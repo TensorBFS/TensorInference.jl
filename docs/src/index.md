@@ -1,14 +1,14 @@
 ```@meta
-CurrentModule = ProbabilisticTensorNetworks
+CurrentModule = TensorInference
 ```
 
-# ProbabilisticTensorNetworks
+# TensorInference
 
-Documentation for [ProbabilisticTensorNetworks](https://github.com/mroavi/ProbabilisticTensorNetworks.jl).
+Documentation for [TensorInference](https://github.com/mroavi/TensorInference.jl).
 
 ```@index
 ```
 
 ```@autodocs
-Modules = [ProbabilisticTensorNetworks]
+Modules = [TensorInference]
 ```

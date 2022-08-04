@@ -1,4 +1,4 @@
-module ProbabilisticTensorNetworks
+module TensorInference
 
 # Write your package code here.
 

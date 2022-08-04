@@ -1,4 +1,4 @@
-name = "ProbabilisticTensorNetworks"
+name = "TensorInference"
 uuid = "c2297e78-99bd-40ad-871d-f50e56b81012"
 authors = ["Jin-Guo Liu", "Martin Roa Villescas"]
 version = "0.1.0"

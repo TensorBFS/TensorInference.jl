@@ -1,16 +1,16 @@
-using ProbabilisticTensorNetworks
+using TensorInference
 using Documenter
 
-DocMeta.setdocmeta!(ProbabilisticTensorNetworks, :DocTestSetup, :(using ProbabilisticTensorNetworks); recursive=true)
+DocMeta.setdocmeta!(TensorInference, :DocTestSetup, :(using TensorInference); recursive=true)
 
 makedocs(;
-    modules=[ProbabilisticTensorNetworks],
+    modules=[TensorInference],
     authors="Jin-Guo Liu, Martin Roa Villescas",
-    repo="https://github.com/mroavi/ProbabilisticTensorNetworks.jl/blob/{commit}{path}#{line}",
-    sitename="ProbabilisticTensorNetworks.jl",
+    repo="https://github.com/mroavi/TensorInference.jl/blob/{commit}{path}#{line}",
+    sitename="TensorInference.jl",
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
-        canonical="https://mroavi.github.io/ProbabilisticTensorNetworks.jl",
+        canonical="https://mroavi.github.io/TensorInference.jl",
         edit_link="main",
         assets=String[],
     ),
@@ -20,6 +20,6 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/mroavi/ProbabilisticTensorNetworks.jl",
+    repo="github.com/mroavi/TensorInference.jl",
     devbranch="main",
 )

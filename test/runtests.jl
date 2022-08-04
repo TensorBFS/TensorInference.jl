@@ -1,6 +1,6 @@
-using ProbabilisticTensorNetworks
+using TensorInference
 using Test
 
-@testset "ProbabilisticTensorNetworks.jl" begin
+@testset "TensorInference.jl" begin
     # Write your tests here.
 end

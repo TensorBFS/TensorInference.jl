@@ -70,7 +70,7 @@ version = "2.3.2"
 deps = ["Unicode"]
 uuid = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 
-[[deps.ProbabilisticTensorNetworks]]
+[[deps.TensorInference]]
 path = ".."
 uuid = "c2297e78-99bd-40ad-871d-f50e56b81012"
 version = "0.1.0"
