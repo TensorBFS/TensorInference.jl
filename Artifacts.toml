@@ -1,0 +1,34 @@
+[MAR_prob]
+git-tree-sha1 = "4dd2447ab2b8eeb8fbfc35d0c7416b5f01ff9711"
+
+    [[MAR_prob.download]]
+    sha256 = "857f8b6706dad46698c6e90a1804e1b40633d87f6eb3d82b5f29929bb6f5155a"
+    url = "https://personal.utdallas.edu/~vibhav.gogate/uai14-competition/files/MAR_prob.tar.gz"
+
+[MAR_sol]
+git-tree-sha1 = "8a86826145efa6b7d7d9c837acd80e33d1368f37"
+
+    [[MAR_sol.download]]
+    sha256 = "d8616ebfc1ab538c2957919f8bb47bd9c1fb86392dd025585cde041bc4e0e934"
+    url = "https://personal.utdallas.edu/~vibhav.gogate/uai14-competition/files/MAR_sol.tar.gz"
+
+[MMAP_UAI2014]
+git-tree-sha1 = "869778bbf5214cbff2169ecc2f3e67e2cb1b6a7a"
+
+    [[MMAP_UAI2014.download]]
+    sha256 = "0080c4851e23c17a42262cdaf4cb1a7aa4b80674435756d0d1ade76d80b9f33f"
+    url = "https://personal.utdallas.edu/~vibhav.gogate/uai14-competition/files/MMAP_UAI2014.tar.gz"
+
+[PR_prob]
+git-tree-sha1 = "a9baff14cc5f64a5d95920928581e2b4eb82acd3"
+
+    [[PR_prob.download]]
+    sha256 = "20b38d43a0718ab555988f041069380a30bbb68881e60d07ebf004054eb9f14f"
+    url = "https://personal.utdallas.edu/~vibhav.gogate/uai14-competition/files/PR_prob.tar.gz"
+
+[PR_sol]
+git-tree-sha1 = "e6643155c4ee433d20ddb7e58441b33b35ecacb8"
+
+    [[PR_sol.download]]
+    sha256 = "86b37c0e7c83f6ff162c88d48250e0bf2b7dd73d44441074ae93a81986238436"
+    url = "https://personal.utdallas.edu/~vibhav.gogate/uai14-competition/files/PR_sol.tar.gz"
