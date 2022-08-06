@@ -1,7 +1,6 @@
 using Test
 using OMEinsum
 using TensorInference
-import LinearAlgebra: normalize!
 
 @testset "gradient based tensor network solvers" begin
     ################# Load problem ####################
@@ -15,20 +14,16 @@ import LinearAlgebra: normalize!
 
     reference_marginals = read_uai_mar_file(uai_mar_filepath)
     obsvars, obsvals = read_uai_evid_file(uai_evid_filepath)
-    nvars, cards, nclique, factors = read_uai_file(uai_filepath; factor_eltype=Float32)
+    nvars, cards, nclique, factors = read_uai_file(uai_filepath; factor_eltype=Float64)
 
     # does not optimize over open vertices
     rawcode = EinCode([[[i] for i in 1:nvars]..., [[factor.vars...] for factor in factors]...], Int[])  # labels for edge tensors
-    tensors = [[ones(Float32, 2) for i=1:length(cards)]..., getfield.(factors, :vals)...]
+    tensors = [[ones(Float64, 2) for i=1:length(cards)]..., getfield.(factors, :vals)...]
     tn = TensorNetworksSolver(rawcode, tensors; fixedvertices=Dict(zip(obsvars, obsvals .- 1)), optimizer=TreeSA(ntrials=1))
     @info timespace_complexity(tn.code, OMEinsum.get_size_dict(getixsv(tn.code), tensors))
-    marginals2 = normalize!.(TensorInference.cost_and_gradient(tn.code, generate_tensors(tn))[2][1:length(cards)], 1)
-    @time marginals2 = normalize!.(TensorInference.cost_and_gradient(tn.code, generate_tensors(tn))[2][1:length(cards)], 1)
-    # for dangling vertices, the output size is 1.
-    npass = 0
-    for i=1:nvars
-        npass += (length(marginals2[i]) == 1 && reference_marginals[i] == [0.0, 1]) || isapprox(marginals2[i], reference_marginals[i])
-    end
-    @show npass, nvars
-    @test npass == nvars
+    most_probable_config(tn)
+    @time logp, config = most_probable_config(tn)
+    @show config
+    @test probability(tn, config) ≈ exp(logp.n)
+    @test maximum_logp(tn)[] ≈ logp
 end 

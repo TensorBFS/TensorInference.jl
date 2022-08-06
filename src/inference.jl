@@ -70,9 +70,13 @@ function generate_gradient_tree(code::NestedEinsum, cache::CacheTree{T}, dy::Abs
         # ...
         # ```
         # Let `L` be the loss, we will have `y̅ := ∂L/∂y`, `A̅ := ∂L/∂A`...
-        dxs = ntuple(i -> OMEinsum.einsum_grad(OMEinsum.getixs(code.eins), xs, OMEinsum.getiy(code.eins), size_dict, conj(dy), i), length(xs))
+        dxs = einsum_backward_rule(code.eins, xs, cache.content, size_dict, dy)
         return CacheTree(dy, generate_gradient_tree.(code.args, cache.siblings, dxs, Ref(size_dict)))
     end
+end
+
+function einsum_backward_rule(eins, xs::NTuple{M,AbstractArray{<:Real}} where M, y, size_dict, dy)
+    return ntuple(i -> OMEinsum.einsum_grad(OMEinsum.getixs(eins), xs, OMEinsum.getiy(eins), size_dict, dy, i), length(xs))
 end
 
 # the main function for generating the gradient tree.
@@ -84,13 +88,13 @@ function gradient_tree(code, xs)
     # initialize `y̅` as `1`. Note we always start from `L̅ := 1`.
     dy = fill!(similar(cache.content), one(eltype(cache.content)))
     # back-propagate
-    return generate_gradient_tree(code, cache, dy, size_dict)
+    return copy(cache.content), generate_gradient_tree(code, cache, dy, size_dict)
 end
 
-function gradient(code, xs)
-    tree = gradient_tree(code, xs)
+function cost_and_gradient(code, xs)
+    cost, tree = gradient_tree(code, xs)
     # extract the gradients on leaves (i.e. the input tensors).
-    return extract_leaves(code, tree)
+    return cost, extract_leaves(code, tree)
 end
 
 # since slicing is not supported, we forward it to NestedEinsum.
