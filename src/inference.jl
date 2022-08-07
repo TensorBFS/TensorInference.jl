@@ -1,5 +1,5 @@
 # generate tensors based on which vertices are fixed.
-function generate_tensors(gp::TensorNetworksSolver)
+function generate_tensors(gp::TensorNetworkModeling)
     fixedvertices = gp.fixedvertices
     isempty(fixedvertices) && return tensors
     ixs = getixsv(gp.code)
@@ -75,6 +75,7 @@ function generate_gradient_tree(code::NestedEinsum, cache::CacheTree{T}, dy::Abs
     end
 end
 
+# a unified interface of the backward rules for real numbers and tropical numbers
 function einsum_backward_rule(eins, xs::NTuple{M,AbstractArray{<:Real}} where M, y, size_dict, dy)
     return ntuple(i -> OMEinsum.einsum_grad(OMEinsum.getixs(eins), xs, OMEinsum.getiy(eins), size_dict, dy, i), length(xs))
 end
@@ -91,6 +92,7 @@ function gradient_tree(code, xs)
     return copy(cache.content), generate_gradient_tree(code, cache, dy, size_dict)
 end
 
+# evaluate the cost and the gradient of leaves
 function cost_and_gradient(code, xs)
     cost, tree = gradient_tree(code, xs)
     # extract the gradients on leaves (i.e. the input tensors).
@@ -100,6 +102,7 @@ end
 # since slicing is not supported, we forward it to NestedEinsum.
 extract_leaves(code::SlicedEinsum, cache::CacheTree) = extract_leaves(code.eins, cache)
 
+# extract gradients on leaf nodes.
 function extract_leaves(code::NestedEinsum, cache::CacheTree)
     res = Vector{Any}(undef, length(getixsv(code)))
     return extract_leaves!(code, cache, res)
@@ -116,3 +119,14 @@ function extract_leaves!(code, cache, res)
     return res
 end 
 
+"""
+$(TYPEDSIGNATURES)
+
+Returns the marginal probability distribution of variables.
+One can use `get_vars(tn)` to get the full list of variables in this tensor network.
+"""
+function marginals(tn::TensorNetworkModeling)::Vector
+    vars = get_vars(tn)
+    _, grads = cost_and_gradient(tn.code, generate_tensors(tn))
+    return LinearAlgebra.normalize!.(grads[1:length(vars)], 1)
+end
