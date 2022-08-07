@@ -1,7 +1,7 @@
 ############ Max a posteriori probability (MAP) ############
 
 # generate tropical tensors with its elements being log(p).
-function generate_tropical_tensors(gp::TensorNetworksSolver)
+function generate_tropical_tensors(gp::TensorNetworkModeling)
     fixedvertices = gp.fixedvertices
     isempty(fixedvertices) && return tensors
     ixs = getixsv(gp.code)
@@ -20,7 +20,7 @@ function einsum_backward_rule(eins, xs::NTuple{M,AbstractArray{<:Tropical}} wher
 end
 
 """
-    backward_tropical(ixs, xs, iy, y, ymask, size_dict)
+$(TYPEDSIGNATURES)
 
 The backward rule for tropical einsum.
 
@@ -37,29 +37,26 @@ function backward_tropical(ixs, @nospecialize(xs::Tuple), iy, @nospecialize(y), 
         nxs  = OMEinsum._insertat( xs, i, y)
         niy = ixs[i]
         A = einsum(EinCode(nixs, niy), nxs, size_dict)
-        push!(masks, onehotmask(A, xs[i]))
+
+        # compute the mask, one of its entry in `A^{-1}` that equal to the corresponding entry in `X` is masked to true.
+        mask = zero(A)
+        j = argmax(xs[i] ./ inv.(A))
+        mask[j] = one(eltype(mask))
+
+        push!(masks, mask)
     end
     return masks
 end
 masked_inv(x, y) = iszero(y) ? zero(x) : inv(x)
 
-# one of the entry in `A` that equal to the corresponding entry in `X` is masked to true.
-function onehotmask(A::AbstractArray{T}, X::AbstractArray{T}) where T
-    @assert length(A) == length(X)
-    mask = zero(A)
-    j = argmax(X ./ inv.(A))
-    mask[j] = one(T)
-    return mask
-end
-
 # Returns the log-probability and the configuration.
-function most_probable_config(tn::TensorNetworksSolver)
-    cards = uniquelabels(tn.code)
+function most_probable_config(tn::TensorNetworkModeling)
+    vars = get_vars(tn)
     logp, grads = cost_and_gradient(tn.code, generate_tropical_tensors(tn))
-    return logp[], map(k->haskey(tn.fixedvertices, cards[k]) ? tn.fixedvertices[cards[k]] : argmax(grads[k]) - 1, 1:length(cards))
+    return logp[], map(k->haskey(tn.fixedvertices, vars[k]) ? tn.fixedvertices[vars[k]] : argmax(grads[k]) - 1, 1:length(vars))
 end
 
 # Returns probability and the configuration.
-function maximum_logp(tn::TensorNetworksSolver)
+function maximum_logp(tn::TensorNetworkModeling)
     return tn.code(generate_tropical_tensors(tn)...)
 end
