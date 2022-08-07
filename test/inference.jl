@@ -17,7 +17,7 @@ using TensorInference
     nvars, cards, nclique, factors = read_uai_file(uai_filepath; factor_eltype=Float32)
 
     # does not optimize over open vertices
-    tn = TensorNetworkModeling(1:nvars, factors; fixedvertices=Dict(zip(obsvars, obsvals .- 1)), optimizer=TreeSA(ntrials=1))
+    tn = TensorNetworkModeling(1:nvars, factors; fixedvertices=Dict(zip(obsvars, obsvals .- 1)))
     @info timespace_complexity(tn)
     @time marginals2 = marginals(tn)
     # for dangling vertices, the output size is 1.

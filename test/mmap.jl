@@ -21,17 +21,17 @@ end
     obsvars, obsvals = read_uai_evid_file(uai_evid_filepath)
     nvars, cards, nclique, factors = read_uai_file(uai_filepath; factor_eltype=Float64)
 
-    tn_ref = TensorNetworkModeling(1:nvars, factors; fixedvertices=Dict(zip(obsvars, obsvals .- 1)), optimizer=TreeSA(ntrials=1))
+    tn_ref = TensorNetworkModeling(1:nvars, factors; fixedvertices=Dict(zip(obsvars, obsvals .- 1)))
     # does not marginalize any var
-    tn = MMAPModeling(1:nvars, factors; marginalizedvertices=Int[], fixedvertices=Dict(zip(obsvars, obsvals .- 1)), optimizer=TreeSA(ntrials=1))
+    tn = MMAPModeling(1:nvars, factors; marginalizedvertices=Int[], fixedvertices=Dict(zip(obsvars, obsvals .- 1)))
     @test maximum_logp(tn_ref) ≈ maximum_logp(tn)
 
     # marginalize all vars
-    tn2 = MMAPModeling(1:nvars, factors; marginalizedvertices=collect(1:nvars), fixedvertices=Dict(zip(obsvars, obsvals .- 1)), optimizer=TreeSA(ntrials=1))
+    tn2 = MMAPModeling(1:nvars, factors; marginalizedvertices=collect(1:nvars), fixedvertices=Dict(zip(obsvars, obsvals .- 1)))
     @test probability(tn_ref)[] ≈ exp(maximum_logp(tn2)[].n)
 
     # does not optimize over open vertices
-    tn3 = MMAPModeling(1:nvars, factors; marginalizedvertices=[2,4,6], fixedvertices=Dict(zip(obsvars, obsvals .- 1)), optimizer=TreeSA(ntrials=1))
+    tn3 = MMAPModeling(1:nvars, factors; marginalizedvertices=[2,4,6], fixedvertices=Dict(zip(obsvars, obsvals .- 1)))
     logp, config = most_probable_config(tn3)
     @test probability(tn3, config) ≈ exp(logp.n)
 end 
