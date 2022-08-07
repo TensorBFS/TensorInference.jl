@@ -6,10 +6,10 @@
 [![Coverage](https://codecov.io/gh/mroavi/TensorInference.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/mroavi/TensorInference.jl)
 
 This package implements a tensor network based probabilistic modeling toolbox, which covers the probability inference functionalities in [this page](https://uaicompetition.github.io/uci-2022/competition-entry/tasks/):
-* [x] PR: computing the partition function or probability of evidence,
-* [x] MAR: computing the marginal probability distribution over all variables given evidence.
-* [x] MAP: computing the most likely assignment to all variables given evidence.
-* [ ] MMAP: computing the most likely assignment to the query variables after marginalizing out the remaining variables.
+* PR: computing the partition function or probability of evidence,
+* MAR: computing the marginal probability distribution over all variables given evidence.
+* MAP: computing the most likely assignment to all variables given evidence.
+* MMAP: computing the most likely assignment to the query variables after marginalizing out the remaining variables.
 
 ## Installation
 <p>
