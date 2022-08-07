@@ -2,7 +2,7 @@ using Test
 using OMEinsum
 using TensorInference
 
-@testset "gradient based tensor network solvers" begin
+@testset "map" begin
     ################# Load problem ####################
     problem_number = "14"
     problem_filename = joinpath("Promedus_" * problem_number)
@@ -17,7 +17,7 @@ using TensorInference
     nvars, cards, nclique, factors = read_uai_file(uai_filepath; factor_eltype=Float64)
 
     # does not optimize over open vertices
-    tn = TensorNetworkModeling(1:nvars, factors; fixedvertices=Dict(zip(obsvars, obsvals .- 1)), optimizer=TreeSA(ntrials=1))
+    tn = TensorNetworkModeling(1:nvars, factors; fixedvertices=Dict(zip(obsvars, obsvals .- 1)))
     @info timespace_complexity(tn)
     most_probable_config(tn)
     @time logp, config = most_probable_config(tn)

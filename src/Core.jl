@@ -28,13 +28,13 @@ struct TensorNetworkModeling{LT,ET,MT<:AbstractArray}
     vars::Vector{LT}
     code::ET
     tensors::Vector{MT}
-    fixedvertices::Dict{Int,Int}
+    fixedvertices::Dict{LT,Int}
 end
 
 """
 $(TYPEDSIGNATURES)
 """
-function TensorNetworkModeling(vars::AbstractVector{LT}, factors::Vector{<:Factor{T}}; openvertices=(), fixedvertices=Dict{Int,Int}(), optimizer=GreedyMethod(), simplifier=nothing)::TensorNetworkModeling where {T,LT}
+function TensorNetworkModeling(vars::AbstractVector{LT}, factors::Vector{<:Factor{T}}; openvertices=(), fixedvertices=Dict{LT,Int}(), optimizer=GreedyMethod(), simplifier=nothing)::TensorNetworkModeling where {T,LT}
     # The 1st argument of `EinCode` is a vector of vector of labels for specifying the input tensors, 
     # The 2nd argument of `EinCode` is a vector of labels for specifying the output tensor,
     # e.g.
@@ -46,7 +46,7 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function TensorNetworkModeling(vars::AbstractVector{LT}, rawcode::EinCode, tensors::Vector{<:AbstractArray}; fixedvertices=Dict{Int,Int}(), optimizer=GreedyMethod(), simplifier=nothing)::TensorNetworkModeling where LT
+function TensorNetworkModeling(vars::AbstractVector{LT}, rawcode::EinCode, tensors::Vector{<:AbstractArray}; fixedvertices=Dict{LT,Int}(), optimizer=GreedyMethod(), simplifier=nothing)::TensorNetworkModeling where LT
     # `optimize_code` optimizes the contraction order of a raw tensor network without a contraction order specified.
     # The 1st argument is the contraction pattern to be optimized (without contraction order).
     # The 2nd arugment is the size dictionary, which is a label-integer dictionary.
@@ -62,13 +62,15 @@ Get the variables in this tensor network, they is also known as legs, labels, or
 """
 get_vars(tn::TensorNetworkModeling)::Vector = tn.vars
 
+chfixedvertices(tn::TensorNetworkModeling, fixedvertices) = TensorNetworkModeling(tn.vars, tn.code, tn.tensors, fixedvertices)
+
 """
 $(TYPEDSIGNATURES)
 
 Evaluate the probability of `config`.
 """
 function probability(tn::TensorNetworkModeling, config)::Real
-    assign = Dict(zip(uniquelabels(tn.code), config .+ 1))
+    assign = Dict(zip(get_vars(tn), config .+ 1))
     return mapreduce(x->x[2][getindex.(Ref(assign), x[1])...], *, zip(getixsv(tn.code), tn.tensors))
 end
 
@@ -78,7 +80,9 @@ $(TYPEDSIGNATURES)
 Contract the tensor network and return a probability array with its rank specified in the contraction code `tn.code`.
 The returned array may not be l1-normalized even if the total probability is l1-normalized, because the evidence `tn.fixedvertices` may not be empty.
 """
-probability(tn::TensorNetworkModeling)::AbstractArray = tn.code(generate_tensors(tn)...)
+function probability(tn::TensorNetworkModeling)::AbstractArray
+    return tn.code(generate_tensors(tn)...)
+end
 
 function OMEinsum.timespacereadwrite_complexity(tn::TensorNetworkModeling)
     tensors = generate_tensors(tn)
