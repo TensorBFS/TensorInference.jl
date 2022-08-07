@@ -40,3 +40,7 @@ function TensorNetworksSolver(rawcode::EinCode, tensors::Vector{<:AbstractArray}
     TensorNetworksSolver(code, tensors, fixedvertices)
 end
 
+function probability(tn::TensorNetworksSolver, config)
+    assign = Dict(zip(uniquelabels(tn.code), config .+ 1))
+    return mapreduce(x->x[2][getindex.(Ref(assign), x[1])...], *, zip(getixsv(tn.code), tn.tensors))
+end
