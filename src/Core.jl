@@ -28,13 +28,13 @@ struct TensorNetworkModeling{LT,ET,MT<:AbstractArray}
     vars::Vector{LT}
     code::ET
     tensors::Vector{MT}
-    fixedvertices::Dict{Int,Int}
+    fixedvertices::Dict{LT,Int}
 end
 
 """
 $(TYPEDSIGNATURES)
 """
-function TensorNetworkModeling(vars::AbstractVector{LT}, factors::Vector{<:Factor{T}}; openvertices=(), fixedvertices=Dict{Int,Int}(), optimizer=GreedyMethod(), simplifier=nothing)::TensorNetworkModeling where {T,LT}
+function TensorNetworkModeling(vars::AbstractVector{LT}, factors::Vector{<:Factor{T}}; openvertices=(), fixedvertices=Dict{LT,Int}(), optimizer=GreedyMethod(), simplifier=nothing)::TensorNetworkModeling where {T,LT}
     # The 1st argument of `EinCode` is a vector of vector of labels for specifying the input tensors, 
     # The 2nd argument of `EinCode` is a vector of labels for specifying the output tensor,
     # e.g.
@@ -46,7 +46,7 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function TensorNetworkModeling(vars::AbstractVector{LT}, rawcode::EinCode, tensors::Vector{<:AbstractArray}; fixedvertices=Dict{Int,Int}(), optimizer=GreedyMethod(), simplifier=nothing)::TensorNetworkModeling where LT
+function TensorNetworkModeling(vars::AbstractVector{LT}, rawcode::EinCode, tensors::Vector{<:AbstractArray}; fixedvertices=Dict{LT,Int}(), optimizer=GreedyMethod(), simplifier=nothing)::TensorNetworkModeling where LT
     # `optimize_code` optimizes the contraction order of a raw tensor network without a contraction order specified.
     # The 1st argument is the contraction pattern to be optimized (without contraction order).
     # The 2nd arugment is the size dictionary, which is a label-integer dictionary.

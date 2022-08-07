@@ -13,12 +13,12 @@ This package implements a tensor network based probabilistic modeling toolbox, w
 
 ## Installation
 <p>
-TensorInference is a &nbsp;
+<code>TensorInference</code> is a &nbsp;
     <a href="https://julialang.org">
         <img src="https://raw.githubusercontent.com/JuliaLang/julia-logo-graphics/master/images/julia.ico" width="16em">
         Julia Language
     </a>
-    &nbsp; package. To install TensorInference,
+    &nbsp; package. To install <code>TensorInference</code>,
     please <a href="https://docs.julialang.org/en/v1/manual/getting-started/">open
     Julia's interactive session (known as REPL)</a> and press <kbd>]</kbd> key in the REPL to use the package mode, then type
 </p>

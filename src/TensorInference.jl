@@ -12,5 +12,6 @@ include("Core.jl")
 include("utils.jl")
 include("inference.jl")
 include("maxprob.jl")
+include("mmap.jl")
 
 end # module
