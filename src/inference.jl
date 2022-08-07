@@ -1,11 +1,11 @@
 # generate tensors based on which vertices are fixed.
-function generate_tensors(gp::TensorNetworkModeling)
-    fixedvertices = gp.fixedvertices
+generate_tensors(gp::TensorNetworkModeling) = generate_tensors(gp.code, gp.tensors, gp.fixedvertices)
+function generate_tensors(code, tensors, fixedvertices)
     isempty(fixedvertices) && return tensors
-    ixs = getixsv(gp.code)
+    ixs = getixsv(code)
     # `ix` is the vector of labels (or a degree of freedoms) for a tensor,
     # if a label in `ix` is fixed to a value, do the slicing to the tensor it associates to.
-    map(gp.tensors, ixs) do t, ix
+    map(tensors, ixs) do t, ix
         dims = map(ixi->ixi ∉ keys(fixedvertices) ? Colon() : (fixedvertices[ixi]+1:fixedvertices[ixi]+1), ix)
         t[dims...]
     end

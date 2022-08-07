@@ -2,7 +2,7 @@ using Test
 using OMEinsum
 using TensorInference
 
-@testset "gradient based tensor network solvers" begin
+@testset "map" begin
     ################# Load problem ####################
     problem_number = "14"
     problem_filename = joinpath("Promedus_" * problem_number)

@@ -7,7 +7,7 @@ using TensorInference
     @test TensorInference.connected_clusters(ixs, [2,3,6]) == [[2, 3] => [1, 2], [6] => [3]]
 end
 
-@testset "gradient based tensor network solvers" begin
+@testset "mmap" begin
     ################# Load problem ####################
     problem_number = "14"
     problem_filename = joinpath("Promedus_" * problem_number)
@@ -21,12 +21,17 @@ end
     obsvars, obsvals = read_uai_evid_file(uai_evid_filepath)
     nvars, cards, nclique, factors = read_uai_file(uai_filepath; factor_eltype=Float64)
 
+    tn_ref = TensorNetworkModeling(1:nvars, factors; fixedvertices=Dict(zip(obsvars, obsvals .- 1)), optimizer=TreeSA(ntrials=1))
+    # does not marginalize any var
+    tn = MMAPModeling(1:nvars, factors; marginalizedvertices=Int[], fixedvertices=Dict(zip(obsvars, obsvals .- 1)), optimizer=TreeSA(ntrials=1))
+    @test maximum_logp(tn_ref) ≈ maximum_logp(tn)
+
+    # marginalize all vars
+    tn2 = MMAPModeling(1:nvars, factors; marginalizedvertices=collect(1:nvars), fixedvertices=Dict(zip(obsvars, obsvals .- 1)), optimizer=TreeSA(ntrials=1))
+    @test probability(tn_ref)[] ≈ exp(maximum_logp(tn2)[].n)
+
     # does not optimize over open vertices
-    tn = TensorNetworkModeling(1:nvars, factors; fixedvertices=Dict(zip(obsvars, obsvals .- 1)), optimizer=TreeSA(ntrials=1))
-    @info timespace_complexity(tn)
-    most_probable_config(tn)
-    @time logp, config = most_probable_config(tn)
-    @show config
-    @test probability(tn, config) ≈ exp(logp.n)
-    @test maximum_logp(tn)[] ≈ logp
+    tn3 = MMAPModeling(1:nvars, factors; marginalizedvertices=[2,4,6], fixedvertices=Dict(zip(obsvars, obsvals .- 1)), optimizer=TreeSA(ntrials=1))
+    logp, config = most_probable_config(tn3)
+    @test probability(tn3, config) ≈ exp(logp.n)
 end 

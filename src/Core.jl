@@ -62,13 +62,15 @@ Get the variables in this tensor network, they is also known as legs, labels, or
 """
 get_vars(tn::TensorNetworkModeling)::Vector = tn.vars
 
+chfixedvertices(tn::TensorNetworkModeling, fixedvertices) = TensorNetworkModeling(tn.vars, tn.code, tn.tensors, fixedvertices)
+
 """
 $(TYPEDSIGNATURES)
 
 Evaluate the probability of `config`.
 """
 function probability(tn::TensorNetworkModeling, config)::Real
-    assign = Dict(zip(uniquelabels(tn.code), config .+ 1))
+    assign = Dict(zip(get_vars(tn), config .+ 1))
     return mapreduce(x->x[2][getindex.(Ref(assign), x[1])...], *, zip(getixsv(tn.code), tn.tensors))
 end
 
@@ -78,7 +80,9 @@ $(TYPEDSIGNATURES)
 Contract the tensor network and return a probability array with its rank specified in the contraction code `tn.code`.
 The returned array may not be l1-normalized even if the total probability is l1-normalized, because the evidence `tn.fixedvertices` may not be empty.
 """
-probability(tn::TensorNetworkModeling)::AbstractArray = tn.code(generate_tensors(tn)...)
+function probability(tn::TensorNetworkModeling)::AbstractArray
+    return tn.code(generate_tensors(tn)...)
+end
 
 function OMEinsum.timespacereadwrite_complexity(tn::TensorNetworkModeling)
     tensors = generate_tensors(tn)

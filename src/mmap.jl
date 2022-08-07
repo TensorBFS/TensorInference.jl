@@ -1,11 +1,33 @@
 # MMAP : computing the most likely assignment to the query variables,  Xₘ ⊆ X after marginalizing out the remaining variables Xₛ = X \ Xₘ.
 
-struct MMAPModeling{LT}
+"""
+$(TYPEDEF)
+
+Computing the most likely assignment to the query variables,  Xₘ ⊆ X after marginalizing out the remaining variables Xₛ = X \\ Xₘ.
+
+```math
+{\\rm MMAP}(X_i|E=e) = \\arg \\max_{X_M} \\sum_{X_S} \\prod_{F} f(x_M, x_S, e)
+```
+
+### Fields
+* `vars` is the remaining (or not marginalized) degree of freedoms in the tensor network.
+* `code` is the tropical tensor network contraction pattern.
+* `tensors` is the tensors fed into the tensor network.
+* `models` is the clusters, each element of this cluster is a [`TensorNetworkModeling`](@ref) instance for marginalizing certain variables.
+* `fixedvertices` is a dictionary to specifiy degree of freedoms fixed to certain values, which should not have overlap with the marginalized variables.
+"""
+struct MMAPModeling{LT,AT<:AbstractArray}
     vars::Vector{LT}
     code::AbstractEinsum
-    submodels::Vector{TensorNetworkModeling}
+    tensors::Vector{AT}
+    models::Vector{TensorNetworkModeling}
     fixedvertices::Dict{LT,Int}
 end
+
+"""
+$(TYPEDSIGNATURES)
+"""
+get_vars(mmap::MMAPModeling) = mmap.vars
 
 """
 $(TYPEDSIGNATURES)
@@ -24,26 +46,27 @@ function MMAPModeling(vars::AbstractVector{LT}, factors::Vector{<:Factor{T}}; ma
     size_dict = OMEinsum.get_size_dict(all_ixs, all_tensors)
 
     # detect clusters for marginalize variables
-    clusters = connected_clusters(all_ixs, iy, get_vars(tn))
+    clusters = connected_clusters(all_ixs, marginalizedvertices)
     models = TensorNetworkModeling[]
     ixs = Vector{LT}[]
     for (contracted, cluster) in clusters
         ts = all_tensors[cluster]
-        ixsi = tn.tensors[cluster]
+        ixsi = all_ixs[cluster]
         vari = unique!(vcat(ixsi...))
         iyi = setdiff(vari, contracted)
         codei = optimize_code(EinCode(ixsi, iyi), size_dict, marginalize_optimizer, marginalize_simplifier)
+        push!(ixs, iyi)
         push!(models, TensorNetworkModeling(vari, codei, ts, fixedvertices))
     end
-    code = optimize_code(EinCode(ixs, iy), size_dict, optimizer, simplifier)
-    return MMAPModeling(setdiff(get_vars(tn), vars), code, models, fixedvertices)
+    rem_indices = setdiff(1:length(all_ixs), vcat([c.second for c in clusters]...))
+    remaining_tensors = all_tensors[rem_indices]
+    code = optimize_code(EinCode([all_ixs[rem_indices]..., ixs...], iy), size_dict, optimizer, simplifier)
+    return MMAPModeling(setdiff(vars, marginalizedvertices), code, remaining_tensors, models, fixedvertices)
 end
 
-function maximum_logp(mmap::MMAPModeling)
-    tensors = map(model->Tropical.(log.(probability(model))), submodels)
-    return maximum_logp(TensorNetworkModeling(mmap.vars, mmap.code, tensors, mmap.fixedvertices))
-end
+generate_tensors(mmap::MMAPModeling) = [generate_tensors(mmap.code, mmap.tensors, mmap.fixedvertices)..., map(model->probability(model), mmap.models)...]
 
+# find connected clusters
 function connected_clusters(ixs, vars::Vector{LT}) where LT
     visited_ixs = falses(length(ixs))
     visited_vars = falses(length(vars))
@@ -53,6 +76,7 @@ function connected_clusters(ixs, vars::Vector{LT}) where LT
         visited_vars[kv] = true
         cluster = LT[]=>Int[]
         visit_var!(var, vars, ixs, visited_ixs, visited_vars, cluster)
+        sort!(cluster.second)  # sort the tensor indices
         if !isempty(cluster)
             push!(clusters, cluster)
         end
@@ -87,12 +111,31 @@ function visit_var!(var, vars::AbstractVector{LT}, ixs, visited_ixs, visited_var
     end
 end
 
-function count_vars(ixs::Vector{Vector{LT}}) where LT
-    total_counts = Dict{LT,Int}()
-    for ix in [ixs..., iy]
-        for label in ix
-            total_counts[label] = get(total_counts, label, 0) + 1
-        end
-    end
-    return total_counts
+"""
+$(TYPEDSIGNATURES)
+"""
+function most_probable_config(mmap::MMAPModeling)::Tuple{Tropical,Vector}
+    vars = get_vars(mmap)
+    tensors = map(t->OMEinsum.asarray(Tropical.(log.(t)), t), generate_tensors(mmap))
+    logp, grads = cost_and_gradient(mmap.code, tensors)
+    return logp[], map(k->haskey(mmap.fixedvertices, vars[k]) ? mmap.fixedvertices[vars[k]] : argmax(grads[k]) - 1, 1:length(vars))
+end
+
+"""
+$(TYPEDSIGNATURES)
+"""
+function maximum_logp(mmap::MMAPModeling)::AbstractArray{<:Tropical}
+    tensors = map(t->OMEinsum.asarray(Tropical.(log.(t)), t), generate_tensors(mmap))
+    return mmap.code(tensors...)
+end
+
+"""
+$(TYPEDSIGNATURES)
+"""
+function probability(mmap::MMAPModeling, config)::Real
+    fixedvertices = merge(mmap.fixedvertices, Dict(zip(get_vars(mmap), config)))
+    assign = Dict(zip(get_vars(mmap), config .+ 1))
+    m1 = mapreduce(x->x[2][getindex.(Ref(assign), x[1])...], *, zip(getixsv(mmap.code), mmap.tensors))
+    m2 = prod(model->probability(chfixedvertices(model, fixedvertices))[], mmap.models)
+    return m1 * m2
 end

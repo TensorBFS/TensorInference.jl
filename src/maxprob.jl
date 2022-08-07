@@ -1,19 +1,5 @@
 ############ Max a posteriori probability (MAP) ############
 
-# generate tropical tensors with its elements being log(p).
-function generate_tropical_tensors(gp::TensorNetworkModeling)
-    fixedvertices = gp.fixedvertices
-    isempty(fixedvertices) && return tensors
-    ixs = getixsv(gp.code)
-    # `ix` is the vector of labels (or a degree of freedoms) for a tensor,
-    # if a label in `ix` is fixed to a value, do the slicing to the tensor it associates to.
-    map(gp.tensors, ixs) do t, ix
-        dims = map(ixi->ixi ∉ keys(fixedvertices) ? Colon() : (fixedvertices[ixi]+1:fixedvertices[ixi]+1), ix)
-        # tropial numbers with log-probability as its value.
-        Tropical.(log.(t[dims...]))
-    end
-end
-
 ########### Backward tropical tensor contraction ##############
 # This part is copied from [`GenericTensorNetworks`](https://github.com/QuEraComputing/GenericTensorNetworks.jl).
 function einsum_backward_rule(eins, xs::NTuple{M,AbstractArray{<:Tropical}} where M, y, size_dict, dy)
@@ -57,7 +43,8 @@ Returns the largest log-probability and the most probable configuration.
 """
 function most_probable_config(tn::TensorNetworkModeling)::Tuple{Tropical,Vector}
     vars = get_vars(tn)
-    logp, grads = cost_and_gradient(tn.code, generate_tropical_tensors(tn))
+    tensors = map(t->Tropical.(log.(t)), generate_tensors(tn))
+    logp, grads = cost_and_gradient(tn.code, tensors)
     return logp[], map(k->haskey(tn.fixedvertices, vars[k]) ? tn.fixedvertices[vars[k]] : argmax(grads[k]) - 1, 1:length(vars))
 end
 
@@ -67,5 +54,7 @@ $(TYPEDSIGNATURES)
 Returns an output array containing largest log-probabilities.
 """
 function maximum_logp(tn::TensorNetworkModeling)::AbstractArray{<:Tropical}
-    return tn.code(generate_tropical_tensors(tn)...)
+    # generate tropical tensors with its elements being log(p).
+    tensors = map(t->Tropical.(log.(t)), generate_tensors(tn))
+    return tn.code(tensors...)
 end
