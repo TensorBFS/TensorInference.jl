@@ -9,6 +9,7 @@ function generate_tropical_tensors(gp::TensorNetworkModeling)
     # if a label in `ix` is fixed to a value, do the slicing to the tensor it associates to.
     map(gp.tensors, ixs) do t, ix
         dims = map(ixi->ixi ∉ keys(fixedvertices) ? Colon() : (fixedvertices[ixi]+1:fixedvertices[ixi]+1), ix)
+        # tropial numbers with log-probability as its value.
         Tropical.(log.(t[dims...]))
     end
 end
@@ -49,14 +50,22 @@ function backward_tropical(ixs, @nospecialize(xs::Tuple), iy, @nospecialize(y), 
 end
 masked_inv(x, y) = iszero(y) ? zero(x) : inv(x)
 
-# Returns the log-probability and the configuration.
-function most_probable_config(tn::TensorNetworkModeling)
+"""
+$(TYPEDSIGNATURES)
+
+Returns the largest log-probability and the most probable configuration.
+"""
+function most_probable_config(tn::TensorNetworkModeling)::Tuple{Tropical,Vector}
     vars = get_vars(tn)
     logp, grads = cost_and_gradient(tn.code, generate_tropical_tensors(tn))
     return logp[], map(k->haskey(tn.fixedvertices, vars[k]) ? tn.fixedvertices[vars[k]] : argmax(grads[k]) - 1, 1:length(vars))
 end
 
-# Returns probability and the configuration.
-function maximum_logp(tn::TensorNetworkModeling)
+"""
+$(TYPEDSIGNATURES)
+
+Returns an output array containing largest log-probabilities.
+"""
+function maximum_logp(tn::TensorNetworkModeling)::AbstractArray{<:Tropical}
     return tn.code(generate_tropical_tensors(tn)...)
 end
