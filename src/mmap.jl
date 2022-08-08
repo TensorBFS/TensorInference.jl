@@ -125,7 +125,8 @@ function most_probable_config(mmap::MMAPModeling; usecuda=false)::Tuple{Tropical
     vars = get_vars(mmap)
     tensors = map(t->OMEinsum.asarray(Tropical.(log.(t)), t), generate_tensors(mmap; usecuda))
     logp, grads = cost_and_gradient(mmap.code, tensors)
-    return logp[], map(k->haskey(mmap.fixedvertices, vars[k]) ? mmap.fixedvertices[vars[k]] : argmax(grads[k]) - 1, 1:length(vars))
+    # use Array to convert CuArray to CPU arrays
+    return Array(logp)[], map(k->haskey(mmap.fixedvertices, vars[k]) ? mmap.fixedvertices[vars[k]] : argmax(grads[k]) - 1, 1:length(vars))
 end
 
 """

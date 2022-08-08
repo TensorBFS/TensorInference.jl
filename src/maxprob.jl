@@ -26,15 +26,18 @@ function backward_tropical(ixs, @nospecialize(xs::Tuple), iy, @nospecialize(y), 
         A = einsum(EinCode(nixs, niy), nxs, size_dict)
 
         # compute the mask, one of its entry in `A^{-1}` that equal to the corresponding entry in `X` is masked to true.
-        mask = zero(A)
         j = argmax(xs[i] ./ inv.(A))
-        mask[j] = one(eltype(mask))
-
+        mask = onehot_like(A, j)
         push!(masks, mask)
     end
     return masks
 end
 masked_inv(x, y) = iszero(y) ? zero(x) : inv(x)
+function onehot_like(A::AbstractArray, j)
+    mask = zero(A)
+    mask[j] = one(eltype(mask))
+    return mask
+end
 
 """
 $(TYPEDSIGNATURES)
@@ -45,7 +48,8 @@ function most_probable_config(tn::TensorNetworkModeling; usecuda=false)::Tuple{T
     vars = get_vars(tn)
     tensors = map(t->Tropical.(log.(t)), generate_tensors(tn; usecuda))
     logp, grads = cost_and_gradient(tn.code, tensors)
-    return logp[], map(k->haskey(tn.fixedvertices, vars[k]) ? tn.fixedvertices[vars[k]] : argmax(grads[k]) - 1, 1:length(vars))
+    # use Array to convert CuArray to CPU arrays
+    return Array(logp)[], map(k->haskey(tn.fixedvertices, vars[k]) ? tn.fixedvertices[vars[k]] : argmax(grads[k]) - 1, 1:length(vars))
 end
 
 """

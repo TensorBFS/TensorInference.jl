@@ -21,7 +21,7 @@ end
     @test maximum_logp(tn_ref) ≈ maximum_logp(tn)
 
     # marginalize all vars
-    tn2 = MMAPModeling(instance; marginalizedvertices=collect(1:nvars), optimizer)
+    tn2 = MMAPModeling(instance; marginalizedvertices=collect(1:instance.nvars), optimizer)
     @test probability(tn_ref)[] ≈ exp(maximum_logp(tn2)[].n)
 
     # does not optimize over open vertices

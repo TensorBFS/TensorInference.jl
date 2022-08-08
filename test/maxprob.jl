@@ -14,7 +14,6 @@ using TensorInference
     @info timespace_complexity(tn)
     most_probable_config(tn)
     @time logp, config = most_probable_config(tn)
-    @show config
     @test probability(tn, config) ≈ exp(logp.n)
     @test maximum_logp(tn)[] ≈ logp
 end 
