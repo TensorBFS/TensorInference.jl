@@ -17,15 +17,18 @@ end
     optimizer=TreeSA(ntrials=1, niters=2, βs=1:0.1:40)
     tn_ref = TensorNetworkModeling(instance; optimizer)
     # does not marginalize any var
-    tn = MMAPModeling(instance; marginalizedvertices=Int[], optimizer)
-    @test maximum_logp(tn_ref) ≈ maximum_logp(tn)
+    mmap = MMAPModeling(instance; marginalizedvertices=Int[], optimizer)
+    @info(mmap)
+    @test maximum_logp(tn_ref) ≈ maximum_logp(mmap)
 
     # marginalize all vars
-    tn2 = MMAPModeling(instance; marginalizedvertices=collect(1:instance.nvars), optimizer)
-    @test probability(tn_ref)[] ≈ exp(maximum_logp(tn2)[].n)
+    mmap2 = MMAPModeling(instance; marginalizedvertices=collect(1:instance.nvars), optimizer)
+    @info(mmap2)
+    @test probability(tn_ref)[] ≈ exp(maximum_logp(mmap2)[].n)
 
     # does not optimize over open vertices
-    tn3 = MMAPModeling(instance; marginalizedvertices=[2,4,6], optimizer)
-    logp, config = most_probable_config(tn3)
-    @test probability(tn3, config) ≈ exp(logp.n)
+    mmap3 = MMAPModeling(instance; marginalizedvertices=[2,4,6], optimizer)
+    @info(mmap3)
+    logp, config = most_probable_config(mmap3)
+    @test probability(mmap3, config) ≈ exp(logp.n)
 end 

@@ -1,5 +1,12 @@
 # MMAP : computing the most likely assignment to the query variables,  Xₘ ⊆ X after marginalizing out the remaining variables Xₛ = X \ Xₘ.
 
+# A cluster is the elimination of a subset of variables.
+struct Cluster{LT}
+    eliminated_vars::Vector{LT}
+    code::AbstractEinsum
+    tensors::Vector
+end
+
 """
 $(TYPEDEF)
 
@@ -13,21 +20,40 @@ Computing the most likely assignment to the query variables,  Xₘ ⊆ X after m
 * `vars` is the remaining (or not marginalized) degree of freedoms in the tensor network.
 * `code` is the tropical tensor network contraction pattern.
 * `tensors` is the tensors fed into the tensor network.
-* `models` is the clusters, each element of this cluster is a [`TensorNetworkModeling`](@ref) instance for marginalizing certain variables.
+* `clusters` is the clusters, each element of this cluster is a [`TensorNetworkModeling`](@ref) instance for marginalizing certain variables.
 * `fixedvertices` is a dictionary to specifiy degree of freedoms fixed to certain values, which should not have overlap with the marginalized variables.
 """
 struct MMAPModeling{LT,AT<:AbstractArray}
     vars::Vector{LT}
     code::AbstractEinsum
     tensors::Vector{AT}
-    models::Vector{TensorNetworkModeling}
+    clusters::Vector{Cluster{LT}}
     fixedvertices::Dict{LT,Int}
 end
+
+function Base.show(io::IO, mmap::MMAPModeling)
+    open = getiyv(mmap.code)
+    variables = join([string_var(var, open, mmap.fixedvertices) for var in mmap.vars], ", ")
+    tc, sc, rw = timespacereadwrite_complexity(mmap)
+    println(io, "$(typeof(mmap))")
+    println(io, "variables: $variables")
+    println(io, "marginalized variables: $(map(x->x.eliminated_vars, mmap.clusters))")
+    print_tcscrw(io, tc, sc, rw)
+end
+Base.show(io::IO, ::MIME"text/plain", mmap::MMAPModeling) = Base.show(io, mmap)
 
 """
 $(TYPEDSIGNATURES)
 """
 get_vars(mmap::MMAPModeling) = mmap.vars
+
+"""
+$(TYPEDSIGNATURES)
+"""
+function get_cards(mmap::MMAPModeling; fixedisone=false)
+    vars = get_vars(mmap)
+    [fixedisone && haskey(mmap.fixedvertices, vars[k]) ? 1 : length(mmap.tensors[k]) for k=1:length(vars)]
+end
 
 """
 $(TYPEDSIGNATURES)
@@ -53,25 +79,50 @@ function MMAPModeling(vars::AbstractVector{LT}, factors::Vector{<:Factor{T}}; ma
     size_dict = OMEinsum.get_size_dict(all_ixs, all_tensors)
 
     # detect clusters for marginalize variables
-    clusters = connected_clusters(all_ixs, marginalizedvertices)
-    models = TensorNetworkModeling[]
+    subsets = connected_clusters(all_ixs, marginalizedvertices)
+    clusters = Cluster{LT}[]
     ixs = Vector{LT}[]
-    for (contracted, cluster) in clusters
+    for (contracted, cluster) in subsets
         ts = all_tensors[cluster]
         ixsi = all_ixs[cluster]
         vari = unique!(vcat(ixsi...))
         iyi = setdiff(vari, contracted)
         codei = optimize_code(EinCode(ixsi, iyi), size_dict, marginalize_optimizer, marginalize_simplifier)
         push!(ixs, iyi)
-        push!(models, TensorNetworkModeling(vari, codei, ts, fixedvertices))
+        push!(clusters, Cluster(contracted, codei, ts))
     end
-    rem_indices = setdiff(1:length(all_ixs), vcat([c.second for c in clusters]...))
+    rem_indices = setdiff(1:length(all_ixs), vcat([c.second for c in subsets]...))
     remaining_tensors = all_tensors[rem_indices]
     code = optimize_code(EinCode([all_ixs[rem_indices]..., ixs...], iy), size_dict, optimizer, simplifier)
-    return MMAPModeling(setdiff(vars, marginalizedvertices), code, remaining_tensors, models, fixedvertices)
+    return MMAPModeling(setdiff(vars, marginalizedvertices), code, remaining_tensors, clusters, fixedvertices)
 end
 
-generate_tensors(mmap::MMAPModeling; usecuda) = [generate_tensors(mmap.code, mmap.tensors, mmap.fixedvertices; usecuda)..., map(model->probability(model; usecuda), mmap.models)...]
+function OMEinsum.timespacereadwrite_complexity(mmap::MMAPModeling{LT}) where LT
+    # extract size
+    size_dict = Dict(zip(get_vars(mmap), get_cards(mmap; fixedisone=true)))
+    sc = -Inf
+    tcs = Float64[]
+    rws = Float64[]
+    for cluster in mmap.clusters
+        # update variable sizes
+        for k in 1:length(cluster.eliminated_vars)
+            # the head sector are for unity tensors.
+            size_dict[cluster.eliminated_vars[k]] = length(cluster.tensors[k])
+        end
+        tc, sci, rw = timespacereadwrite_complexity(cluster.code, size_dict)
+        push!(tcs, tc)
+        push!(rws, rw)
+        sc = max(sc, sci)
+    end
+
+    tc, sci, rw = timespacereadwrite_complexity(mmap.code, size_dict)
+    push!(tcs, tc)
+    push!(rws, tc)
+    OMEinsum.OMEinsumContractionOrders.log2sumexp2(tcs), max(sc, sci), OMEinsum.OMEinsumContractionOrders.log2sumexp2(rws)
+end
+OMEinsum.timespace_complexity(mmap::MMAPModeling) = timespacereadwrite_complexity(mmap)[1:2]
+
+generate_tensors(mmap::MMAPModeling; usecuda) = [generate_tensors(mmap.code, mmap.tensors, mmap.fixedvertices; usecuda)..., map(cluster->probability(cluster; fixedvertices=mmap.fixedvertices, usecuda), mmap.clusters)...]
 
 # find connected clusters
 function connected_clusters(ixs, vars::Vector{LT}) where LT
@@ -144,6 +195,11 @@ function probability(mmap::MMAPModeling, config)::Real
     fixedvertices = merge(mmap.fixedvertices, Dict(zip(get_vars(mmap), config)))
     assign = Dict(zip(get_vars(mmap), config .+ 1))
     m1 = mapreduce(x->x[2][getindex.(Ref(assign), x[1])...], *, zip(getixsv(mmap.code), mmap.tensors))
-    m2 = prod(model->probability(chfixedvertices(model, fixedvertices))[], mmap.models)
+    m2 = prod(cluster->probability(cluster; fixedvertices, usecuda=false)[], mmap.clusters)
     return m1 * m2
+end
+
+function probability(c::Cluster; fixedvertices, usecuda)::AbstractArray
+    tensors = generate_tensors(c.code, c.tensors, fixedvertices; usecuda)
+    return c.code(tensors...)
 end
