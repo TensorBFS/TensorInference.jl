@@ -12,6 +12,7 @@ end
   include("mmap.jl")
 end
 
+using CUDA
 if CUDA.functional()
     include("cuda.jl")
 end
