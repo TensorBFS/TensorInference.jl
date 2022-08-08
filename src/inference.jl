@@ -1,13 +1,13 @@
 # generate tensors based on which vertices are fixed.
-generate_tensors(gp::TensorNetworkModeling) = generate_tensors(gp.code, gp.tensors, gp.fixedvertices)
-function generate_tensors(code, tensors, fixedvertices)
+generate_tensors(gp::TensorNetworkModeling; usecuda) = generate_tensors(gp.code, gp.tensors, gp.fixedvertices; usecuda)
+function generate_tensors(code, tensors, fixedvertices; usecuda)
     isempty(fixedvertices) && return tensors
     ixs = getixsv(code)
     # `ix` is the vector of labels (or a degree of freedoms) for a tensor,
     # if a label in `ix` is fixed to a value, do the slicing to the tensor it associates to.
     map(tensors, ixs) do t, ix
         dims = map(ixi->ixi ∉ keys(fixedvertices) ? Colon() : (fixedvertices[ixi]+1:fixedvertices[ixi]+1), ix)
-        t[dims...]
+        usecuda ? CuArray(t[dims...]) : t[dims...]
     end
 end
 
@@ -125,8 +125,8 @@ $(TYPEDSIGNATURES)
 Returns the marginal probability distribution of variables.
 One can use `get_vars(tn)` to get the full list of variables in this tensor network.
 """
-function marginals(tn::TensorNetworkModeling)::Vector
+function marginals(tn::TensorNetworkModeling; usecuda=false)::Vector
     vars = get_vars(tn)
-    _, grads = cost_and_gradient(tn.code, generate_tensors(tn))
+    _, grads = cost_and_gradient(tn.code, generate_tensors(tn; usecuda))
     return LinearAlgebra.normalize!.(grads[1:length(vars)], 1)
 end

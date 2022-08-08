@@ -32,6 +32,13 @@ get_vars(mmap::MMAPModeling) = mmap.vars
 """
 $(TYPEDSIGNATURES)
 """
+function MMAPModeling(instance::UAIInstance; marginalizedvertices, openvertices=(), optimizer=GreedyMethod(), simplifier=nothing)::MMAPModeling
+    return MMAPModeling(1:instance.nvars, instance.factors; marginalizedvertices, fixedvertices=Dict(zip(instance.obsvars, instance.obsvals .- 1)), optimizer, simplifier, openvertices)
+end
+
+"""
+$(TYPEDSIGNATURES)
+"""
 function MMAPModeling(vars::AbstractVector{LT}, factors::Vector{<:Factor{T}}; marginalizedvertices, openvertices=(),
             fixedvertices=Dict{LT,Int}(),
             optimizer=GreedyMethod(), simplifier=nothing,
@@ -64,7 +71,7 @@ function MMAPModeling(vars::AbstractVector{LT}, factors::Vector{<:Factor{T}}; ma
     return MMAPModeling(setdiff(vars, marginalizedvertices), code, remaining_tensors, models, fixedvertices)
 end
 
-generate_tensors(mmap::MMAPModeling) = [generate_tensors(mmap.code, mmap.tensors, mmap.fixedvertices)..., map(model->probability(model), mmap.models)...]
+generate_tensors(mmap::MMAPModeling; usecuda) = [generate_tensors(mmap.code, mmap.tensors, mmap.fixedvertices; usecuda)..., map(model->probability(model; usecuda), mmap.models)...]
 
 # find connected clusters
 function connected_clusters(ixs, vars::Vector{LT}) where LT
@@ -114,18 +121,19 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function most_probable_config(mmap::MMAPModeling)::Tuple{Tropical,Vector}
+function most_probable_config(mmap::MMAPModeling; usecuda=false)::Tuple{Tropical,Vector}
     vars = get_vars(mmap)
-    tensors = map(t->OMEinsum.asarray(Tropical.(log.(t)), t), generate_tensors(mmap))
+    tensors = map(t->OMEinsum.asarray(Tropical.(log.(t)), t), generate_tensors(mmap; usecuda))
     logp, grads = cost_and_gradient(mmap.code, tensors)
-    return logp[], map(k->haskey(mmap.fixedvertices, vars[k]) ? mmap.fixedvertices[vars[k]] : argmax(grads[k]) - 1, 1:length(vars))
+    # use Array to convert CuArray to CPU arrays
+    return Array(logp)[], map(k->haskey(mmap.fixedvertices, vars[k]) ? mmap.fixedvertices[vars[k]] : argmax(grads[k]) - 1, 1:length(vars))
 end
 
 """
 $(TYPEDSIGNATURES)
 """
-function maximum_logp(mmap::MMAPModeling)::AbstractArray{<:Tropical}
-    tensors = map(t->OMEinsum.asarray(Tropical.(log.(t)), t), generate_tensors(mmap))
+function maximum_logp(mmap::MMAPModeling; usecuda=false)::AbstractArray{<:Tropical}
+    tensors = map(t->OMEinsum.asarray(Tropical.(log.(t)), t), generate_tensors(mmap; usecuda))
     return mmap.code(tensors...)
 end
 

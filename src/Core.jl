@@ -16,6 +16,30 @@ end
 """
 $(TYPEDEF)
 
+### Fields
+* `nvars` is the number of variables,
+* `nclique` is the number of cliques,
+* `cards` is a vector of cardinalities for variables,
+* `factors` is a vector of factors,
+
+* `obsvars` is a vector of observed variables,
+* `obsvals` is a vector of observed values,
+* `reference_marginals` is a vector of marginal probabilities.
+"""
+struct UAIInstance{ET, FT<:Factor{ET}}
+  nvars::Int
+  nclique::Int
+  cards::Vector{Int}
+  factors::Vector{FT}
+
+  obsvars::Vector{Int}
+  obsvals::Vector{Int}
+  reference_marginals::Vector{Vector{ET}}
+end
+
+"""
+$(TYPEDEF)
+
 Probabilistic modeling with a tensor network.
 
 ### Fields
@@ -29,6 +53,13 @@ struct TensorNetworkModeling{LT,ET,MT<:AbstractArray}
     code::ET
     tensors::Vector{MT}
     fixedvertices::Dict{LT,Int}
+end
+
+"""
+$(TYPEDSIGNATURES)
+"""
+function TensorNetworkModeling(instance::UAIInstance; openvertices=(), optimizer=GreedyMethod(), simplifier=nothing)::TensorNetworkModeling
+    return TensorNetworkModeling(1:instance.nvars, instance.factors; fixedvertices=Dict(zip(instance.obsvars, instance.obsvals .- 1)), optimizer, simplifier, openvertices)
 end
 
 """
@@ -80,12 +111,12 @@ $(TYPEDSIGNATURES)
 Contract the tensor network and return a probability array with its rank specified in the contraction code `tn.code`.
 The returned array may not be l1-normalized even if the total probability is l1-normalized, because the evidence `tn.fixedvertices` may not be empty.
 """
-function probability(tn::TensorNetworkModeling)::AbstractArray
-    return tn.code(generate_tensors(tn)...)
+function probability(tn::TensorNetworkModeling; usecuda=false)::AbstractArray
+    return tn.code(generate_tensors(tn; usecuda)...)
 end
 
 function OMEinsum.timespacereadwrite_complexity(tn::TensorNetworkModeling)
-    tensors = generate_tensors(tn)
+    tensors = generate_tensors(tn; usecuda=false)
     return timespacereadwrite_complexity(tn.code, OMEinsum.get_size_dict(getixsv(tn.code), tensors))
 end
 OMEinsum.timespace_complexity(tn::TensorNetworkModeling) = timespacereadwrite_complexity(tn)[1:2]
