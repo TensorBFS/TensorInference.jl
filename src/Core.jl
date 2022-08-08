@@ -55,6 +55,31 @@ struct TensorNetworkModeling{LT,ET,MT<:AbstractArray}
     fixedvertices::Dict{LT,Int}
 end
 
+function Base.show(io::IO, tn::TensorNetworkModeling)
+    open = getiyv(tn.code)
+    variables = join([string_var(var, open, tn.fixedvertices) for var in tn.vars], ", ")
+    tc, sc, rw = timespacereadwrite_complexity(tn)
+    println(io, "$(typeof(tn))")
+    println(io, "variables: $variables")
+    print_tcscrw(io, tc, sc, rw)
+end
+Base.show(io::IO, ::MIME"text/plain", tn::TensorNetworkModeling) = Base.show(io, tn)
+function string_var(var, open ,fixedvertices)
+    if var ∈ open && haskey(fixedvertices, var)
+        "$var (open, fixed to $(fixedvertices[var]))"
+    elseif var ∈ open
+        "$var (open)"
+    elseif haskey(fixedvertices, var)
+        "$var (evidence → $(fixedvertices[var]))"
+    else
+        "$var"
+    end
+end
+
+function print_tcscrw(io, tc, sc, rw)
+    print(io, "contraction time = 2^$(round(tc; digits=3)), space = 2^$(round(sc; digits=3)), read-write = 2^$(round(rw; digits=3))")
+end
+
 """
 $(TYPEDSIGNATURES)
 """
@@ -89,9 +114,19 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Get the variables in this tensor network, they is also known as legs, labels, or degree of freedoms.
+Get the variables in this tensor network, they are also known as legs, labels, or degree of freedoms.
 """
 get_vars(tn::TensorNetworkModeling)::Vector = tn.vars
+
+"""
+$(TYPEDSIGNATURES)
+
+Get the cardinalities of variables in this tensor network.
+"""
+function get_cards(tn::TensorNetworkModeling; fixedisone=false)::Vector
+    vars = get_vars(tn)
+    [fixedisone && haskey(tn.fixedvertices, vars[k]) ? 1 : length(tn.tensors[k]) for k=1:length(vars)]
+end
 
 chfixedvertices(tn::TensorNetworkModeling, fixedvertices) = TensorNetworkModeling(tn.vars, tn.code, tn.tensors, fixedvertices)
 
@@ -116,7 +151,6 @@ function probability(tn::TensorNetworkModeling; usecuda=false)::AbstractArray
 end
 
 function OMEinsum.timespacereadwrite_complexity(tn::TensorNetworkModeling)
-    tensors = generate_tensors(tn; usecuda=false)
-    return timespacereadwrite_complexity(tn.code, OMEinsum.get_size_dict(getixsv(tn.code), tensors))
+    return timespacereadwrite_complexity(tn.code, Dict(zip(get_vars(tn), get_cards(tn; fixedisone=true))))
 end
 OMEinsum.timespace_complexity(tn::TensorNetworkModeling) = timespacereadwrite_complexity(tn)[1:2]

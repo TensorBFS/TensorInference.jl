@@ -12,6 +12,7 @@ using TensorInference
 
     # does not optimize over open vertices
     tn = TensorNetworkModeling(instance; optimizer=TreeSA(ntrials=1, niters=2, βs=1:0.1:40))
+    @info(tn)
     @info timespace_complexity(tn)
     @time marginals2 = marginals(tn)
     # for dangling vertices, the output size is 1.
