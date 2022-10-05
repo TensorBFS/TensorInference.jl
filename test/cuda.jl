@@ -5,11 +5,7 @@ CUDA.allowscalar(false)
 
 @testset "gradient based tensor network solvers" begin
     ################# Load problem ####################
-    problem_number = "14"
-    problem_filename = joinpath("Promedus_" * problem_number)
-    problem_dir = joinpath(pkgdir(TensorInference), "data", problem_number)
-
-    instance = read_uai_dir(problem_dir, problem_filename)
+    instance = read_uai_problem("Promedus_14")
 
     # does not optimize over open vertices
     tn = TensorNetworkModeling(instance; optimizer=TreeSA(ntrials=1, niters=2, βs=1:0.1:40))
@@ -26,10 +22,7 @@ end
 
 @testset "map" begin
     ################# Load problem ####################
-    problem_number = "14"
-    problem_filename = joinpath("Promedus_" * problem_number)
-    problem_dir = joinpath(pkgdir(TensorInference), "data", problem_number)
-    instance = read_uai_dir(problem_dir, problem_filename)
+    instance = read_uai_problem("Promedus_14")
 
     # does not optimize over open vertices
     tn = TensorNetworkModeling(instance; optimizer=TreeSA(ntrials=1, niters=2, βs=1:0.1:40))
@@ -44,10 +37,7 @@ end
 
 @testset "mmap" begin
     ################# Load problem ####################
-    problem_number = "14"
-    problem_filename = joinpath("Promedus_" * problem_number)
-    problem_dir = joinpath(pkgdir(TensorInference), "data", problem_number)
-    instance = read_uai_dir(problem_dir, problem_filename)
+    instance = read_uai_problem("Promedus_14")
 
     optimizer=TreeSA(ntrials=1, niters=2, βs=1:0.1:40)
     tn_ref = TensorNetworkModeling(instance; optimizer)

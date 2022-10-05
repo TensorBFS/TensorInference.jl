@@ -16,4 +16,5 @@ using CUDA
 if CUDA.functional()
     include("cuda.jl")
 end
+
 Documenter.doctest(TensorInference; manual=false)

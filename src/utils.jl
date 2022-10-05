@@ -189,15 +189,18 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Read a UAI instance from a folder.
+Read a UAI problem from an artifact.
 """
-function read_uai_dir(problem_dir::String, problem_filename::String)::UAIInstance
-    uai_filepath = joinpath(problem_dir, problem_filename * ".uai")
-    uai_evid_filepath = joinpath(problem_dir, problem_filename * ".uai.evid")
-    uai_mar_filepath = joinpath(problem_dir, problem_filename * ".uai.MAR")
+function read_uai_problem(problem::String)::UAIInstance
 
-    reference_marginals = read_uai_mar_file(uai_mar_filepath)
-    obsvars, obsvals = read_uai_evid_file(uai_evid_filepath)
-    nvars, cards, nclique, factors = read_uai_file(uai_filepath; factor_eltype=Float64)
-    return UAIInstance(nvars, nclique, cards, factors, obsvars, obsvals, reference_marginals)
+  uai_filepath = joinpath(artifact"MAR_prob", problem * ".uai")
+  uai_evid_filepath = joinpath(artifact"MAR_prob", problem * ".uai.evid")
+  uai_mar_filepath = joinpath(artifact"MAR_sol", problem * ".uai.MAR")
+
+  nvars, cards, ncliques, factors = read_uai_file(uai_filepath; factor_eltype=Float64)
+  obsvars, obsvals = read_uai_evid_file(uai_evid_filepath)
+  reference_marginals = read_uai_mar_file(uai_mar_filepath)
+
+  return UAIInstance(nvars, ncliques, cards, factors, obsvars, obsvals, reference_marginals)
+
 end

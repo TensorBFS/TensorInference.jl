@@ -2,12 +2,13 @@ module TensorInference
 
 using OMEinsum, LinearAlgebra
 using DocStringExtensions, TropicalNumbers
+using Artifacts
 
 # reexport OMEinsum functions
 export timespace_complexity, timespacereadwrite_complexity, TreeSA, GreedyMethod, KaHyParBipartite, SABipartite, MergeGreedy, MergeVectors
 
 # read and load uai files
-export read_uai_file, read_td_file, read_uai_evid_file, read_uai_mar_file, read_uai_dir
+export read_uai_file, read_td_file, read_uai_evid_file, read_uai_mar_file, read_uai_problem
 
 # marginals
 export TensorNetworkModeling, get_vars, get_cards, probability, marginals
