@@ -191,7 +191,7 @@ $(TYPEDSIGNATURES)
 
 Read a UAI problem from an artifact.
 """
-function read_uai_problem(problem::String)::UAIInstance
+function read_uai_problem(problem::AbstractString)::UAIInstance
 
   uai_filepath = joinpath(artifact"MAR_prob", problem * ".uai")
   uai_evid_filepath = joinpath(artifact"MAR_prob", problem * ".uai.evid")

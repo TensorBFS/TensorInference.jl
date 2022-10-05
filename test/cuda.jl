@@ -3,7 +3,7 @@ using OMEinsum
 using TensorInference, CUDA
 CUDA.allowscalar(false)
 
-@testset "gradient based tensor network solvers" begin
+@testset "gradient-based tensor network solvers" begin
     ################# Load problem ####################
     instance = read_uai_problem("Promedus_14")
 
