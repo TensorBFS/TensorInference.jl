@@ -11,7 +11,7 @@ export timespace_complexity, timespacereadwrite_complexity, TreeSA, GreedyMethod
 export read_uai_file, read_td_file, read_uai_evid_file, read_uai_mar_file, read_uai_problem
 
 # marginals
-export TensorNetworkModeling, get_vars, get_cards, probability, marginals
+export TensorNetworkModeling, get_vars, get_cards, probability, marginals, autorescale!
 
 # MAP
 export most_probable_config, maximum_logp

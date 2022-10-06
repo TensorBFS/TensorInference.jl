@@ -83,21 +83,21 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function TensorNetworkModeling(instance::UAIInstance; openvertices=(), optimizer=GreedyMethod(), simplifier=nothing)::TensorNetworkModeling
-    return TensorNetworkModeling(1:instance.nvars, instance.factors; fixedvertices=Dict(zip(instance.obsvars, instance.obsvals .- 1)), optimizer, simplifier, openvertices)
+function TensorNetworkModeling(instance::UAIInstance; rescale=1.0, openvertices=(), optimizer=GreedyMethod(), simplifier=nothing)::TensorNetworkModeling
+    return TensorNetworkModeling(1:instance.nvars, instance.cards, instance.factors; fixedvertices=Dict(zip(instance.obsvars, instance.obsvals .- 1)), optimizer, simplifier, openvertices, rescale)
 end
 
 """
 $(TYPEDSIGNATURES)
 """
-function TensorNetworkModeling(vars::AbstractVector{LT}, factors::Vector{<:Factor{T}}; openvertices=(), fixedvertices=Dict{LT,Int}(), optimizer=GreedyMethod(), simplifier=nothing)::TensorNetworkModeling where {T,LT}
+function TensorNetworkModeling(vars::AbstractVector{LT}, cards::AbstractVector{Int}, factors::Vector{<:Factor{T}}; rescale=1.0, openvertices=(), fixedvertices=Dict{LT,Int}(), optimizer=GreedyMethod(), simplifier=nothing)::TensorNetworkModeling where {T,LT}
     # The 1st argument of `EinCode` is a vector of vector of labels for specifying the input tensors, 
     # The 2nd argument of `EinCode` is a vector of labels for specifying the output tensor,
     # e.g.
     # `EinCode([[1, 2], [2, 3]], [1, 3])` is the EinCode for matrix multiplication.
     rawcode = EinCode([[[var] for var in vars]..., [[factor.vars...] for factor in factors]...], collect(LT, openvertices))  # labels for vertex tensors (unity tensors) and edge tensors
-    tensors = [[ones(T, 2) for _=1:length(vars)]..., getfield.(factors, :vals)...]
-    return TensorNetworkModeling(collect(LT, vars), rawcode, tensors; fixedvertices, optimizer, simplifier)
+    tensors = [[ones(T, cards[i]) for i=1:length(vars)]..., getfield.(factors, :vals)...]
+    return TensorNetworkModeling(collect(LT, vars), rawcode, map(t->t .* rescale, tensors); fixedvertices, optimizer, simplifier)
 end
 """
 $(TYPEDSIGNATURES)

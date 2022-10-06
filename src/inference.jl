@@ -127,6 +127,18 @@ One can use `get_vars(tn)` to get the full list of variables in this tensor netw
 """
 function marginals(tn::TensorNetworkModeling; usecuda=false)::Vector
     vars = get_vars(tn)
-    _, grads = cost_and_gradient(tn.code, generate_tensors(tn; usecuda))
+    # sometimes, the cost can overflow.
+    cost, grads = cost_and_gradient(tn.code, generate_tensors(tn; usecuda))
     return LinearAlgebra.normalize!.(grads[1:length(vars)], 1)
+end
+
+"""
+$(TYPEDSIGNATURES)
+"""
+function autorescale!(tn::TensorNetworkModeling; usecuda::Bool=false)::TensorNetworkModeling
+    vars = get_vars(tn)
+    for t in tn.tensors[length(vars)+1:end]
+        t ./= maximum(t)/sqrt(length(t))
+    end
+    return tn
 end

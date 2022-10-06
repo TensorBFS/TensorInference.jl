@@ -6,20 +6,22 @@ using TensorInference
 
   @testset "UAI 2014 problem set" begin
 
+    # TODO: rescale while contract.
     benchmarks = [
-                  "Alchemy", # fails
-                  "CSP",
-                  "DBN",
-                  "Grids",
-                  "linkage",
-                  "ObjectDetection",
-                  "Pedigree",
-                  "Promedus",
-                  "relational",
-                  "Segmentation",
+                  ("Alchemy", 1/3), # fails
+                  ("CSP",1.0),
+                  #("DBN",1.0),
+                  ("Grids",1/2),
+                  ("linkage",1/2),
+                  ("ObjectDetection",1/2),
+                  #("Pedigree",1.0),
+                  ("Promedus",1.0),
+                  #("relational",1.0),
+                  ("Segmentation",1.0),
                  ]
+    benchmarks = [("linkage",1/3)]
 
-    for benchmark in benchmarks
+    for (benchmark, rescale) in benchmarks
 
       @testset "$(benchmark) benchmark" begin
 
@@ -37,7 +39,8 @@ using TensorInference
             problem = read_uai_problem(problem)
 
             # does not optimize over open vertices
-            tn = TensorNetworkModeling(problem; optimizer=TreeSA(ntrials=1, niters=2, βs=1:0.1:40))
+            tn = TensorNetworkModeling(problem; optimizer=TreeSA(ntrials=3, niters=5, βs=1:0.1:40))
+            autorescale!(tn)
             # @info(tn)
             # @info timespace_complexity(tn)
             marginals2 = marginals(tn)
