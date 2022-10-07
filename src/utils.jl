@@ -76,15 +76,13 @@ function read_uai_evid_file(uai_evid_filepath::AbstractString)
     obsvars = Int64[]
     obsvals = Int64[]
   else
-    # Read the uai evid file into an array of lines
+    # Read the last line of the uai evid file
     line = open(uai_evid_filepath) do file
       readlines(file)
-    end
-
-    @assert length(line) == 1
+    end |> last
 
     # Extract number of observed vars, and their id together with their corresponding value
-    nobsvars, rest = split(line[1]) |> x -> parse.(Int, x) |> x -> (x[1], x[2:end])
+    nobsvars, rest = split(line) |> x -> parse.(Int, x) |> x -> (x[1], x[2:end])
     observations = reshape(rest, 2, :)
 
     # Convert to 1-based indexing

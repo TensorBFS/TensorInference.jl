@@ -96,8 +96,8 @@ function TensorNetworkModeling(vars::AbstractVector{LT}, cards::AbstractVector{I
     # e.g.
     # `EinCode([[1, 2], [2, 3]], [1, 3])` is the EinCode for matrix multiplication.
     rawcode = EinCode([[[var] for var in vars]..., [[factor.vars...] for factor in factors]...], collect(LT, openvertices))  # labels for vertex tensors (unity tensors) and edge tensors
-    tensors = [[ones(T, cards[i]) for i=1:length(vars)]..., getfield.(factors, :vals)...]
-    return TensorNetworkModeling(collect(LT, vars), rawcode, map(t->t .* rescale, tensors); fixedvertices, optimizer, simplifier)
+    tensors = Array{T}[[ones(T, cards[i]) for i=1:length(vars)]..., [t.vals .* rescale for t in factors]...]
+    return TensorNetworkModeling(collect(LT, vars), rawcode, tensors; fixedvertices, optimizer, simplifier)
 end
 """
 $(TYPEDSIGNATURES)
@@ -107,7 +107,9 @@ function TensorNetworkModeling(vars::AbstractVector{LT}, rawcode::EinCode, tenso
     # The 1st argument is the contraction pattern to be optimized (without contraction order).
     # The 2nd arugment is the size dictionary, which is a label-integer dictionary.
     # The 3rd and 4th arguments are the optimizer and simplifier that configures which algorithm to use and simplify.
-    code = optimize_code(rawcode, OMEinsum.get_size_dict(getixsv(rawcode), tensors), optimizer, simplifier)
+    size_dict = OMEinsum.get_size_dict(getixsv(rawcode), tensors)
+    code = optimize_code(rawcode, size_dict, optimizer, simplifier)
+    @show code |> typeof
     TensorNetworkModeling(collect(LT, vars), code, tensors, fixedvertices)
 end
 
@@ -150,7 +152,6 @@ function probability(tn::TensorNetworkModeling; usecuda=false)::AbstractArray
     return tn.code(generate_tensors(tn; usecuda)...)
 end
 
-function OMEinsum.timespacereadwrite_complexity(tn::TensorNetworkModeling)
-    return timespacereadwrite_complexity(tn.code, Dict(zip(get_vars(tn), get_cards(tn; fixedisone=true))))
+function OMEinsum.contraction_complexity(tn::TensorNetworkModeling)
+    return contraction_complexity(tn.code, Dict(zip(get_vars(tn), get_cards(tn; fixedisone=true))))
 end
-OMEinsum.timespace_complexity(tn::TensorNetworkModeling) = timespacereadwrite_complexity(tn)[1:2]
