@@ -109,7 +109,6 @@ function TensorNetworkModeling(vars::AbstractVector{LT}, rawcode::EinCode, tenso
     # The 3rd and 4th arguments are the optimizer and simplifier that configures which algorithm to use and simplify.
     size_dict = OMEinsum.get_size_dict(getixsv(rawcode), tensors)
     code = optimize_code(rawcode, size_dict, optimizer, simplifier)
-    @show code |> typeof
     TensorNetworkModeling(collect(LT, vars), code, tensors, fixedvertices)
 end
 
