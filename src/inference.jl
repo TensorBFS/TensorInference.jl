@@ -1,21 +1,22 @@
 # generate tensors based on which vertices are fixed.
-generate_tensors(gp::TensorNetworkModeling; usecuda) = generate_tensors(gp.code, gp.tensors, gp.fixedvertices; usecuda)
-function generate_tensors(code, tensors, fixedvertices; usecuda)
-    isempty(fixedvertices) && return tensors
+generate_tensors(gp::TensorNetworkModeling; usecuda, rescale) = generate_tensors(gp.code, gp.tensors, gp.fixedvertices; usecuda, rescale)
+function generate_tensors(code, tensors, fixedvertices; usecuda, rescale)
     ixs = getixsv(code)
     # `ix` is the vector of labels (or a degree of freedoms) for a tensor,
     # if a label in `ix` is fixed to a value, do the slicing to the tensor it associates to.
     map(tensors, ixs) do t, ix
         dims = map(ixi->ixi ∉ keys(fixedvertices) ? Colon() : (fixedvertices[ixi]+1:fixedvertices[ixi]+1), ix)
-        usecuda ? CuArray(t[dims...]) : t[dims...]
+        t2 = t[dims...]
+        t3 = usecuda ? CuArray(t2) : t2
+        rescale ? rescale_array(t3) : t3
     end
 end
 
 # ######### Inference by back propagation ############
 # `CacheTree` stores intermediate `NestedEinsum` contraction results.
 # It is a tree structure that isomorphic to the contraction tree,
-# `siblings` are the siblings of current node.
 # `content` is the cached intermediate contraction result.
+# `siblings` are the siblings of current node.
 struct CacheTree{T}
     content::AbstractArray{T}
     siblings::Vector{CacheTree{T}}
@@ -60,7 +61,7 @@ function generate_gradient_tree(code::NestedEinsum, cache::CacheTree{T}, dy::Abs
     if OMEinsum.isleaf(code)
         return CacheTree(dy, CacheTree{T}[])
     else
-        xs = (getfield.(cache.siblings, :content)...,)
+        xs = ntuple(i->cache.siblings[i].content, length(cache.siblings))
         # `einsum_grad` is the back-propagation rule for einsum function.
         # If the forward pass is `y = einsum(EinCode(inputs_labels, output_labels), (A, B, ...), size_dict)`
         # Then the back-propagation pass is
@@ -87,7 +88,7 @@ function gradient_tree(code, xs)
     # forward compute and cache intermediate results.
     cache = cached_einsum(code, xs, size_dict)
     # initialize `y̅` as `1`. Note we always start from `L̅ := 1`.
-    dy = fill!(similar(cache.content), one(eltype(cache.content)))
+    dy = match_arraytype(typeof(cache.content), ones(eltype(cache.content), size(cache.content)))
     # back-propagate
     return copy(cache.content), generate_gradient_tree(code, cache, dy, size_dict)
 end
@@ -125,10 +126,14 @@ $(TYPEDSIGNATURES)
 Returns the marginal probability distribution of variables.
 One can use `get_vars(tn)` to get the full list of variables in this tensor network.
 """
-function marginals(tn::TensorNetworkModeling; usecuda=false)::Vector
+function marginals(tn::TensorNetworkModeling; usecuda=false, rescale=true)::Vector
     vars = get_vars(tn)
-    # sometimes, the cost can overflow.
-    cost, grads = cost_and_gradient(tn.code, generate_tensors(tn; usecuda))
-    @info "cost = $cost"
-    return LinearAlgebra.normalize!.(grads[1:length(vars)], 1)
+    # sometimes, the cost can overflow, then we need to rescale the tensors during contraction.
+    cost, grads = cost_and_gradient(tn.code, generate_tensors(tn; usecuda, rescale))
+    @debug "cost = $cost"
+    if rescale
+        return LinearAlgebra.normalize!.(getfield.(grads[1:length(vars)], :value), 1)
+    else
+        return LinearAlgebra.normalize!.(grads[1:length(vars)], 1)
+    end
 end

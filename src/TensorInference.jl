@@ -5,13 +5,14 @@ using DocStringExtensions, TropicalNumbers
 using Artifacts
 
 # reexport OMEinsum functions
+export RescaledArray
 export timespace_complexity, timespacereadwrite_complexity, TreeSA, GreedyMethod, KaHyParBipartite, SABipartite, MergeGreedy, MergeVectors
 
 # read and load uai files
 export read_uai_file, read_td_file, read_uai_evid_file, read_uai_mar_file, read_uai_problem
 
 # marginals
-export TensorNetworkModeling, get_vars, get_cards, probability, marginals
+export TensorNetworkModeling, get_vars, get_cards, log_probability, probability, marginals
 
 # MAP
 export most_probable_config, maximum_logp
@@ -20,6 +21,7 @@ export most_probable_config, maximum_logp
 export MMAPModeling
 
 include("Core.jl")
+include("RescaledArray.jl")
 include("utils.jl")
 include("inference.jl")
 include("maxprob.jl")

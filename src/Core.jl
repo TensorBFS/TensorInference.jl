@@ -83,20 +83,20 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function TensorNetworkModeling(instance::UAIInstance; rescale=1.0, openvertices=(), optimizer=GreedyMethod(), simplifier=nothing)::TensorNetworkModeling
-    return TensorNetworkModeling(1:instance.nvars, instance.cards, instance.factors; fixedvertices=Dict(zip(instance.obsvars, instance.obsvals .- 1)), optimizer, simplifier, openvertices, rescale)
+function TensorNetworkModeling(instance::UAIInstance; openvertices=(), optimizer=GreedyMethod(), simplifier=nothing)::TensorNetworkModeling
+    return TensorNetworkModeling(1:instance.nvars, instance.cards, instance.factors; fixedvertices=Dict(zip(instance.obsvars, instance.obsvals .- 1)), optimizer, simplifier, openvertices)
 end
 
 """
 $(TYPEDSIGNATURES)
 """
-function TensorNetworkModeling(vars::AbstractVector{LT}, cards::AbstractVector{Int}, factors::Vector{<:Factor{T}}; rescale=1.0, openvertices=(), fixedvertices=Dict{LT,Int}(), optimizer=GreedyMethod(), simplifier=nothing)::TensorNetworkModeling where {T,LT}
+function TensorNetworkModeling(vars::AbstractVector{LT}, cards::AbstractVector{Int}, factors::Vector{<:Factor{T}}; openvertices=(), fixedvertices=Dict{LT,Int}(), optimizer=GreedyMethod(), simplifier=nothing)::TensorNetworkModeling where {T,LT}
     # The 1st argument of `EinCode` is a vector of vector of labels for specifying the input tensors, 
     # The 2nd argument of `EinCode` is a vector of labels for specifying the output tensor,
     # e.g.
     # `EinCode([[1, 2], [2, 3]], [1, 3])` is the EinCode for matrix multiplication.
     rawcode = EinCode([[[var] for var in vars]..., [[factor.vars...] for factor in factors]...], collect(LT, openvertices))  # labels for vertex tensors (unity tensors) and edge tensors
-    tensors = Array{T}[[ones(T, cards[i]) for i=1:length(vars)]..., [t.vals .* rescale for t in factors]...]
+    tensors = Array{T}[[ones(T, cards[i]) for i=1:length(vars)]..., [t.vals for t in factors]...]
     return TensorNetworkModeling(collect(LT, vars), rawcode, tensors; fixedvertices, optimizer, simplifier)
 end
 """
@@ -134,11 +134,11 @@ chfixedvertices(tn::TensorNetworkModeling, fixedvertices) = TensorNetworkModelin
 """
 $(TYPEDSIGNATURES)
 
-Evaluate the probability of `config`.
+Evaluate the log probability of `config`.
 """
-function probability(tn::TensorNetworkModeling, config)::Real
-    assign = Dict(zip(get_vars(tn), config .+ 1))
-    return mapreduce(x->x[2][getindex.(Ref(assign), x[1])...], *, zip(getixsv(tn.code), tn.tensors))
+function log_probability(tn::TensorNetworkModeling, config::Union{Dict, AbstractVector})::Real
+    assign =  config isa AbstractVector ? Dict(zip(get_vars(tn), config)) : config
+    return sum(x->log(x[2][(getindex.(Ref(assign), x[1]) .+ 1)...]), zip(getixsv(tn.code), tn.tensors))
 end
 
 """
@@ -147,10 +147,13 @@ $(TYPEDSIGNATURES)
 Contract the tensor network and return a probability array with its rank specified in the contraction code `tn.code`.
 The returned array may not be l1-normalized even if the total probability is l1-normalized, because the evidence `tn.fixedvertices` may not be empty.
 """
-function probability(tn::TensorNetworkModeling; usecuda=false)::AbstractArray
-    return tn.code(generate_tensors(tn; usecuda)...)
+function probability(tn::TensorNetworkModeling; usecuda=false, rescale=true)::AbstractArray
+    return tn.code(generate_tensors(tn; usecuda, rescale)...)
 end
 
 function OMEinsum.contraction_complexity(tn::TensorNetworkModeling)
     return contraction_complexity(tn.code, Dict(zip(get_vars(tn), get_cards(tn; fixedisone=true))))
 end
+
+# adapt array type with the target array type
+match_arraytype(::Type{<:Array{T, N}}, target::AbstractArray{T, N}) where {T, N} = Array(target)

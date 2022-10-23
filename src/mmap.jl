@@ -122,7 +122,10 @@ function OMEinsum.timespacereadwrite_complexity(mmap::MMAPModeling{LT}) where LT
 end
 OMEinsum.timespace_complexity(mmap::MMAPModeling) = timespacereadwrite_complexity(mmap)[1:2]
 
-generate_tensors(mmap::MMAPModeling; usecuda) = [generate_tensors(mmap.code, mmap.tensors, mmap.fixedvertices; usecuda)..., map(cluster->probability(cluster; fixedvertices=mmap.fixedvertices, usecuda), mmap.clusters)...]
+function generate_tensors(mmap::MMAPModeling; usecuda, rescale)
+    return [generate_tensors(mmap.code, mmap.tensors, mmap.fixedvertices; usecuda, rescale)...,
+        map(cluster->probability(cluster; fixedvertices=mmap.fixedvertices, usecuda, rescale), mmap.clusters)...]
+end
 
 # find connected clusters
 function connected_clusters(ixs, vars::Vector{LT}) where LT
@@ -174,7 +177,7 @@ $(TYPEDSIGNATURES)
 """
 function most_probable_config(mmap::MMAPModeling; usecuda=false)::Tuple{Tropical,Vector}
     vars = get_vars(mmap)
-    tensors = map(t->OMEinsum.asarray(Tropical.(log.(t)), t), generate_tensors(mmap; usecuda))
+    tensors = map(t->OMEinsum.asarray(Tropical.(log.(t)), t), generate_tensors(mmap; usecuda, rescale=false))
     logp, grads = cost_and_gradient(mmap.code, tensors)
     # use Array to convert CuArray to CPU arrays
     return Array(logp)[], map(k->haskey(mmap.fixedvertices, vars[k]) ? mmap.fixedvertices[vars[k]] : argmax(grads[k]) - 1, 1:length(vars))
@@ -184,22 +187,29 @@ end
 $(TYPEDSIGNATURES)
 """
 function maximum_logp(mmap::MMAPModeling; usecuda=false)::AbstractArray{<:Tropical}
-    tensors = map(t->OMEinsum.asarray(Tropical.(log.(t)), t), generate_tensors(mmap; usecuda))
+    tensors = map(t->OMEinsum.asarray(Tropical.(log.(t)), t), generate_tensors(mmap; usecuda, rescale=false))
     return mmap.code(tensors...)
 end
 
 """
 $(TYPEDSIGNATURES)
 """
-function probability(mmap::MMAPModeling, config)::Real
-    fixedvertices = merge(mmap.fixedvertices, Dict(zip(get_vars(mmap), config)))
-    assign = Dict(zip(get_vars(mmap), config .+ 1))
-    m1 = mapreduce(x->x[2][getindex.(Ref(assign), x[1])...], *, zip(getixsv(mmap.code), mmap.tensors))
-    m2 = prod(cluster->probability(cluster; fixedvertices, usecuda=false)[], mmap.clusters)
-    return m1 * m2
+function log_probability(mmap::MMAPModeling, config::Union{Dict, AbstractVector}; rescale=true, usecuda=false)::Real
+    @assert length(get_vars(mmap)) == length(config)
+    fixedvertices =  config isa AbstractVector ? Dict(zip(get_vars(mmap), config)) : config
+    assign = merge(mmap.fixedvertices, fixedvertices)
+    # two contributions to the probability, not-clustered tensors and clusters.
+    m1 = sum(x->log(x[2][(getindex.(Ref(assign), x[1]) .+ 1)...]), zip(getixsv(mmap.code), mmap.tensors))
+    m2 = sum(cluster->probability(cluster; fixedvertices, usecuda, rescale).logf, mmap.clusters)
+    return m1 + m2
 end
 
-function probability(c::Cluster; fixedvertices, usecuda)::AbstractArray
-    tensors = generate_tensors(c.code, c.tensors, fixedvertices; usecuda)
+function probability(c::Cluster; fixedvertices, usecuda, rescale)::AbstractArray
+    tensors = generate_tensors(c.code, c.tensors, fixedvertices; usecuda, rescale)
     return c.code(tensors...)
+end
+
+function log_probability(c::Cluster, config::Union{AbstractVector, Dict})::AbstractArray
+    assign =  config isa AbstractVector ? Dict(zip(get_vars(c), config)) : config
+    return sum(x->log(x[2][(getindex.(Ref(assign), x[1]) .+ 1)...]), zip(getixsv(c.code), c.tensors))
 end
