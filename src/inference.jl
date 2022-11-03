@@ -132,7 +132,7 @@ function marginals(tn::TensorNetworkModel; usecuda=false, rescale=true)::Vector
     cost, grads = cost_and_gradient(tn.code, adapt_tensors(tn; usecuda, rescale))
     @debug "cost = $cost"
     if rescale
-        return LinearAlgebra.normalize!.(getfield.(grads[1:length(vars)], :rescaled_value), 1)
+        return LinearAlgebra.normalize!.(getfield.(grads[1:length(vars)], :normalized_value), 1)
     else
         return LinearAlgebra.normalize!.(grads[1:length(vars)], 1)
     end
