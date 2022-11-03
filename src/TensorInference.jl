@@ -12,13 +12,13 @@ export timespace_complexity, timespacereadwrite_complexity, TreeSA, GreedyMethod
 export read_uai_file, read_td_file, read_uai_evid_file, read_uai_mar_file, read_uai_problem
 
 # marginals
-export TensorNetworkModeling, get_vars, get_cards, log_probability, probability, marginals
+export TensorNetworkModel, get_vars, get_cards, log_probability, probability, marginals
 
 # MAP
 export most_probable_config, maximum_logp
 
 # MMAP
-export MMAPModeling
+export MMAPModel
 
 include("Core.jl")
 include("RescaledArray.jl")

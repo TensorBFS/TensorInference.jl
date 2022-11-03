@@ -1,6 +1,6 @@
 # generate tensors based on which vertices are fixed.
-generate_tensors(gp::TensorNetworkModeling; usecuda, rescale) = generate_tensors(gp.code, gp.tensors, gp.fixedvertices; usecuda, rescale)
-function generate_tensors(code, tensors, fixedvertices; usecuda, rescale)
+adapt_tensors(gp::TensorNetworkModel; usecuda, rescale) = adapt_tensors(gp.code, gp.tensors, gp.fixedvertices; usecuda, rescale)
+function adapt_tensors(code, tensors, fixedvertices; usecuda, rescale)
     ixs = getixsv(code)
     # `ix` is the vector of labels (or a degree of freedoms) for a tensor,
     # if a label in `ix` is fixed to a value, do the slicing to the tensor it associates to.
@@ -126,13 +126,13 @@ $(TYPEDSIGNATURES)
 Returns the marginal probability distribution of variables.
 One can use `get_vars(tn)` to get the full list of variables in this tensor network.
 """
-function marginals(tn::TensorNetworkModeling; usecuda=false, rescale=true)::Vector
+function marginals(tn::TensorNetworkModel; usecuda=false, rescale=true)::Vector
     vars = get_vars(tn)
     # sometimes, the cost can overflow, then we need to rescale the tensors during contraction.
-    cost, grads = cost_and_gradient(tn.code, generate_tensors(tn; usecuda, rescale))
+    cost, grads = cost_and_gradient(tn.code, adapt_tensors(tn; usecuda, rescale))
     @debug "cost = $cost"
     if rescale
-        return LinearAlgebra.normalize!.(getfield.(grads[1:length(vars)], :value), 1)
+        return LinearAlgebra.normalize!.(getfield.(grads[1:length(vars)], :rescaled_value), 1)
     else
         return LinearAlgebra.normalize!.(grads[1:length(vars)], 1)
     end

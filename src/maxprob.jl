@@ -44,9 +44,9 @@ $(TYPEDSIGNATURES)
 
 Returns the largest log-probability and the most probable configuration.
 """
-function most_probable_config(tn::TensorNetworkModeling; usecuda=false)::Tuple{Tropical,Vector}
+function most_probable_config(tn::TensorNetworkModel; usecuda=false)::Tuple{Tropical,Vector}
     vars = get_vars(tn)
-    tensors = map(t->Tropical.(log.(t)), generate_tensors(tn; usecuda, rescale=false))
+    tensors = map(t->Tropical.(log.(t)), adapt_tensors(tn; usecuda, rescale=false))
     logp, grads = cost_and_gradient(tn.code, tensors)
     # use Array to convert CuArray to CPU arrays
     return Array(logp)[], map(k->haskey(tn.fixedvertices, vars[k]) ? tn.fixedvertices[vars[k]] : argmax(grads[k]) - 1, 1:length(vars))
@@ -57,8 +57,8 @@ $(TYPEDSIGNATURES)
 
 Returns an output array containing largest log-probabilities.
 """
-function maximum_logp(tn::TensorNetworkModeling; usecuda=false)::AbstractArray{<:Tropical}
+function maximum_logp(tn::TensorNetworkModel; usecuda=false)::AbstractArray{<:Tropical}
     # generate tropical tensors with its elements being log(p).
-    tensors = map(t->Tropical.(log.(t)), generate_tensors(tn; usecuda, rescale=false))
+    tensors = map(t->Tropical.(log.(t)), adapt_tensors(tn; usecuda, rescale=false))
     return tn.code(tensors...)
 end

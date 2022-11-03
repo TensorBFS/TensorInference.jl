@@ -7,7 +7,7 @@ using TensorInference
     instance = read_uai_problem("Promedus_14")
 
     # does not optimize over open vertices
-    tn = TensorNetworkModeling(instance; optimizer=TreeSA(ntrials=1, niters=2, βs=1:0.1:40))
+    tn = TensorNetworkModel(instance; optimizer=TreeSA(ntrials=1, niters=2, βs=1:0.1:40))
     @info contraction_complexity(tn)
     most_probable_config(tn)
     @time logp, config = most_probable_config(tn)

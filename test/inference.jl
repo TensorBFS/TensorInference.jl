@@ -15,13 +15,13 @@ end
 @testset "cached, rescaled contract" begin
     problem = read_uai_problem("Promedus_14")
     optimizer = TreeSA(ntrials=1, niters=5, βs=0.1:0.1:100)
-    tn = TensorNetworkModeling(problem; optimizer)
+    tn = TensorNetworkModel(problem; optimizer)
     p1 = probability(tn; usecuda=false, rescale=false)
     p2 = probability(tn; usecuda=false, rescale=true)
     @test p1 ≈ Array(p2)
     
     # cached contract
-    xs = TensorInference.generate_tensors(tn; usecuda=false, rescale=true)
+    xs = TensorInference.adapt_tensors(tn; usecuda=false, rescale=true)
     size_dict = OMEinsum.get_size_dict!(getixsv(tn.code), xs, Dict{Int,Int}())
     cache = TensorInference.cached_einsum(tn.code, xs, size_dict)
     @test cache.content isa RescaledArray
@@ -73,7 +73,7 @@ end
             problem = read_uai_problem(problem)
 
             # does not optimize over open vertices
-            tn = TensorNetworkModeling(problem; optimizer)
+            tn = TensorNetworkModel(problem; optimizer)
             sc = contraction_complexity(tn).sc
             if sc > 28
               error("space complexity too large! got $(sc)")
