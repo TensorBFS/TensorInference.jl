@@ -20,10 +20,10 @@ Computing the most likely assignment to the query variables,  Xₘ ⊆ X after m
 * `vars` is the remaining (or not marginalized) degree of freedoms in the tensor network.
 * `code` is the tropical tensor network contraction pattern.
 * `tensors` is the tensors fed into the tensor network.
-* `clusters` is the clusters, each element of this cluster is a [`TensorNetworkModeling`](@ref) instance for marginalizing certain variables.
+* `clusters` is the clusters, each element of this cluster is a [`TensorNetworkModel`](@ref) instance for marginalizing certain variables.
 * `fixedvertices` is a dictionary to specifiy degree of freedoms fixed to certain values, which should not have overlap with the marginalized variables.
 """
-struct MMAPModeling{LT,AT<:AbstractArray}
+struct MMAPModel{LT,AT<:AbstractArray}
     vars::Vector{LT}
     code::AbstractEinsum
     tensors::Vector{AT}
@@ -31,7 +31,7 @@ struct MMAPModeling{LT,AT<:AbstractArray}
     fixedvertices::Dict{LT,Int}
 end
 
-function Base.show(io::IO, mmap::MMAPModeling)
+function Base.show(io::IO, mmap::MMAPModel)
     open = getiyv(mmap.code)
     variables = join([string_var(var, open, mmap.fixedvertices) for var in mmap.vars], ", ")
     tc, sc, rw = timespacereadwrite_complexity(mmap)
@@ -40,17 +40,17 @@ function Base.show(io::IO, mmap::MMAPModeling)
     println(io, "marginalized variables: $(map(x->x.eliminated_vars, mmap.clusters))")
     print_tcscrw(io, tc, sc, rw)
 end
-Base.show(io::IO, ::MIME"text/plain", mmap::MMAPModeling) = Base.show(io, mmap)
+Base.show(io::IO, ::MIME"text/plain", mmap::MMAPModel) = Base.show(io, mmap)
 
 """
 $(TYPEDSIGNATURES)
 """
-get_vars(mmap::MMAPModeling) = mmap.vars
+get_vars(mmap::MMAPModel) = mmap.vars
 
 """
 $(TYPEDSIGNATURES)
 """
-function get_cards(mmap::MMAPModeling; fixedisone=false)
+function get_cards(mmap::MMAPModel; fixedisone=false)
     vars = get_vars(mmap)
     [fixedisone && haskey(mmap.fixedvertices, vars[k]) ? 1 : length(mmap.tensors[k]) for k=1:length(vars)]
 end
@@ -58,18 +58,18 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function MMAPModeling(instance::UAIInstance; marginalizedvertices, openvertices=(), optimizer=GreedyMethod(), simplifier=nothing)::MMAPModeling
-    return MMAPModeling(1:instance.nvars, instance.factors; marginalizedvertices, fixedvertices=Dict(zip(instance.obsvars, instance.obsvals .- 1)), optimizer, simplifier, openvertices)
+function MMAPModel(instance::UAIInstance; marginalizedvertices, openvertices=(), optimizer=GreedyMethod(), simplifier=nothing)::MMAPModel
+    return MMAPModel(1:instance.nvars, instance.factors; marginalizedvertices, fixedvertices=Dict(zip(instance.obsvars, instance.obsvals .- 1)), optimizer, simplifier, openvertices)
 end
 
 """
 $(TYPEDSIGNATURES)
 """
-function MMAPModeling(vars::AbstractVector{LT}, factors::Vector{<:Factor{T}}; marginalizedvertices, openvertices=(),
+function MMAPModel(vars::AbstractVector{LT}, factors::Vector{<:Factor{T}}; marginalizedvertices, openvertices=(),
             fixedvertices=Dict{LT,Int}(),
             optimizer=GreedyMethod(), simplifier=nothing,
             marginalize_optimizer=GreedyMethod(), marginalize_simplifier=nothing
-        )::MMAPModeling where {T,LT}
+        )::MMAPModel where {T,LT}
     all_ixs = [[[var] for var in vars]..., [[factor.vars...] for factor in factors]...]  # labels for vertex tensors (unity tensors) and edge tensors
     iy = collect(LT, openvertices)
     if !isempty(setdiff(iy, vars))
@@ -94,10 +94,10 @@ function MMAPModeling(vars::AbstractVector{LT}, factors::Vector{<:Factor{T}}; ma
     rem_indices = setdiff(1:length(all_ixs), vcat([c.second for c in subsets]...))
     remaining_tensors = all_tensors[rem_indices]
     code = optimize_code(EinCode([all_ixs[rem_indices]..., ixs...], iy), size_dict, optimizer, simplifier)
-    return MMAPModeling(setdiff(vars, marginalizedvertices), code, remaining_tensors, clusters, fixedvertices)
+    return MMAPModel(setdiff(vars, marginalizedvertices), code, remaining_tensors, clusters, fixedvertices)
 end
 
-function OMEinsum.timespacereadwrite_complexity(mmap::MMAPModeling{LT}) where LT
+function OMEinsum.timespacereadwrite_complexity(mmap::MMAPModel{LT}) where LT
     # extract size
     size_dict = Dict(zip(get_vars(mmap), get_cards(mmap; fixedisone=true)))
     sc = -Inf
@@ -120,9 +120,12 @@ function OMEinsum.timespacereadwrite_complexity(mmap::MMAPModeling{LT}) where LT
     push!(rws, tc)
     OMEinsum.OMEinsumContractionOrders.log2sumexp2(tcs), max(sc, sci), OMEinsum.OMEinsumContractionOrders.log2sumexp2(rws)
 end
-OMEinsum.timespace_complexity(mmap::MMAPModeling) = timespacereadwrite_complexity(mmap)[1:2]
+OMEinsum.timespace_complexity(mmap::MMAPModel) = timespacereadwrite_complexity(mmap)[1:2]
 
-generate_tensors(mmap::MMAPModeling; usecuda) = [generate_tensors(mmap.code, mmap.tensors, mmap.fixedvertices; usecuda)..., map(cluster->probability(cluster; fixedvertices=mmap.fixedvertices, usecuda), mmap.clusters)...]
+function adapt_tensors(mmap::MMAPModel; usecuda, rescale)
+    return [adapt_tensors(mmap.code, mmap.tensors, mmap.fixedvertices; usecuda, rescale)...,
+        map(cluster->probability(cluster; fixedvertices=mmap.fixedvertices, usecuda, rescale), mmap.clusters)...]
+end
 
 # find connected clusters
 function connected_clusters(ixs, vars::Vector{LT}) where LT
@@ -172,9 +175,9 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function most_probable_config(mmap::MMAPModeling; usecuda=false)::Tuple{Tropical,Vector}
+function most_probable_config(mmap::MMAPModel; usecuda=false)::Tuple{Tropical,Vector}
     vars = get_vars(mmap)
-    tensors = map(t->OMEinsum.asarray(Tropical.(log.(t)), t), generate_tensors(mmap; usecuda))
+    tensors = map(t->OMEinsum.asarray(Tropical.(log.(t)), t), adapt_tensors(mmap; usecuda, rescale=false))
     logp, grads = cost_and_gradient(mmap.code, tensors)
     # use Array to convert CuArray to CPU arrays
     return Array(logp)[], map(k->haskey(mmap.fixedvertices, vars[k]) ? mmap.fixedvertices[vars[k]] : argmax(grads[k]) - 1, 1:length(vars))
@@ -183,23 +186,30 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function maximum_logp(mmap::MMAPModeling; usecuda=false)::AbstractArray{<:Tropical}
-    tensors = map(t->OMEinsum.asarray(Tropical.(log.(t)), t), generate_tensors(mmap; usecuda))
+function maximum_logp(mmap::MMAPModel; usecuda=false)::AbstractArray{<:Tropical}
+    tensors = map(t->OMEinsum.asarray(Tropical.(log.(t)), t), adapt_tensors(mmap; usecuda, rescale=false))
     return mmap.code(tensors...)
 end
 
 """
 $(TYPEDSIGNATURES)
 """
-function probability(mmap::MMAPModeling, config)::Real
-    fixedvertices = merge(mmap.fixedvertices, Dict(zip(get_vars(mmap), config)))
-    assign = Dict(zip(get_vars(mmap), config .+ 1))
-    m1 = mapreduce(x->x[2][getindex.(Ref(assign), x[1])...], *, zip(getixsv(mmap.code), mmap.tensors))
-    m2 = prod(cluster->probability(cluster; fixedvertices, usecuda=false)[], mmap.clusters)
-    return m1 * m2
+function log_probability(mmap::MMAPModel, config::Union{Dict, AbstractVector}; rescale=true, usecuda=false)::Real
+    @assert length(get_vars(mmap)) == length(config)
+    fixedvertices =  config isa AbstractVector ? Dict(zip(get_vars(mmap), config)) : config
+    assign = merge(mmap.fixedvertices, fixedvertices)
+    # two contributions to the probability, not-clustered tensors and clusters.
+    m1 = sum(x->log(x[2][(getindex.(Ref(assign), x[1]) .+ 1)...]), zip(getixsv(mmap.code), mmap.tensors))
+    m2 = sum(cluster->probability(cluster; fixedvertices, usecuda, rescale).log_factor, mmap.clusters)
+    return m1 + m2
 end
 
-function probability(c::Cluster; fixedvertices, usecuda)::AbstractArray
-    tensors = generate_tensors(c.code, c.tensors, fixedvertices; usecuda)
+function probability(c::Cluster; fixedvertices, usecuda, rescale)::AbstractArray
+    tensors = adapt_tensors(c.code, c.tensors, fixedvertices; usecuda, rescale)
     return c.code(tensors...)
+end
+
+function log_probability(c::Cluster, config::Union{AbstractVector, Dict})::AbstractArray
+    assign =  config isa AbstractVector ? Dict(zip(get_vars(c), config)) : config
+    return sum(x->log(x[2][(getindex.(Ref(assign), x[1]) .+ 1)...]), zip(getixsv(c.code), c.tensors))
 end
