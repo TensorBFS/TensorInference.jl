@@ -1,12 +1,13 @@
 """
 $(TYPEDEF)
+
     RescaledArray(α, T) -> RescaledArray
 
 An array data type with a log-prefactor, and a l∞-normalized storage, i.e. the maximum element in a tensor is 1.
 This tensor type can avoid the potential underflow/overflow of numbers in a tensor network.
 The constructor `RescaledArray(α, T)` creates a rescaled array that equal to `exp(α) * T`.
 """
-struct RescaledArray{T, N, AT<:AbstractArray{T, N}} <: AbstractArray{T, N}
+struct RescaledArray{T, N, AT <: AbstractArray{T, N}} <: AbstractArray{T, N}
     log_factor::T
     normalized_value::AT
 end
@@ -20,7 +21,7 @@ $(TYPEDSIGNATURES)
 
 Returns a rescaled array that equivalent to the input tensor.
 """
-function rescale_array(tensor::AbstractArray{T})::RescaledArray where T
+function rescale_array(tensor::AbstractArray{T})::RescaledArray where {T}
     maxf = maximum(tensor)
     if iszero(maxf)
         @warn("The maximum value of the array to rescale is 0!")
@@ -30,14 +31,14 @@ function rescale_array(tensor::AbstractArray{T})::RescaledArray where T
 end
 
 for CT in [:DynamicEinCode, :StaticEinCode]
-    @eval function OMEinsum.einsum(code::$CT, @nospecialize(xs::NTuple{N,RescaledArray}), size_dict::Dict) where N
+    @eval function OMEinsum.einsum(code::$CT, @nospecialize(xs::NTuple{N, RescaledArray}), size_dict::Dict) where {N}
         # The following equality holds
         # einsum(code, exp(α) * A, exp(β) * B, ...) = exp(α * β * ...) * einsum(code, A, B, ...)
         # Hence the einsum is performed on the normalized values, and the factors are added later.
         res = einsum(code, getfield.(xs, :normalized_value), size_dict)
         rescaled = rescale_array(res)
         # a new rescaled array, its factor is 
-        return RescaledArray(sum(x->x.log_factor, xs) + rescaled.log_factor, rescaled.normalized_value)
+        return RescaledArray(sum(x -> x.log_factor, xs) + rescaled.log_factor, rescaled.normalized_value)
     end
 end
 

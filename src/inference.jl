@@ -5,7 +5,7 @@ function adapt_tensors(code, tensors, fixedvertices; usecuda, rescale)
     # `ix` is the vector of labels (or a degree of freedoms) for a tensor,
     # if a label in `ix` is fixed to a value, do the slicing to the tensor it associates to.
     map(tensors, ixs) do t, ix
-        dims = map(ixi->ixi ∉ keys(fixedvertices) ? Colon() : (fixedvertices[ixi]+1:fixedvertices[ixi]+1), ix)
+        dims = map(ixi -> ixi ∉ keys(fixedvertices) ? Colon() : ((fixedvertices[ixi] + 1):(fixedvertices[ixi] + 1)), ix)
         t2 = t[dims...]
         t3 = usecuda ? CuArray(t2) : t2
         rescale ? rescale_array(t3) : t3
@@ -21,6 +21,7 @@ struct CacheTree{T}
     content::AbstractArray{T}
     siblings::Vector{CacheTree{T}}
 end
+
 function cached_einsum(se::SlicedEinsum, @nospecialize(xs), size_dict)
     # slicing is not supported yet.
     if length(se.slicing) != 0
@@ -42,13 +43,13 @@ function cached_einsum(code::NestedEinsum, @nospecialize(xs), size_dict)
         # Its 1st argument is the contraction pattern,
         # Its 2nd one is a tuple of input tensors,
         # Its 3rd argument is the size dictionary (label as the key, size as the value).
-        y = einsum(code.eins, ntuple(i->caches[i].content, length(caches)), size_dict)
+        y = einsum(code.eins, ntuple(i -> caches[i].content, length(caches)), size_dict)
         return CacheTree(y, caches)
     end
 end
 
 # computed gradient tree by back propagation
-function generate_gradient_tree(se::SlicedEinsum, cache::CacheTree{T}, dy::AbstractArray{T}, size_dict::Dict) where T
+function generate_gradient_tree(se::SlicedEinsum, cache::CacheTree{T}, dy::AbstractArray{T}, size_dict::Dict) where {T}
     if length(se.slicing) != 0
         @warn "Slicing is not supported for generating masked tree! Fallback to `NestedEinsum`."
     end
@@ -57,11 +58,11 @@ end
 
 # recursively compute the gradients and store it into a tree.
 # also known as the back-propagation algorithm.
-function generate_gradient_tree(code::NestedEinsum, cache::CacheTree{T}, dy::AbstractArray{T}, size_dict::Dict) where T
+function generate_gradient_tree(code::NestedEinsum, cache::CacheTree{T}, dy::AbstractArray{T}, size_dict::Dict) where {T}
     if OMEinsum.isleaf(code)
         return CacheTree(dy, CacheTree{T}[])
     else
-        xs = ntuple(i->cache.siblings[i].content, length(cache.siblings))
+        xs = ntuple(i -> cache.siblings[i].content, length(cache.siblings))
         # `einsum_grad` is the back-propagation rule for einsum function.
         # If the forward pass is `y = einsum(EinCode(inputs_labels, output_labels), (A, B, ...), size_dict)`
         # Then the back-propagation pass is
@@ -77,14 +78,14 @@ function generate_gradient_tree(code::NestedEinsum, cache::CacheTree{T}, dy::Abs
 end
 
 # a unified interface of the backward rules for real numbers and tropical numbers
-function einsum_backward_rule(eins, xs::NTuple{M,AbstractArray{<:Real}} where M, y, size_dict, dy)
+function einsum_backward_rule(eins, xs::NTuple{M, AbstractArray{<:Real}} where {M}, y, size_dict, dy)
     return ntuple(i -> OMEinsum.einsum_grad(OMEinsum.getixs(eins), xs, OMEinsum.getiy(eins), size_dict, dy, i), length(xs))
 end
 
 # the main function for generating the gradient tree.
 function gradient_tree(code, xs)
     # infer size from the contraction code and the input tensors `xs`, returns a label-size dictionary.
-    size_dict = OMEinsum.get_size_dict!(getixsv(code), xs, Dict{Int,Int}())
+    size_dict = OMEinsum.get_size_dict!(getixsv(code), xs, Dict{Int, Int}())
     # forward compute and cache intermediate results.
     cache = cached_einsum(code, xs, size_dict)
     # initialize `y̅` as `1`. Note we always start from `L̅ := 1`.
@@ -118,7 +119,7 @@ function extract_leaves!(code, cache, res)
         extract_leaves!.(code.args, cache.siblings, Ref(res))
     end
     return res
-end 
+end
 
 """
 $(TYPEDSIGNATURES)
@@ -126,7 +127,7 @@ $(TYPEDSIGNATURES)
 Returns the marginal probability distribution of variables.
 One can use `get_vars(tn)` to get the full list of variables in this tensor network.
 """
-function marginals(tn::TensorNetworkModel; usecuda=false, rescale=true)::Vector
+function marginals(tn::TensorNetworkModel; usecuda = false, rescale = true)::Vector
     vars = get_vars(tn)
     # sometimes, the cost can overflow, then we need to rescale the tensors during contraction.
     cost, grads = cost_and_gradient(tn.code, adapt_tensors(tn; usecuda, rescale))
