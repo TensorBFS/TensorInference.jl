@@ -84,9 +84,20 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function TensorNetworkModel(instance::UAIInstance; openvertices = (), optimizer = GreedyMethod(), simplifier = nothing)::TensorNetworkModel
+function TensorNetworkModel(
+    instance::UAIInstance;
+    openvertices = (),
+    optimizer = GreedyMethod(),
+    simplifier = nothing
+)::TensorNetworkModel
     return TensorNetworkModel(
-        1:(instance.nvars), instance.cards, instance.factors; fixedvertices = Dict(zip(instance.obsvars, instance.obsvals .- 1)), optimizer, simplifier, openvertices
+        1:(instance.nvars),
+        instance.cards,
+        instance.factors;
+        fixedvertices = Dict(zip(instance.obsvars, instance.obsvals .- 1)),
+        optimizer,
+        simplifier,
+        openvertices
     )
 end
 
@@ -115,7 +126,12 @@ end
 $(TYPEDSIGNATURES)
 """
 function TensorNetworkModel(
-    vars::AbstractVector{LT}, rawcode::EinCode, tensors::Vector{<:AbstractArray}; fixedvertices = Dict{LT, Int}(), optimizer = GreedyMethod(), simplifier = nothing
+    vars::AbstractVector{LT},
+    rawcode::EinCode,
+    tensors::Vector{<:AbstractArray};
+    fixedvertices = Dict{LT, Int}(),
+    optimizer = GreedyMethod(),
+    simplifier = nothing
 )::TensorNetworkModel where {LT}
     # `optimize_code` optimizes the contraction order of a raw tensor network without a contraction order specified.
     # The 1st argument is the contraction pattern to be optimized (without contraction order).
