@@ -94,10 +94,10 @@ function TensorNetworkModel(
         1:(instance.nvars),
         instance.cards,
         instance.factors;
+        openvertices,
         fixedvertices = Dict(zip(instance.obsvars, instance.obsvals .- 1)),
         optimizer,
-        simplifier,
-        openvertices
+        simplifier
     )
 end
 
