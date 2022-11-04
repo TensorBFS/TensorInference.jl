@@ -21,7 +21,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Push results
-        run: julia -e "using BenchmarkCI; BenchmarkCI.pushresult()"
+        run: julia -e '
+          using BenchmarkCI;
+          BenchmarkCI.pushresult(;
+              url = "git@github.com:TensorBFS/TensorInference-data.git",
+          );
+          '
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SSH_KEY: ${{ secrets.DOCUMENTER_KEY }}
+          SSH_KEY: ${{ secrets.DATA_SSH_KEY }}
