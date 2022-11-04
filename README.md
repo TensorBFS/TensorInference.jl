@@ -1,9 +1,9 @@
 # TensorInference
 
-[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://mroavi.github.io/TensorInference.jl/stable/)
-[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://mroavi.github.io/TensorInference.jl/dev/)
-[![Build Status](https://github.com/mroavi/TensorInference.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/mroavi/TensorInference.jl/actions/workflows/CI.yml?query=branch%3Amain)
-[![Coverage](https://codecov.io/gh/mroavi/TensorInference.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/mroavi/TensorInference.jl)
+[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://TensorBFS.github.io/TensorInference.jl/stable/)
+[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://TensorBFS.github.io/TensorInference.jl/dev/)
+[![Build Status](https://github.com/TensorBFS/TensorInference.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/TensorBFS/TensorInference.jl/actions/workflows/CI.yml?query=branch%3Amain)
+[![Coverage](https://codecov.io/gh/TensorBFS/TensorInference.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/TensorBFS/TensorInference.jl)
 
 This package implements a tensor network based probabilistic modeling toolbox, which covers the probability inference functionalities in [this page](https://uaicompetition.github.io/uci-2022/competition-entry/tasks/):
 * PR: computing the partition function or probability of evidence,

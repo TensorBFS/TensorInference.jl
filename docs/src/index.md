@@ -4,7 +4,7 @@ CurrentModule = TensorInference
 
 # TensorInference
 
-Documentation for [TensorInference](https://github.com/mroavi/TensorInference.jl).
+Documentation for [TensorInference](https://github.com/TensorBFS/TensorInference.jl).
 
 ```@index
 ```

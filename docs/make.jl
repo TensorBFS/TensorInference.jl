@@ -6,11 +6,11 @@ DocMeta.setdocmeta!(TensorInference, :DocTestSetup, :(using TensorInference); re
 makedocs(;
     modules=[TensorInference],
     authors="Jin-Guo Liu, Martin Roa Villescas",
-    repo="https://github.com/mroavi/TensorInference.jl/blob/{commit}{path}#{line}",
+    repo="https://github.com/TensorBFS/TensorInference.jl/blob/{commit}{path}#{line}",
     sitename="TensorInference.jl",
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
-        canonical="https://mroavi.github.io/TensorInference.jl",
+        canonical="https://TensorBFS.github.io/TensorInference.jl",
         edit_link="main",
         assets=String[],
     ),
@@ -20,6 +20,6 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/mroavi/TensorInference.jl",
+    repo="github.com/TensorBFS/TensorInference.jl",
     devbranch="main",
 )
