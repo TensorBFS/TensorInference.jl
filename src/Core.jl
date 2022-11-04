@@ -8,9 +8,9 @@ $(TYPEDEF)
 Encodes a discrete function over the set of variables `vars` that maps each
 instantiation of `vars` into a nonnegative number in `vals`.
 """
-struct Factor{T,N}
-  vars::NTuple{N,Int64}
-  vals::Array{T,N}
+struct Factor{T, N}
+    vars::NTuple{N, Int64}
+    vals::Array{T, N}
 end
 
 """
@@ -26,15 +26,15 @@ $(TYPEDEF)
 * `obsvals` is a vector of observed values,
 * `reference_marginals` is a vector of marginal probabilities.
 """
-struct UAIInstance{ET, FT<:Factor{ET}}
-  nvars::Int
-  nclique::Int
-  cards::Vector{Int}
-  factors::Vector{FT}
+struct UAIInstance{ET, FT <: Factor{ET}}
+    nvars::Int
+    nclique::Int
+    cards::Vector{Int}
+    factors::Vector{FT}
 
-  obsvars::Vector{Int}
-  obsvals::Vector{Int}
-  reference_marginals::Vector{Vector{ET}}
+    obsvars::Vector{Int}
+    obsvals::Vector{Int}
+    reference_marginals::Vector{Vector{ET}}
 end
 
 """
@@ -48,11 +48,11 @@ Probabilistic modeling with a tensor network.
 * `tensors` is the tensors fed into the tensor network.
 * `fixedvertices` is a dictionary to specifiy degree of freedoms fixed to certain values.
 """
-struct TensorNetworkModel{LT,ET,MT<:AbstractArray}
+struct TensorNetworkModel{LT, ET, MT <: AbstractArray}
     vars::Vector{LT}
     code::ET
     tensors::Vector{MT}
-    fixedvertices::Dict{LT,Int}
+    fixedvertices::Dict{LT, Int}
 end
 
 function Base.show(io::IO, tn::TensorNetworkModel)
@@ -64,7 +64,8 @@ function Base.show(io::IO, tn::TensorNetworkModel)
     print_tcscrw(io, tc, sc, rw)
 end
 Base.show(io::IO, ::MIME"text/plain", tn::TensorNetworkModel) = Base.show(io, tn)
-function string_var(var, open ,fixedvertices)
+
+function string_var(var, open, fixedvertices)
     if var ∈ open && haskey(fixedvertices, var)
         "$var (open, fixed to $(fixedvertices[var]))"
     elseif var ∈ open
@@ -83,26 +84,39 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function TensorNetworkModel(instance::UAIInstance; openvertices=(), optimizer=GreedyMethod(), simplifier=nothing)::TensorNetworkModel
-    return TensorNetworkModel(1:instance.nvars, instance.cards, instance.factors; fixedvertices=Dict(zip(instance.obsvars, instance.obsvals .- 1)), optimizer, simplifier, openvertices)
+function TensorNetworkModel(instance::UAIInstance; openvertices = (), optimizer = GreedyMethod(), simplifier = nothing)::TensorNetworkModel
+    return TensorNetworkModel(
+        1:(instance.nvars), instance.cards, instance.factors; fixedvertices = Dict(zip(instance.obsvars, instance.obsvals .- 1)), optimizer, simplifier, openvertices
+    )
 end
 
 """
 $(TYPEDSIGNATURES)
 """
-function TensorNetworkModel(vars::AbstractVector{LT}, cards::AbstractVector{Int}, factors::Vector{<:Factor{T}}; openvertices=(), fixedvertices=Dict{LT,Int}(), optimizer=GreedyMethod(), simplifier=nothing)::TensorNetworkModel where {T,LT}
+function TensorNetworkModel(
+    vars::AbstractVector{LT},
+    cards::AbstractVector{Int},
+    factors::Vector{<:Factor{T}};
+    openvertices = (),
+    fixedvertices = Dict{LT, Int}(),
+    optimizer = GreedyMethod(),
+    simplifier = nothing
+)::TensorNetworkModel where {T, LT}
     # The 1st argument of `EinCode` is a vector of vector of labels for specifying the input tensors, 
     # The 2nd argument of `EinCode` is a vector of labels for specifying the output tensor,
     # e.g.
     # `EinCode([[1, 2], [2, 3]], [1, 3])` is the EinCode for matrix multiplication.
     rawcode = EinCode([[[var] for var in vars]..., [[factor.vars...] for factor in factors]...], collect(LT, openvertices))  # labels for vertex tensors (unity tensors) and edge tensors
-    tensors = Array{T}[[ones(T, cards[i]) for i=1:length(vars)]..., [t.vals for t in factors]...]
+    tensors = Array{T}[[ones(T, cards[i]) for i in 1:length(vars)]..., [t.vals for t in factors]...]
     return TensorNetworkModel(collect(LT, vars), rawcode, tensors; fixedvertices, optimizer, simplifier)
 end
+
 """
 $(TYPEDSIGNATURES)
 """
-function TensorNetworkModel(vars::AbstractVector{LT}, rawcode::EinCode, tensors::Vector{<:AbstractArray}; fixedvertices=Dict{LT,Int}(), optimizer=GreedyMethod(), simplifier=nothing)::TensorNetworkModel where LT
+function TensorNetworkModel(
+    vars::AbstractVector{LT}, rawcode::EinCode, tensors::Vector{<:AbstractArray}; fixedvertices = Dict{LT, Int}(), optimizer = GreedyMethod(), simplifier = nothing
+)::TensorNetworkModel where {LT}
     # `optimize_code` optimizes the contraction order of a raw tensor network without a contraction order specified.
     # The 1st argument is the contraction pattern to be optimized (without contraction order).
     # The 2nd arugment is the size dictionary, which is a label-integer dictionary.
@@ -124,9 +138,9 @@ $(TYPEDSIGNATURES)
 
 Get the cardinalities of variables in this tensor network.
 """
-function get_cards(tn::TensorNetworkModel; fixedisone=false)::Vector
+function get_cards(tn::TensorNetworkModel; fixedisone = false)::Vector
     vars = get_vars(tn)
-    [fixedisone && haskey(tn.fixedvertices, vars[k]) ? 1 : length(tn.tensors[k]) for k=1:length(vars)]
+    [fixedisone && haskey(tn.fixedvertices, vars[k]) ? 1 : length(tn.tensors[k]) for k in 1:length(vars)]
 end
 
 chfixedvertices(tn::TensorNetworkModel, fixedvertices) = TensorNetworkModel(tn.vars, tn.code, tn.tensors, fixedvertices)
@@ -137,8 +151,8 @@ $(TYPEDSIGNATURES)
 Evaluate the log probability of `config`.
 """
 function log_probability(tn::TensorNetworkModel, config::Union{Dict, AbstractVector})::Real
-    assign =  config isa AbstractVector ? Dict(zip(get_vars(tn), config)) : config
-    return sum(x->log(x[2][(getindex.(Ref(assign), x[1]) .+ 1)...]), zip(getixsv(tn.code), tn.tensors))
+    assign = config isa AbstractVector ? Dict(zip(get_vars(tn), config)) : config
+    return sum(x -> log(x[2][(getindex.(Ref(assign), x[1]) .+ 1)...]), zip(getixsv(tn.code), tn.tensors))
 end
 
 """
@@ -147,12 +161,12 @@ $(TYPEDSIGNATURES)
 Contract the tensor network and return a probability array with its rank specified in the contraction code `tn.code`.
 The returned array may not be l1-normalized even if the total probability is l1-normalized, because the evidence `tn.fixedvertices` may not be empty.
 """
-function probability(tn::TensorNetworkModel; usecuda=false, rescale=true)::AbstractArray
+function probability(tn::TensorNetworkModel; usecuda = false, rescale = true)::AbstractArray
     return tn.code(adapt_tensors(tn; usecuda, rescale)...)
 end
 
 function OMEinsum.contraction_complexity(tn::TensorNetworkModel)
-    return contraction_complexity(tn.code, Dict(zip(get_vars(tn), get_cards(tn; fixedisone=true))))
+    return contraction_complexity(tn.code, Dict(zip(get_vars(tn), get_cards(tn; fixedisone = true))))
 end
 
 # adapt array type with the target array type
