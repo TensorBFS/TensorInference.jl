@@ -4,3 +4,4 @@ Manifest.toml
 *.jl.mem
 /docs/build/
 .vscode/
+Session.vim
