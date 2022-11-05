@@ -3,6 +3,8 @@ module BenchMar
 using BenchmarkTools
 using TensorInference
 using Artifacts
+using CUDA
+CUDA.allowscalar(false)
 
 const SUITE = BenchmarkGroup()
 
