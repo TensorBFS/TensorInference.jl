@@ -4,7 +4,7 @@ using BenchmarkTools
 
 const SUITE = BenchmarkGroup()
 
-SUITE["test"] = @benchmarkable inv(rand(1000, 1000))
+SUITE["test"] = @benchmarkable inv(rand(100, 100))
 
 end  # module
 BenchTest.SUITE
