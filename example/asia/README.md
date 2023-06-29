@@ -1,6 +1,12 @@
 # The "Asia" Bayesian network
 
-The variables and factors in `.uai` files are labelled as below.
+Please check the Julia code [asia.jl](asia.jl).
+
+The variables and factors for the asia model is described in the [asia.uai](asia.uai) file.
+The UAI file format is detailed in:
+https://personal.utdallas.edu/~vibhav.gogate/uai16-evaluation/uaiformat.html
+
+The meanings of variables and factors as listed bellow.
 
 ## Variables
 index 0 is mapped to yes, 1 is mapped to no.

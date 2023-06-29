@@ -19,7 +19,7 @@ The backward rule for tropical einsum.
 function backward_tropical(ixs, @nospecialize(xs::Tuple), iy, @nospecialize(y), @nospecialize(ymask), size_dict)
     y .= masked_inv.(y, ymask)
     masks = []
-    for i in 1:length(ixs)
+    for i in eachindex(ixs)
         nixs = OMEinsum._insertat(ixs, i, iy)
         nxs  = OMEinsum._insertat(xs, i, y)
         niy  = ixs[i]
@@ -44,12 +44,12 @@ $(TYPEDSIGNATURES)
 
 Returns the largest log-probability and the most probable configuration.
 """
-function most_probable_config(tn::TensorNetworkModel; usecuda = false)::Tuple{Tropical, Vector}
+function most_probable_config(tn::TensorNetworkModel; usecuda = false)::Tuple{Real, Vector}
     vars = get_vars(tn)
     tensors = map(t -> Tropical.(log.(t)), adapt_tensors(tn; usecuda, rescale = false))
     logp, grads = cost_and_gradient(tn.code, tensors)
     # use Array to convert CuArray to CPU arrays
-    return Array(logp)[], map(k -> haskey(tn.fixedvertices, vars[k]) ? tn.fixedvertices[vars[k]] : argmax(grads[k]) - 1, 1:length(vars))
+    return content(Array(logp)[]), map(k -> haskey(tn.fixedvertices, vars[k]) ? tn.fixedvertices[vars[k]] : argmax(grads[k]) - 1, 1:length(vars))
 end
 
 """
@@ -57,8 +57,8 @@ $(TYPEDSIGNATURES)
 
 Returns an output array containing largest log-probabilities.
 """
-function maximum_logp(tn::TensorNetworkModel; usecuda = false)::AbstractArray{<:Tropical}
+function maximum_logp(tn::TensorNetworkModel; usecuda = false)::AbstractArray{<:Real}
     # generate tropical tensors with its elements being log(p).
     tensors = map(t -> Tropical.(log.(t)), adapt_tensors(tn; usecuda, rescale = false))
-    return tn.code(tensors...)
+    return map(content, tn.code(tensors...))
 end

@@ -15,6 +15,7 @@ Base.show(io::IO, c::RescaledArray) = print(io, "exp($(c.log_factor)) * $(c.norm
 Base.show(io::IO, ::MIME"text/plain", c::RescaledArray) = Base.show(io, c)
 Base.Array(c::RescaledArray) = rmul!(Array(c.normalized_value), exp(c.log_factor))
 Base.copy(c::RescaledArray) = RescaledArray(c.log_factor, copy(c.normalized_value))
+Base.getindex(r::RescaledArray, indices...) = map(x->x * exp(r.log_factor), getindex(r.normalized_value, indices...))
 
 """
 $(TYPEDSIGNATURES)

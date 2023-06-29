@@ -11,6 +11,6 @@ using TensorInference
     @info contraction_complexity(tn)
     most_probable_config(tn)
     @time logp, config = most_probable_config(tn)
-    @test log_probability(tn, config) ≈ logp.n
+    @test log_probability(tn, config) ≈ logp
     @test maximum_logp(tn)[] ≈ logp
 end

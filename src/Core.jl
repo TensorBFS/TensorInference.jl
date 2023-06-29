@@ -38,6 +38,30 @@ struct UAIInstance{ET, FT <: Factor{ET}}
 end
 
 """
+$TYPEDSIGNATURES
+
+Set the evidence of an UAI instance.
+
+### Examples
+```jldoctest; setup=:(using TensorInference)
+julia> problem = read_uai_problem("Promedus_14"); problem.obsvars, problem.obsvals
+([42, 48, 27, 30, 29, 15, 124, 5, 148], [1, 1, 1, 1, 1, 1, 1, 1, 1])
+
+julia> set_evidence!(problem, 2=>0, 4=>1); problem.obsvars, problem.obsvals
+([2, 4], [0, 1])
+```
+"""
+function set_evidence!(uai::UAIInstance, pairs::Pair{Int}...)
+    empty!(uai.obsvars)
+    empty!(uai.obsvals)
+    for (var, val) in pairs
+        push!(uai.obsvars, var)
+        push!(uai.obsvals, val)
+    end
+    return uai
+end
+
+"""
 $(TYPEDEF)
 
 Probabilistic modeling with a tensor network.
@@ -95,7 +119,7 @@ function TensorNetworkModel(
         instance.cards,
         instance.factors;
         openvertices,
-        fixedvertices = Dict(zip(instance.obsvars, instance.obsvals .- 1)),
+        fixedvertices = Dict(zip(instance.obsvars, instance.obsvals)),
         optimizer,
         simplifier
     )

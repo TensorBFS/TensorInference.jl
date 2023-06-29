@@ -11,6 +11,7 @@ export contraction_complexity, TreeSA, GreedyMethod, KaHyParBipartite, SABiparti
 
 # read and load uai files
 export read_uai_file, read_td_file, read_uai_evid_file, read_uai_mar_file, read_uai_problem, uai_problem_from_file
+export set_evidence!
 
 # marginals
 export TensorNetworkModel, get_vars, get_cards, log_probability, probability, marginals

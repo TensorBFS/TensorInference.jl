@@ -84,7 +84,7 @@ function read_uai_evid_file(uai_evid_filepath::AbstractString)
 
         # Convert to 1-based indexing
         obsvars = observations[1, :] .+ 1
-        obsvals = observations[2, :] .+ 1
+        obsvals = observations[2, :]
 
         @assert nobsvars == length(obsvars)
     end
