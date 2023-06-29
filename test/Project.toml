@@ -1,0 +1,8 @@
+[deps]
+Artifacts = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
+CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
+Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+KaHyPar = "2a6221f6-aa48-11e9-3542-2d9e0ef01880"
+OMEinsum = "ebe7aa44-baf0-506c-a96f-8464559b3922"
+Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
