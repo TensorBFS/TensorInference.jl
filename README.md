@@ -28,3 +28,6 @@ pkg> add TensorInference
 ```
 
 To update, just type `up` in the package mode.
+
+## Example
+Please check the [example](example) folder.

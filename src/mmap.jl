@@ -34,7 +34,7 @@ end
 function Base.show(io::IO, mmap::MMAPModel)
     open = getiyv(mmap.code)
     variables = join([string_var(var, open, mmap.fixedvertices) for var in mmap.vars], ", ")
-    tc, sc, rw = timespacereadwrite_complexity(mmap)
+    tc, sc, rw = contraction_complexity(mmap)
     println(io, "$(typeof(mmap))")
     println(io, "variables: $variables")
     println(io, "marginalized variables: $(map(x->x.eliminated_vars, mmap.clusters))")
@@ -58,16 +58,16 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function MMAPModel(instance::UAIInstance; marginalizedvertices, openvertices = (), optimizer = GreedyMethod(), simplifier = nothing)::MMAPModel
+function MMAPModel(instance::UAIInstance; marginalized, openvertices = (), optimizer = GreedyMethod(), simplifier = nothing)::MMAPModel
     return MMAPModel(
-        1:(instance.nvars), instance.factors; marginalizedvertices, fixedvertices = Dict(zip(instance.obsvars, instance.obsvals .- 1)), optimizer, simplifier, openvertices
+        1:(instance.nvars), instance.factors; marginalized, fixedvertices = Dict(zip(instance.obsvars, instance.obsvals)), optimizer, simplifier, openvertices
     )
 end
 
 """
 $(TYPEDSIGNATURES)
 """
-function MMAPModel(vars::AbstractVector{LT}, factors::Vector{<:Factor{T}}; marginalizedvertices, openvertices = (),
+function MMAPModel(vars::AbstractVector{LT}, factors::Vector{<:Factor{T}}; marginalized, openvertices = (),
     fixedvertices = Dict{LT, Int}(),
     optimizer = GreedyMethod(), simplifier = nothing,
     marginalize_optimizer = GreedyMethod(), marginalize_simplifier = nothing
@@ -81,7 +81,7 @@ function MMAPModel(vars::AbstractVector{LT}, factors::Vector{<:Factor{T}}; margi
     size_dict = OMEinsum.get_size_dict(all_ixs, all_tensors)
 
     # detect clusters for marginalize variables
-    subsets = connected_clusters(all_ixs, marginalizedvertices)
+    subsets = connected_clusters(all_ixs, marginalized)
     clusters = Cluster{LT}[]
     ixs = Vector{LT}[]
     for (contracted, cluster) in subsets
@@ -96,10 +96,10 @@ function MMAPModel(vars::AbstractVector{LT}, factors::Vector{<:Factor{T}}; margi
     rem_indices = setdiff(1:length(all_ixs), vcat([c.second for c in subsets]...))
     remaining_tensors = all_tensors[rem_indices]
     code = optimize_code(EinCode([all_ixs[rem_indices]..., ixs...], iy), size_dict, optimizer, simplifier)
-    return MMAPModel(setdiff(vars, marginalizedvertices), code, remaining_tensors, clusters, fixedvertices)
+    return MMAPModel(setdiff(vars, marginalized), code, remaining_tensors, clusters, fixedvertices)
 end
 
-function OMEinsum.timespacereadwrite_complexity(mmap::MMAPModel{LT}) where {LT}
+function OMEinsum.contraction_complexity(mmap::MMAPModel{LT}) where {LT}
     # extract size
     size_dict = Dict(zip(get_vars(mmap), get_cards(mmap; fixedisone = true)))
     sc = -Inf
@@ -111,18 +111,17 @@ function OMEinsum.timespacereadwrite_complexity(mmap::MMAPModel{LT}) where {LT}
             # the head sector are for unity tensors.
             size_dict[cluster.eliminated_vars[k]] = length(cluster.tensors[k])
         end
-        tc, sci, rw = timespacereadwrite_complexity(cluster.code, size_dict)
+        tc, sci, rw = contraction_complexity(cluster.code, size_dict)
         push!(tcs, tc)
         push!(rws, rw)
         sc = max(sc, sci)
     end
 
-    tc, sci, rw = timespacereadwrite_complexity(mmap.code, size_dict)
+    tc, sci, rw = contraction_complexity(mmap.code, size_dict)
     push!(tcs, tc)
     push!(rws, tc)
     OMEinsum.OMEinsumContractionOrders.log2sumexp2(tcs), max(sc, sci), OMEinsum.OMEinsumContractionOrders.log2sumexp2(rws)
 end
-OMEinsum.timespace_complexity(mmap::MMAPModel) = timespacereadwrite_complexity(mmap)[1:2]
 
 function adapt_tensors(mmap::MMAPModel; usecuda, rescale)
     return [adapt_tensors(mmap.code, mmap.tensors, mmap.fixedvertices; usecuda, rescale)...,
@@ -174,35 +173,29 @@ function visit_var!(var, vars::AbstractVector{LT}, ixs, visited_ixs, visited_var
     end
 end
 
-"""
-$(TYPEDSIGNATURES)
-"""
-function most_probable_config(mmap::MMAPModel; usecuda = false)::Tuple{Tropical, Vector}
+function most_probable_config(mmap::MMAPModel; usecuda = false)::Tuple{Real, Vector}
     vars = get_vars(mmap)
     tensors = map(t -> OMEinsum.asarray(Tropical.(log.(t)), t), adapt_tensors(mmap; usecuda, rescale = false))
     logp, grads = cost_and_gradient(mmap.code, tensors)
     # use Array to convert CuArray to CPU arrays
-    return Array(logp)[], map(k -> haskey(mmap.fixedvertices, vars[k]) ? mmap.fixedvertices[vars[k]] : argmax(grads[k]) - 1, 1:length(vars))
+    return content(Array(logp)[]), map(k -> haskey(mmap.fixedvertices, vars[k]) ? mmap.fixedvertices[vars[k]] : argmax(grads[k]) - 1, 1:length(vars))
 end
 
-"""
-$(TYPEDSIGNATURES)
-"""
-function maximum_logp(mmap::MMAPModel; usecuda = false)::AbstractArray{<:Tropical}
+function maximum_logp(mmap::MMAPModel; usecuda = false)::AbstractArray{<:Real}
     tensors = map(t -> OMEinsum.asarray(Tropical.(log.(t)), t), adapt_tensors(mmap; usecuda, rescale = false))
-    return mmap.code(tensors...)
+    return map(content, mmap.code(tensors...))
 end
 
-"""
-$(TYPEDSIGNATURES)
-"""
 function log_probability(mmap::MMAPModel, config::Union{Dict, AbstractVector}; rescale = true, usecuda = false)::Real
     @assert length(get_vars(mmap)) == length(config)
     fixedvertices = config isa AbstractVector ? Dict(zip(get_vars(mmap), config)) : config
     assign = merge(mmap.fixedvertices, fixedvertices)
     # two contributions to the probability, not-clustered tensors and clusters.
     m1 = sum(x -> log(x[2][(getindex.(Ref(assign), x[1]) .+ 1)...]), zip(getixsv(mmap.code), mmap.tensors))
-    m2 = sum(cluster -> probability(cluster; fixedvertices, usecuda, rescale).log_factor, mmap.clusters)
+    m2 = sum(mmap.clusters) do cluster
+        p = probability(cluster; fixedvertices, usecuda, rescale)
+        rescale ? p.log_factor : log(p[])
+    end
     return m1 + m2
 end
 
