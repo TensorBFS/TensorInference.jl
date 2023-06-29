@@ -3,6 +3,7 @@ module TensorInference
 using OMEinsum, LinearAlgebra
 using DocStringExtensions, TropicalNumbers
 using Artifacts
+using TropicalGEMM
 
 # reexport OMEinsum functions
 export RescaledArray
