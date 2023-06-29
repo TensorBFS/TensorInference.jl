@@ -34,7 +34,7 @@ end
 function Base.show(io::IO, mmap::MMAPModel)
     open = getiyv(mmap.code)
     variables = join([string_var(var, open, mmap.fixedvertices) for var in mmap.vars], ", ")
-    tc, sc, rw = timespacereadwrite_complexity(mmap)
+    tc, sc, rw = contraction_complexity(mmap)
     println(io, "$(typeof(mmap))")
     println(io, "variables: $variables")
     println(io, "marginalized variables: $(map(x->x.eliminated_vars, mmap.clusters))")
@@ -99,7 +99,7 @@ function MMAPModel(vars::AbstractVector{LT}, factors::Vector{<:Factor{T}}; margi
     return MMAPModel(setdiff(vars, marginalizedvertices), code, remaining_tensors, clusters, fixedvertices)
 end
 
-function OMEinsum.timespacereadwrite_complexity(mmap::MMAPModel{LT}) where {LT}
+function OMEinsum.contraction_complexity(mmap::MMAPModel{LT}) where {LT}
     # extract size
     size_dict = Dict(zip(get_vars(mmap), get_cards(mmap; fixedisone = true)))
     sc = -Inf
@@ -111,18 +111,17 @@ function OMEinsum.timespacereadwrite_complexity(mmap::MMAPModel{LT}) where {LT}
             # the head sector are for unity tensors.
             size_dict[cluster.eliminated_vars[k]] = length(cluster.tensors[k])
         end
-        tc, sci, rw = timespacereadwrite_complexity(cluster.code, size_dict)
+        tc, sci, rw = contraction_complexity(cluster.code, size_dict)
         push!(tcs, tc)
         push!(rws, rw)
         sc = max(sc, sci)
     end
 
-    tc, sci, rw = timespacereadwrite_complexity(mmap.code, size_dict)
+    tc, sci, rw = contraction_complexity(mmap.code, size_dict)
     push!(tcs, tc)
     push!(rws, tc)
     OMEinsum.OMEinsumContractionOrders.log2sumexp2(tcs), max(sc, sci), OMEinsum.OMEinsumContractionOrders.log2sumexp2(rws)
 end
-OMEinsum.timespace_complexity(mmap::MMAPModel) = timespacereadwrite_complexity(mmap)[1:2]
 
 function adapt_tensors(mmap::MMAPModel; usecuda, rescale)
     return [adapt_tensors(mmap.code, mmap.tensors, mmap.fixedvertices; usecuda, rescale)...,

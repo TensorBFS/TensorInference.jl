@@ -71,8 +71,7 @@ https://personal.utdallas.edu/~vibhav.gogate/uai16-evaluation/uaiformat.html
 function read_uai_evid_file(uai_evid_filepath::AbstractString)
     if isempty(uai_evid_filepath)
         # No evidence
-        obsvars = Int64[]
-        obsvals = Int64[]
+        return Int64[], Int64[]
     else
         # Read the last line of the uai evid file
         line = open(uai_evid_filepath) do file
@@ -89,10 +88,6 @@ function read_uai_evid_file(uai_evid_filepath::AbstractString)
 
         @assert nobsvars == length(obsvars)
     end
-
-    # # DEBUG:
-    # print("  "); @show obsvars
-    # print("  "); @show obsvals
 
     return obsvars, obsvals
 end
@@ -179,14 +174,21 @@ $(TYPEDSIGNATURES)
 
 Read a UAI problem from an artifact.
 """
-function read_uai_problem(problem::AbstractString)::UAIInstance
+function read_uai_problem(problem::AbstractString; eltype=Float64)::UAIInstance
     uai_filepath = joinpath(artifact"MAR_prob", problem * ".uai")
     uai_evid_filepath = joinpath(artifact"MAR_prob", problem * ".uai.evid")
     uai_mar_filepath = joinpath(artifact"MAR_sol", problem * ".uai.MAR")
+    return uai_problem_from_file(uai_filepath; uai_evid_filepath, uai_mar_filepath, eltype)
+end
 
-    nvars, cards, ncliques, factors = read_uai_file(uai_filepath; factor_eltype = Float64)
+"""
+$(TYPEDSIGNATURES)
+
+Read a UAI problem from a file.
+"""
+function uai_problem_from_file(uai_filepath::String; uai_evid_filepath="", uai_mar_filepath="", eltype=Float64)::UAIInstance
+    nvars, cards, ncliques, factors = read_uai_file(uai_filepath; factor_eltype = eltype)
     obsvars, obsvals = read_uai_evid_file(uai_evid_filepath)
-    reference_marginals = read_uai_mar_file(uai_mar_filepath)
-
+    reference_marginals = isempty(uai_mar_filepath) ? Vector{eltype}[] : read_uai_mar_file(uai_mar_filepath)
     return UAIInstance(nvars, ncliques, cards, factors, obsvars, obsvals, reference_marginals)
 end

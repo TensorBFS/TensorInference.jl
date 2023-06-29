@@ -58,7 +58,7 @@ end
 function Base.show(io::IO, tn::TensorNetworkModel)
     open = getiyv(tn.code)
     variables = join([string_var(var, open, tn.fixedvertices) for var in tn.vars], ", ")
-    tc, sc, rw = timespacereadwrite_complexity(tn)
+    tc, sc, rw = contraction_complexity(tn)
     println(io, "$(typeof(tn))")
     println(io, "variables: $variables")
     print_tcscrw(io, tc, sc, rw)

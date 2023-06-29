@@ -75,7 +75,7 @@ end
                             error("space complexity too large! got $(sc)")
                         end
                         # @info(tn)
-                        # @info timespace_complexity(tn)
+                        @info contraction_complexity(tn)
                         marginals2 = marginals(tn)
                         # for dangling vertices, the output size is 1.
                         npass = 0

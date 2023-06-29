@@ -7,10 +7,10 @@ using TropicalGEMM
 
 # reexport OMEinsum functions
 export RescaledArray
-export timespace_complexity, timespacereadwrite_complexity, TreeSA, GreedyMethod, KaHyParBipartite, SABipartite, MergeGreedy, MergeVectors
+export contraction_complexity, TreeSA, GreedyMethod, KaHyParBipartite, SABipartite, MergeGreedy, MergeVectors
 
 # read and load uai files
-export read_uai_file, read_td_file, read_uai_evid_file, read_uai_mar_file, read_uai_problem
+export read_uai_file, read_td_file, read_uai_evid_file, read_uai_mar_file, read_uai_problem, uai_problem_from_file
 
 # marginals
 export TensorNetworkModel, get_vars, get_cards, log_probability, probability, marginals
