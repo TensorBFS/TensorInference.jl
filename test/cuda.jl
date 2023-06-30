@@ -9,7 +9,7 @@ CUDA.allowscalar(false)
 
     # does not optimize over open vertices
     tn = TensorNetworkModel(instance; optimizer = TreeSA(ntrials = 1, niters = 2, βs = 1:0.1:40))
-    @info contraction_complexity(tn)
+    @debug contraction_complexity(tn)
     @time marginals2 = marginals(tn; usecuda = true)
     @test all(x -> x isa CuArray, marginals2)
     # for dangling vertices, the output size is 1.
@@ -26,10 +26,10 @@ end
 
     # does not optimize over open vertices
     tn = TensorNetworkModel(instance; optimizer = TreeSA(ntrials = 1, niters = 2, βs = 1:0.1:40))
-    @info contraction_complexity(tn)
+    @debug contraction_complexity(tn)
     most_probable_config(tn)
     @time logp, config = most_probable_config(tn; usecuda = true)
-    @test log_probability(tn, config) ≈ logp.n
+    @test log_probability(tn, config) ≈ logp
     culogp = maximum_logp(tn; usecuda = true)
     @test culogp isa CuArray
     @test Array(culogp)[] ≈ logp
@@ -54,10 +54,10 @@ end
     culogp = maximum_logp(tn2; usecuda = true)
     @test cup isa RescaledArray{T, N, <:CuArray} where {T, N}
     @test culogp isa CuArray
-    @test Array(cup)[] ≈ exp(Array(culogp)[].n)
+    @test Array(cup)[] ≈ exp(Array(culogp)[])
 
     # does not optimize over open vertices
     tn3 = MMAPModel(instance; marginalized = [2, 4, 6], optimizer)
     logp, config = most_probable_config(tn3; usecuda = true)
-    @test log_probability(tn3, config) ≈ logp.n
+    @test log_probability(tn3, config) ≈ logp
 end

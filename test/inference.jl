@@ -63,8 +63,7 @@ end
                                      x -> map(first, x) # get the first capture of each element
 
                 for problem in problems
-                    @show problem
-
+                    @info "Testing: $problem"
                     @testset "$(problem)" begin
                         problem = read_uai_problem(problem)
 
@@ -74,8 +73,7 @@ end
                         if sc > 28
                             error("space complexity too large! got $(sc)")
                         end
-                        # @info(tn)
-                        @info contraction_complexity(tn)
+                        @debug contraction_complexity(tn)
                         marginals2 = marginals(tn)
                         # for dangling vertices, the output size is 1.
                         npass = 0

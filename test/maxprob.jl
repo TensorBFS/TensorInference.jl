@@ -8,7 +8,7 @@ using TensorInference
 
     # does not optimize over open vertices
     tn = TensorNetworkModel(instance; optimizer = TreeSA(ntrials = 3, niters = 2, βs = 1:0.1:80))
-    @info contraction_complexity(tn)
+    @debug contraction_complexity(tn)
     most_probable_config(tn)
     @time logp, config = most_probable_config(tn)
     @test log_probability(tn, config) ≈ logp

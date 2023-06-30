@@ -60,5 +60,5 @@ Returns an output array containing largest log-probabilities.
 function maximum_logp(tn::TensorNetworkModel; usecuda = false)::AbstractArray{<:Real}
     # generate tropical tensors with its elements being log(p).
     tensors = map(t -> Tropical.(log.(t)), adapt_tensors(tn; usecuda, rescale = false))
-    return map(content, tn.code(tensors...))
+    return broadcasted_content(tn.code(tensors...))
 end
