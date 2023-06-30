@@ -1,4 +1,6 @@
-using Test, TensorInference, Documenter
+using Test, TensorInference, Documenter, Pkg
+
+Pkg.Artifacts.ensure_all_artifacts_installed("Artifacts.toml")
 
 @testset "inference" begin
     include("inference.jl")
