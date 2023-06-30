@@ -1,7 +1,6 @@
 using Test
 using OMEinsum
 using TensorInference
-using Random
 
 @testset "clustering" begin
     ixs = [[1, 2, 3], [2, 3, 4], [4, 5, 6]]
@@ -9,7 +8,6 @@ using Random
 end
 
 @testset "mmap" begin
-    Random.seed!(5)
     ################# Load problem ####################
     instance = read_uai_problem("Promedus_14")
 
