@@ -192,3 +192,6 @@ function uai_problem_from_file(uai_filepath::String; uai_evid_filepath="", uai_m
     reference_marginals = isempty(uai_mar_filepath) ? Vector{eltype}[] : read_uai_mar_file(uai_mar_filepath)
     return UAIInstance(nvars, ncliques, cards, factors, obsvars, obsvals, reference_marginals)
 end
+
+# patch to get content by broadcasting into array, while keep array size unchanged.
+broadcasted_content(x) = asarray(content.(x), x)
