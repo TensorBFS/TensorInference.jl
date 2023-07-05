@@ -15,17 +15,17 @@ end
     tn_ref = TensorNetworkModel(instance; optimizer)
     # does not marginalize any var
     mmap = MMAPModel(instance; marginalized = Int[], optimizer)
-    @info(mmap)
+    @debug(mmap)
     @test maximum_logp(tn_ref) ≈ maximum_logp(mmap)
 
     # marginalize all vars
     mmap2 = MMAPModel(instance; marginalized = collect(1:(instance.nvars)), optimizer)
-    @info(mmap2)
+    @debug(mmap2)
     @test Array(probability(tn_ref))[] ≈ exp(maximum_logp(mmap2)[])
 
     # does not optimize over open vertices
     mmap3 = MMAPModel(instance; marginalized = [2, 4, 6], optimizer)
-    @info(mmap3)
+    @debug(mmap3)
     logp, config = most_probable_config(mmap3)
     @test log_probability(mmap3, config) ≈ logp
 end

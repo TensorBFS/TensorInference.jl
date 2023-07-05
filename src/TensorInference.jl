@@ -3,6 +3,7 @@ module TensorInference
 using OMEinsum, LinearAlgebra
 using DocStringExtensions, TropicalNumbers
 using Artifacts
+# The Tropical GEMM support
 using TropicalGEMM
 
 # reexport OMEinsum functions
@@ -32,6 +33,15 @@ include("mmap.jl")
 using Requires
 function __init__()
     @require CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba" include("cuda.jl")
+end
+
+import PrecompileTools
+PrecompileTools.@setup_workload begin
+    # Putting some things in `@setup_workload` instead of `@compile_workload` can reduce the size of the
+    # precompile file and potentially make loading faster.
+    #PrecompileTools.@compile_workload begin
+        #include("../example/asia/asia.jl")
+    #end
 end
 
 end # module

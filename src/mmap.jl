@@ -183,7 +183,7 @@ end
 
 function maximum_logp(mmap::MMAPModel; usecuda = false)::AbstractArray{<:Real}
     tensors = map(t -> OMEinsum.asarray(Tropical.(log.(t)), t), adapt_tensors(mmap; usecuda, rescale = false))
-    return map(content, mmap.code(tensors...))
+    return broadcasted_content(mmap.code(tensors...))
 end
 
 function log_probability(mmap::MMAPModel, config::Union{Dict, AbstractVector}; rescale = true, usecuda = false)::Real
