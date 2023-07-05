@@ -39,9 +39,9 @@ import PrecompileTools
 PrecompileTools.@setup_workload begin
     # Putting some things in `@setup_workload` instead of `@compile_workload` can reduce the size of the
     # precompile file and potentially make loading faster.
-    PrecompileTools.@compile_workload begin
-        include("../example/asia/asia.jl")
-    end
+    #PrecompileTools.@compile_workload begin
+        #include("../example/asia/asia.jl")
+    #end
 end
 
 end # module
