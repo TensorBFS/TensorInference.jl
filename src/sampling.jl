@@ -5,6 +5,12 @@ function einsum_backward_rule(eins, xs::NTuple{M, AbstractArray{<:Real}} where {
     return backward_sampling(OMEinsum.getixs(eins), xs, OMEinsum.getiy(eins), y, dy, size_dict)
 end
 
+struct Samples{L}
+    samples::Vector{Vector{Int}}
+    labels::Vector{L}
+    setmask::Vector{Bool}
+end
+
 """
 $(TYPEDSIGNATURES)
 
@@ -15,18 +21,18 @@ The backward rule for tropical einsum.
 * `ysamples` is the samples generated on the output tensor,
 * `size_dict` is a key-value map from tensor label to dimension size.
 """
-function backward_sampling(ixs, @nospecialize(xs::Tuple), iy, @nospecialize(y), @nospecialize(ysamples), size_dict)
-    xsamples = []
-    for i in eachindex(ixs)
-        nixs = OMEinsum._insertat(ixs, i, iy)
-        nxs  = OMEinsum._insertat(xs, i, y)
-        niy  = ixs[i]
-        A    = einsum(EinCode(nixs, niy), nxs, size_dict)
-
-        # compute the mask, one of its entry in `A^{-1}` that equal to the corresponding entry in `X` is masked to true.
-        j = argmax(xs[i] ./ inv.(A))
-        mask = onehot_like(A, j)
-        push!(xsamples, mask)
+function backward_sampling(ixs, @nospecialize(xs::Tuple), iy, @nospecialize(y), samples::Samples, size_dict)
+    eliminated_variables = setdiff(vcat(ixs...), iy)
+    newiy = eliminated_variables
+    newixs = eliminated_variables
+    code = DynamicEinCode(newixs, newiy)
+    totalset = CartesianIndices(map(x->size_dict[x], eliminated_variables))
+    for (i, sample) in enumerate(samples.samples)
+        newxs = [get_slice(x, ix, iy=>sample) for (x, ix) in zip(xs, ixs)]
+        newy = Array(get_slice(y, iy, iy=>sample))[]
+        probabilities = einsum(code, newxs, size_dict) / newy
+        config = StatsBase.sample(totalset, weights=StatsBase.Weights(probabilities))
+        update_sample!(samples, i, eliminated_variables=>config)
     end
     return xsamples
 end
