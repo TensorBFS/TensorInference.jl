@@ -22,19 +22,38 @@ The backward rule for tropical einsum.
 * `size_dict` is a key-value map from tensor label to dimension size.
 """
 function backward_sampling(ixs, @nospecialize(xs::Tuple), iy, @nospecialize(y), samples::Samples, size_dict)
+    idx4label(totalset, labels) = map(v->findfirst(==(v), totalset), labels)
     eliminated_variables = setdiff(vcat(ixs...), iy)
+    eliminated_locs = idx4label(samples.labels, eliminated_variables)
+    samples.setmask[eliminated_locs] .= true
+
+    # the contraction code to get probability
     newiy = eliminated_variables
-    newixs = eliminated_variables
+    iy_in_sample = idx4labels(samples.labels, iy)
+    slice_y_dim = collect(1:length(iy))
+    newixs = map(ix->setdiff(ix, iy), ixs)
+    ix_in_sample = map(ix->idx4labels(samples.labels, ix ∩ iy), ixs)
+    slice_xs_dim = map(ix->idx4label(ix, ix ∩ iy), ixs)
     code = DynamicEinCode(newixs, newiy)
-    totalset = CartesianIndices(map(x->size_dict[x], eliminated_variables))
+
+    totalset = CartesianIndices(map(x->size_dict[x], eliminated_variables)...)
     for (i, sample) in enumerate(samples.samples)
-        newxs = [get_slice(x, ix, iy=>sample) for (x, ix) in zip(xs, ixs)]
-        newy = Array(get_slice(y, iy, iy=>sample))[]
+        newxs = [get_slice(x, dimx, sample[ixloc]) for (x, dimx, ixloc) in zip(xs, slice_xs_dim, ix_in_sample)]
+        newy = Array(get_slice(y, slice_y_dim, sample[iy_in_sample]))[]
         probabilities = einsum(code, newxs, size_dict) / newy
         config = StatsBase.sample(totalset, weights=StatsBase.Weights(probabilities))
-        update_sample!(samples, i, eliminated_variables=>config)
+        # update the samples
+        samples.samples[i][eliminated_locs] .= config.I
     end
     return xsamples
+end
+
+# type unstable
+function get_slice(x, dim, config)
+    for (d, c) in zip(dim, config)
+        x = selectdim(x, d, c)
+    end
+    return x
 end
 
 """
