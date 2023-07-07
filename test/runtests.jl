@@ -1,6 +1,10 @@
 using Test, TensorInference, Documenter, Pkg
 
-Pkg.Artifacts.ensure_all_artifacts_installed("Artifacts.toml")
+artifacts_toml = "Artifacts.toml"
+artifacts = Pkg.Artifacts.select_downloadable_artifacts(artifacts_toml)
+for name in keys(artifacts)
+    Pkg.Artifacts.ensure_artifact_installed(name, artifacts[name], artifacts_toml)
+end
 
 @testset "inference" begin
     include("inference.jl")
