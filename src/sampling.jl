@@ -32,7 +32,7 @@ The backward process for sampling configurations.
 
 * `ixs` and `xs` are labels and tensor data for input tensors,
 * `iy` and `y` are labels and tensor data for the output tensor,
-* `ysamples` is the samples generated on the output tensor,
+* `samples` is the samples generated for eliminated variables,
 * `size_dict` is a key-value map from tensor label to dimension size.
 """
 function backward_sampling!(ixs, @nospecialize(xs::Tuple), iy, @nospecialize(y), samples::Samples, size_dict)
@@ -72,9 +72,14 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Sample a tensor network based probabilistic model.
+Generate samples from a tensor network based probabilistic model.
+Returns a vector of vector, each element being a configurations defined on `get_vars(tn)`.
+
+### Arguments
+* `tn` is the tensor network model.
+* `n` is the number of samples to be returned.
 """
-function sample(tn::TensorNetworkModel, n::Int; usecuda = false)::Samples
+function sample(tn::TensorNetworkModel, n::Int; usecuda = false)::Vector{Vector{Int}}
     # generate tropical tensors with its elements being log(p).
     xs = adapt_tensors(tn; usecuda, rescale = false)
     # infer size from the contraction code and the input tensors `xs`, returns a label-size dictionary.
