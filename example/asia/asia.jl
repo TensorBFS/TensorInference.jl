@@ -10,6 +10,9 @@ probability(tnet)
 # Get the marginal probabilities (MAR)
 marginals(tnet) .|> first
 
+# The corresponding variables are
+get_vars(tnet)
+
 # Set the evidence variables "X-ray" (7) to be positive.
 set_evidence!(instance, 7=>0)
 
