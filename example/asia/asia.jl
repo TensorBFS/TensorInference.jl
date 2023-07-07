@@ -22,6 +22,9 @@ tnet = TensorNetworkModel(instance)
 # Get the maximum log-probabilities (MAP)
 maximum_logp(tnet)
 
+# To sample from the probability model
+sample(tnet, 10)
+
 # Get not only the maximum log-probability, but also the most probable conifguration
 # In the most probable configuration, the most probable one is the patient smoke (3) and has lung cancer (4)
 logp, cfg = most_probable_config(tnet)

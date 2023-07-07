@@ -49,7 +49,7 @@ function cached_einsum(code::NestedEinsum, @nospecialize(xs), size_dict)
 end
 
 # computed gradient tree by back propagation
-function generate_gradient_tree(se::SlicedEinsum, cache::CacheTree{T}, dy, size_dict::Dict) where {T}
+function generate_gradient_tree(se::SlicedEinsum, cache::CacheTree{T}, dy::AbstractArray{T}, size_dict::Dict) where {T}
     if length(se.slicing) != 0
         @warn "Slicing is not supported for generating masked tree! Fallback to `NestedEinsum`."
     end
@@ -58,7 +58,7 @@ end
 
 # recursively compute the gradients and store it into a tree.
 # also known as the back-propagation algorithm.
-function generate_gradient_tree(code::NestedEinsum, cache::CacheTree{T}, dy, size_dict::Dict) where {T}
+function generate_gradient_tree(code::NestedEinsum, cache::CacheTree{T}, dy::AbstractArray{T}, size_dict::Dict) where {T}
     if OMEinsum.isleaf(code)
         return CacheTree(dy, CacheTree{T}[])
     else

@@ -1,4 +1,14 @@
 ############ Sampling ############
+"""
+$TYPEDEF
+
+### Fields
+$TYPEDFIELDS
+
+The sampled configurations are stored in `samples`, which is a vector of vector.
+`labels` is a vector of variable names for labeling configurations.
+The `setmask` is an boolean indicator to denote whether the sampling process of a variable is complete.
+"""
 struct Samples{L}
     samples::Vector{Vector{Int}}
     labels::Vector{L}
@@ -18,7 +28,7 @@ idx4labels(totalset, labels) = map(v->findfirst(==(v), totalset), labels)
 """
 $(TYPEDSIGNATURES)
 
-The backward rule for tropical einsum.
+The backward process for sampling configurations.
 
 * `ixs` and `xs` are labels and tensor data for input tensors,
 * `iy` and `y` are labels and tensor data for the output tensor,
@@ -72,7 +82,7 @@ function sample(tn::TensorNetworkModel, n::Int; usecuda = false)::Samples
     # forward compute and cache intermediate results.
     cache = cached_einsum(tn.code, xs, size_dict)
     # initialize `y̅` as the initial batch of samples.
-    labels = OMEinsum.uniquelabels(tn.code)
+    labels = get_vars(tn)
     iy = getiyv(tn.code)
     setmask = falses(length(labels))
     idx = map(l->findfirst(==(l), labels), iy)
@@ -86,7 +96,7 @@ function sample(tn::TensorNetworkModel, n::Int; usecuda = false)::Samples
     samples = Samples(configs, labels, setmask)
     # back-propagate
     generate_samples(tn.code, cache, samples, size_dict)
-    return samples
+    return samples.samples
 end
 
 function generate_samples(code::NestedEinsum, cache::CacheTree{T}, samples, size_dict::Dict) where {T}
