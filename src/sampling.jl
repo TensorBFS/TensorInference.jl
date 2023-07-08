@@ -10,7 +10,7 @@ The sampled configurations are stored in `samples`, which is a vector of vector.
 The `setmask` is an boolean indicator to denote whether the sampling process of a variable is complete.
 """
 struct Samples{L}
-    samples::Vector{Vector{Int}}
+    samples::Matrix{Int}  # size is nvars × nsample
     labels::Vector{L}
     setmask::BitVector
 end
@@ -50,13 +50,14 @@ function backward_sampling!(ixs, @nospecialize(xs::Tuple), iy, @nospecialize(y),
     code = DynamicEinCode(newixs, newiy)
 
     totalset = CartesianIndices((map(x->size_dict[x], eliminated_variables)...,))
-    for (i, sample) in enumerate(samples.samples)
+    for i in axes(samples.samples, 2)
+        sample = samples.samples[:, i]
         newxs = [get_slice(x, dimx, sample[ixloc]) for (x, dimx, ixloc) in zip(xs, slice_xs_dim, ix_in_sample)]
         newy = get_element(y, slice_y_dim, sample[iy_in_sample])
         probabilities = einsum(code, (newxs...,), size_dict) / newy
         config = StatsBase.sample(totalset, Weights(vec(probabilities)))
         # update the samples
-        samples.samples[i][eliminated_locs] .= config.I .- 1
+        samples.samples[eliminated_locs, i] .= config.I .- 1
     end
     return samples
 end
@@ -79,7 +80,7 @@ Returns a vector of vector, each element being a configurations defined on `get_
 * `tn` is the tensor network model.
 * `n` is the number of samples to be returned.
 """
-function sample(tn::TensorNetworkModel, n::Int; usecuda = false)::Vector{Vector{Int}}
+function sample(tn::TensorNetworkModel, n::Int; usecuda = false)::AbstractMatrix{Int}
     # generate tropical tensors with its elements being log(p).
     xs = adapt_tensors(tn; usecuda, rescale = false)
     # infer size from the contraction code and the input tensors `xs`, returns a label-size dictionary.
@@ -93,10 +94,9 @@ function sample(tn::TensorNetworkModel, n::Int; usecuda = false)::Vector{Vector{
     idx = map(l->findfirst(==(l), labels), iy)
     setmask[idx] .= true
     indices = StatsBase.sample(CartesianIndices(size(cache.content)), Weights(normalize!(vec(LinearAlgebra.normalize!(cache.content)))), n)
-    configs = map(indices) do ind
-        c=zeros(Int, length(labels))
-        c[idx] .= ind.I .- 1
-        c
+    configs = zeros(Int, length(labels), n)
+    for i=1:n
+        configs[idx, i] .= indices[i].I .- 1
     end
     samples = Samples(configs, labels, setmask)
     # back-propagate
@@ -104,9 +104,7 @@ function sample(tn::TensorNetworkModel, n::Int; usecuda = false)::Vector{Vector{
     # set evidence variables
     for (k, v) in tn.fixedvertices
         idx = findfirst(==(k), labels)
-        for c in samples.samples
-            c[idx] = v
-        end
+        samples.samples[idx, :] .= v
     end
     return samples.samples
 end

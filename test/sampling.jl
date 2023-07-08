@@ -51,7 +51,7 @@ using TensorInference, Test
     tnet = TensorNetworkModel(instance)
     samples = sample(tnet, n)
     mars = getindex.(marginals(tnet), 2)
-    mars_sample = [count(s->s[k]==(1), samples) for k=1:8] ./ n
+    mars_sample = [count(i->samples[k, i]==(1), axes(samples, 2)) for k=1:8] ./ n
     @test isapprox(mars, mars_sample, atol=0.05)
 
     # fix the evidence
@@ -59,6 +59,6 @@ using TensorInference, Test
     tnet = TensorNetworkModel(instance)
     samples = sample(tnet, n)
     mars = getindex.(marginals(tnet), 1)
-    mars_sample = [count(s->s[k]==(0), samples) for k=1:8] ./ n
+    mars_sample = [count(i->samples[k, i]==(0), axes(samples, 2)) for k=1:8] ./ n
     @test isapprox([mars[1:6]..., mars[8]], [mars_sample[1:6]..., mars_sample[8]], atol=0.05)
 end
