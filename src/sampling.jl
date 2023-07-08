@@ -51,9 +51,8 @@ function backward_sampling!(ixs, @nospecialize(xs::Tuple), iy, @nospecialize(y),
 
     totalset = CartesianIndices((map(x->size_dict[x], eliminated_variables)...,))
     for i in axes(samples.samples, 2)
-        sample = samples.samples[:, i]
-        newxs = [get_slice(x, dimx, sample[ixloc]) for (x, dimx, ixloc) in zip(xs, slice_xs_dim, ix_in_sample)]
-        newy = get_element(y, slice_y_dim, sample[iy_in_sample])
+        newxs = [get_slice(x, dimx, samples.samples[ixloc, i]) for (x, dimx, ixloc) in zip(xs, slice_xs_dim, ix_in_sample)]
+        newy = get_element(y, slice_y_dim, samples.samples[iy_in_sample, i])
         probabilities = einsum(code, (newxs...,), size_dict) / newy
         config = StatsBase.sample(totalset, Weights(vec(probabilities)))
         # update the samples
