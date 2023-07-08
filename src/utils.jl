@@ -8,12 +8,15 @@ The UAI file formats are defined in:
 https://personal.utdallas.edu/~vibhav.gogate/uai16-evaluation/uaiformat.html
 """
 function read_uai_file(uai_filepath; factor_eltype = Float64)
-
     # Read the uai file into an array of lines
-    rawlines = open(uai_filepath) do file
-        readlines(file)
+    str = open(uai_filepath) do file
+        read(file, String)
     end
+    return read_uai_string(str; factor_eltype)
+end
 
+function read_uai_string(str; factor_eltype = Float64)
+    rawlines = split(str, "\n")
     # Filter out empty lines
     lines = filter(!isempty, rawlines)
 
@@ -191,6 +194,11 @@ function uai_problem_from_file(uai_filepath::String; uai_evid_filepath="", uai_m
     obsvars, obsvals = read_uai_evid_file(uai_evid_filepath)
     reference_marginals = isempty(uai_mar_filepath) ? Vector{eltype}[] : read_uai_mar_file(uai_mar_filepath)
     return UAIInstance(nvars, ncliques, cards, factors, obsvars, obsvals, reference_marginals)
+end
+
+function uai_problem_from_string(uai::String; eltype=Float64)::UAIInstance
+    nvars, cards, ncliques, factors = read_uai_string(uai; factor_eltype = eltype)
+    return UAIInstance(nvars, ncliques, cards, factors, Int[], Int[], Vector{eltype}[])
 end
 
 # patch to get content by broadcasting into array, while keep array size unchanged.

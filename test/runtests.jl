@@ -17,6 +17,9 @@ end
 @testset "MMAP" begin
     include("mmap.jl")
 end
+@testset "MMAP" begin
+    include("sampling.jl")
+end
 
 using CUDA
 if CUDA.functional()

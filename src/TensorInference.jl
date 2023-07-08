@@ -5,6 +5,7 @@ using DocStringExtensions, TropicalNumbers
 using Artifacts
 # The Tropical GEMM support
 using TropicalGEMM
+using StatsBase
 
 # reexport OMEinsum functions
 export RescaledArray
@@ -20,6 +21,9 @@ export TensorNetworkModel, get_vars, get_cards, log_probability, probability, ma
 # MAP
 export most_probable_config, maximum_logp
 
+# sampling
+export sample
+
 # MMAP
 export MMAPModel
 
@@ -29,6 +33,7 @@ include("utils.jl")
 include("inference.jl")
 include("maxprob.jl")
 include("mmap.jl")
+include("sampling.jl")
 
 using Requires
 function __init__()
@@ -40,7 +45,7 @@ PrecompileTools.@setup_workload begin
     # Putting some things in `@setup_workload` instead of `@compile_workload` can reduce the size of the
     # precompile file and potentially make loading faster.
     #PrecompileTools.@compile_workload begin
-        #include("../example/asia/asia.jl")
+    #    include("../example/asia/asia.jl")
     #end
 end
 

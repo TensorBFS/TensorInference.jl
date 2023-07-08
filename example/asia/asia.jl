@@ -10,6 +10,9 @@ probability(tnet)
 # Get the marginal probabilities (MAR)
 marginals(tnet) .|> first
 
+# The corresponding variables are
+get_vars(tnet)
+
 # Set the evidence variables "X-ray" (7) to be positive.
 set_evidence!(instance, 7=>0)
 
@@ -18,6 +21,9 @@ tnet = TensorNetworkModel(instance)
 
 # Get the maximum log-probabilities (MAP)
 maximum_logp(tnet)
+
+# To sample from the probability model
+sample(tnet, 10)
 
 # Get not only the maximum log-probability, but also the most probable conifguration
 # In the most probable configuration, the most probable one is the patient smoke (3) and has lung cancer (4)
