@@ -23,7 +23,7 @@ function setmask!(samples::Samples, eliminated_variables)
     return samples
 end
 
-idx4labels(totalset, labels) = map(v->findfirst(==(v), totalset), labels)
+idx4labels(totalset, labels)::Vector{Int} = map(v->findfirst(==(v), totalset), labels)
 
 """
 $(TYPEDSIGNATURES)
@@ -41,32 +41,52 @@ function backward_sampling!(ixs, @nospecialize(xs::Tuple), iy, @nospecialize(y),
     setmask!(samples, eliminated_variables)
 
     # the contraction code to get probability
-    newiy = eliminated_variables
-    iy_in_sample = idx4labels(samples.labels, iy)
-    slice_y_dim = collect(1:length(iy))
     newixs = map(ix->setdiff(ix, iy), ixs)
     ix_in_sample = map(ix->idx4labels(samples.labels, ix ∩ iy), ixs)
     slice_xs_dim = map(ix->idx4labels(ix, ix ∩ iy), ixs)
-    code = DynamicEinCode(newixs, newiy)
+
+    # relabel and compute probabilities
+    uniquelabels = unique!(vcat(ixs..., iy))
+    labelmap = Dict(zip(uniquelabels, 1:length(uniquelabels)))
+    batchdim = length(labelmap) + 1
+    newnewixs = [Int[getindex.(Ref(labelmap), ix)..., batchdim] for ix in newixs]
+    newnewiy = Int[getindex.(Ref(labelmap), eliminated_variables)..., batchdim]
+    newnewxs = [get_slice(x, dimx, samples.samples[ixloc, :]) for (x, dimx, ixloc) in zip(xs, slice_xs_dim, ix_in_sample)]
+    code = DynamicEinCode(newnewixs, newnewiy)
+    probabilities = code(newnewxs...)
 
     totalset = CartesianIndices((map(x->size_dict[x], eliminated_variables)...,))
-    for i in axes(samples.samples, 2)
-        newxs = [get_slice(x, dimx, samples.samples[ixloc, i]) for (x, dimx, ixloc) in zip(xs, slice_xs_dim, ix_in_sample)]
-        newy = get_element(y, slice_y_dim, samples.samples[iy_in_sample, i])
-        probabilities = einsum(code, (newxs...,), size_dict) / newy
-        config = StatsBase.sample(totalset, Weights(vec(probabilities)))
-        # update the samples
+    for i=axes(samples.samples, 2)
+        config = StatsBase.sample(totalset, Weights(vec(selectdim(probabilities, ndims(probabilities), i))))
+        # update the samplesS
         samples.samples[eliminated_locs, i] .= config.I .- 1
     end
     return samples
 end
 
 # type unstable
-function get_slice(x, dim, config)
-    asarray(x[[i ∈ dim ? config[findfirst(==(i), dim)]+1 : Colon() for i in 1:ndims(x)]...], x)
+function get_slice(x::AbstractArray{T}, slicedim, configs::AbstractMatrix) where T
+    outdim = setdiff(1:ndims(x), slicedim)
+    res = similar(x, [size(x, d) for d in outdim]..., size(configs, 2))
+    return get_slice!(res, x, outdim, slicedim, configs)
 end
-function get_element(x, dim, config)
-    x[[config[findfirst(==(i), dim)]+1 for i in 1:ndims(x)]...]
+
+function get_slice!(res, x::AbstractArray{T}, outdim, slicedim, configs::AbstractMatrix) where T
+    xstrides = strides(x)
+    @inbounds for ci in CartesianIndices(res)
+        idx = 1
+        # the output dimension part
+        for (dim, k) in zip(outdim, ci.I)
+            idx += (k-1) * xstrides[dim]
+        end
+        # the sliced part
+        batchidx = ci.I[end]
+        for (dim, k) in zip(slicedim, view(configs, :, batchidx))
+            idx += k * xstrides[dim]
+        end
+        res[ci] = x[idx]
+    end
+    return res
 end
 
 """
@@ -112,6 +132,8 @@ function generate_samples(code::NestedEinsum, cache::CacheTree{T}, samples, size
     if !OMEinsum.isleaf(code)
         xs = ntuple(i -> cache.siblings[i].content, length(cache.siblings))
         backward_sampling!(OMEinsum.getixs(code.eins), xs, OMEinsum.getiy(code.eins), cache.content, samples, size_dict)
-        generate_samples.(code.args, cache.siblings, Ref(samples), Ref(size_dict))
+        for (arg, sib) in zip(code.args, cache.siblings)
+            generate_samples(arg, sib, samples, size_dict)
+        end
     end
 end
