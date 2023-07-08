@@ -46,10 +46,19 @@ using TensorInference, Test
  0.9 0.7 0.8 0.1
  0.1 0.3 0.2 0.9
 """)
+    # general sampling
     n = 10000
     tnet = TensorNetworkModel(instance)
     samples = sample(tnet, n)
     mars = getindex.(marginals(tnet), 2)
     mars_sample = [count(s->s[k]==(1), samples) for k=1:8] ./ n
     @test isapprox(mars, mars_sample, atol=0.05)
+
+    # fix the evidence
+    set_evidence!(instance, 7=>1)
+    tnet = TensorNetworkModel(instance)
+    samples = sample(tnet, n)
+    mars = getindex.(marginals(tnet), 1)
+    mars_sample = [count(s->s[k]==(0), samples) for k=1:8] ./ n
+    @test isapprox([mars[1:6]..., mars[8]], [mars_sample[1:6]..., mars_sample[8]], atol=0.05)
 end

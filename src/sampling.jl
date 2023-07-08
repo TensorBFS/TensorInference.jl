@@ -101,6 +101,13 @@ function sample(tn::TensorNetworkModel, n::Int; usecuda = false)::Vector{Vector{
     samples = Samples(configs, labels, setmask)
     # back-propagate
     generate_samples(tn.code, cache, samples, size_dict)
+    # set evidence variables
+    for (k, v) in tn.fixedvertices
+        idx = findfirst(==(k), labels)
+        for c in samples.samples
+            c[idx] = v
+        end
+    end
     return samples.samples
 end
 
