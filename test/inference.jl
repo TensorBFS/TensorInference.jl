@@ -13,7 +13,7 @@ end
 
 @testset "cached, rescaled contract" begin
     model_filepath, evid_filepath, sol_filepath = get_instance_filepaths("Promedus_14", "MAR")
-    problem = uai_problem_from_file(model_filepath; uai_evid_filepath = evid_filepath, uai_mar_filepath = sol_filepath)
+    problem = read_instance(model_filepath; uai_evid_filepath = evid_filepath, uai_mar_filepath = sol_filepath)
     ref_sol = problem.reference_marginals
     optimizer = TreeSA(ntrials = 1, niters = 5, βs = 0.1:0.1:100)
     tn = TensorNetworkModel(problem; optimizer)
@@ -67,7 +67,7 @@ end
                 @info "Testing: $problem"
                 @testset "$(problem)" begin
                     model_filepath, evid_filepath, sol_filepath = get_instance_filepaths(problem, "MAR")
-                    problem = uai_problem_from_file(model_filepath; uai_evid_filepath = evid_filepath, uai_mar_filepath = sol_filepath)
+                    problem = read_instance(model_filepath; uai_evid_filepath = evid_filepath, uai_mar_filepath = sol_filepath)
                     ref_sol = problem.reference_marginals
                     obsvars = problem.obsvars
 

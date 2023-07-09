@@ -7,15 +7,15 @@ format.
 The UAI file formats are defined in:
 https://personal.utdallas.edu/~vibhav.gogate/uai16-evaluation/uaiformat.html
 """
-function read_uai_file(uai_filepath; factor_eltype = Float64)
+function read_model_file(uai_filepath; factor_eltype = Float64)
     # Read the uai file into an array of lines
     str = open(uai_filepath) do file
         read(file, String)
     end
-    return read_uai_string(str; factor_eltype)
+    return read_model_string(str; factor_eltype)
 end
 
-function read_uai_string(str; factor_eltype = Float64)
+function read_model_string(str; factor_eltype = Float64)
     rawlines = split(str, "\n")
     # Filter out empty lines
     lines = filter(!isempty, rawlines)
@@ -71,7 +71,7 @@ file path is an empty string, return empty vectors.
 The UAI file formats are defined in:
 https://personal.utdallas.edu/~vibhav.gogate/uai16-evaluation/uaiformat.html
 """
-function read_uai_evid_file(uai_evid_filepath::AbstractString)
+function read_evidence_file(uai_evid_filepath::AbstractString)
     if isempty(uai_evid_filepath)
         # No evidence
         return Int64[], Int64[]
@@ -104,7 +104,7 @@ as in the model
 The UAI file formats are defined in:
 https://personal.utdallas.edu/~vibhav.gogate/uai16-evaluation/uaiformat.html
 """
-function read_uai_mar_file(uai_mar_filepath::AbstractString; factor_eltype = Float64)
+function read_solution_file(uai_mar_filepath::AbstractString; factor_eltype = Float64)
 
     # Read the uai mar file into an array of lines
     rawlines = open(uai_mar_filepath) do file
@@ -175,17 +175,22 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Read a UAI problem from a file.
+Read a UAI problem instance from a file.
 """
-function uai_problem_from_file(uai_filepath::String; uai_evid_filepath::String = "", uai_mar_filepath::String = "", eltype = Float64)::UAIInstance
-    nvars, cards, ncliques, factors = read_uai_file(uai_filepath; factor_eltype = eltype)
-    obsvars, obsvals = read_uai_evid_file(uai_evid_filepath)
-    reference_marginals = isempty(uai_mar_filepath) ? Vector{eltype}[] : read_uai_mar_file(uai_mar_filepath)
+function read_instance(
+    uai_filepath::AbstractString;
+    uai_evid_filepath::AbstractString = "",
+    uai_mar_filepath::AbstractString = "",
+    eltype = Float64
+)::UAIInstance
+    nvars, cards, ncliques, factors = read_model_file(uai_filepath; factor_eltype = eltype)
+    obsvars, obsvals = read_evidence_file(uai_evid_filepath)
+    reference_marginals = isempty(uai_mar_filepath) ? Vector{eltype}[] : read_solution_file(uai_mar_filepath)
     return UAIInstance(nvars, ncliques, cards, factors, obsvars, obsvals, reference_marginals)
 end
 
-function uai_problem_from_string(uai::String; eltype = Float64)::UAIInstance
-    nvars, cards, ncliques, factors = read_uai_string(uai; factor_eltype = eltype)
+function read_instance_from_string(uai::AbstractString; eltype = Float64)::UAIInstance
+    nvars, cards, ncliques, factors = read_model_string(uai; factor_eltype = eltype)
     return UAIInstance(nvars, ncliques, cards, factors, Int[], Int[], Vector{eltype}[])
 end
 

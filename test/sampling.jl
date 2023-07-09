@@ -1,7 +1,7 @@
 using TensorInference, Test
 
 @testset "sampling" begin
-    instance = TensorInference.uai_problem_from_string("""MARKOV
+    instance = TensorInference.read_instance_from_string("""MARKOV
 8
  2 2 2 2 2 2 2 2
 8

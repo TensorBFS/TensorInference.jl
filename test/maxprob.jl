@@ -5,7 +5,7 @@ using TensorInference
 @testset "map" begin
     ################# Load problem ####################
     model_filepath, evid_filepath, sol_filepath = get_instance_filepaths("Promedus_14", "MAR")
-    instance = uai_problem_from_file(model_filepath; uai_evid_filepath = evid_filepath, uai_mar_filepath = sol_filepath)
+    instance = read_instance(model_filepath; uai_evid_filepath = evid_filepath, uai_mar_filepath = sol_filepath)
 
     # does not optimize over open vertices
     tn = TensorNetworkModel(instance; optimizer = TreeSA(ntrials = 3, niters = 2, βs = 1:0.1:80))
