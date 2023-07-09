@@ -177,7 +177,7 @@ $(TYPEDSIGNATURES)
 
 Read a UAI problem from an artifact.
 """
-function read_uai_problem(problem::AbstractString; eltype=Float64)::UAIInstance
+function read_uai_problem(problem::AbstractString; eltype = Float64)::UAIInstance
     uai_filepath = joinpath(artifact"MAR_prob", problem * ".uai")
     uai_evid_filepath = joinpath(artifact"MAR_prob", problem * ".uai.evid")
     uai_mar_filepath = joinpath(artifact"MAR_sol", problem * ".uai.MAR")
@@ -189,14 +189,14 @@ $(TYPEDSIGNATURES)
 
 Read a UAI problem from a file.
 """
-function uai_problem_from_file(uai_filepath::String; uai_evid_filepath="", uai_mar_filepath="", eltype=Float64)::UAIInstance
+function uai_problem_from_file(uai_filepath::String; uai_evid_filepath = "", uai_mar_filepath = "", eltype = Float64)::UAIInstance
     nvars, cards, ncliques, factors = read_uai_file(uai_filepath; factor_eltype = eltype)
     obsvars, obsvals = read_uai_evid_file(uai_evid_filepath)
     reference_marginals = isempty(uai_mar_filepath) ? Vector{eltype}[] : read_uai_mar_file(uai_mar_filepath)
     return UAIInstance(nvars, ncliques, cards, factors, obsvars, obsvals, reference_marginals)
 end
 
-function uai_problem_from_string(uai::String; eltype=Float64)::UAIInstance
+function uai_problem_from_string(uai::String; eltype = Float64)::UAIInstance
     nvars, cards, ncliques, factors = read_uai_string(uai; factor_eltype = eltype)
     return UAIInstance(nvars, ncliques, cards, factors, Int[], Int[], Vector{eltype}[])
 end
