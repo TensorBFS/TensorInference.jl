@@ -4,7 +4,6 @@ using TensorInference, CUDA
 CUDA.allowscalar(false)
 
 @testset "gradient-based tensor network solvers" begin
-    ################# Load problem ####################
     model_filepath, evidence_filepath, solution_filepath = get_instance_filepaths("Promedus_14", "MAR")
     instance = read_instance(model_filepath; evidence_filepath, solution_filepath)
 
@@ -22,7 +21,6 @@ CUDA.allowscalar(false)
 end
 
 @testset "map" begin
-    ################# Load problem ####################
     model_filepath, evidence_filepath, solution_filepath = get_instance_filepaths("Promedus_14", "MAR")
     instance = read_instance(model_filepath; evidence_filepath, solution_filepath)
 
@@ -38,7 +36,6 @@ end
 end
 
 @testset "mmap" begin
-    ################# Load problem ####################
     model_filepath, evidence_filepath, solution_filepath = get_instance_filepaths("Promedus_14", "MAR")
     instance = read_instance(model_filepath; evidence_filepath, solution_filepath)
 

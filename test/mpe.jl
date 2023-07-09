@@ -2,8 +2,7 @@ using Test
 using OMEinsum
 using TensorInference
 
-@testset "map" begin
-    ################# Load problem ####################
+@testset "gradient-based tensor network solvers" begin
     model_filepath, evidence_filepath, solution_filepath = get_instance_filepaths("Promedus_14", "MAR")
     instance = read_instance(model_filepath; evidence_filepath, solution_filepath)
 
