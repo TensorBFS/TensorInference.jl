@@ -6,8 +6,8 @@ using Artifacts
 
 const SUITE = BenchmarkGroup()
 
-model_filepath, evid_filepath, sol_filepath = get_instance_filepaths("Promedus_14", "MAR")
-problem = read_instance(model_filepath; uai_evid_filepath = evid_filepath, uai_mar_filepath = sol_filepath)
+model_filepath, evidence_filepath, solution_filepath = get_instance_filepaths("Promedus_14", "MAR")
+problem = read_instance(model_filepath; evidence_filepath, solution_filepath)
 
 optimizer = TreeSA(ntrials = 1, niters = 2, βs = 1:0.1:40)
 tn = TensorNetworkModel(problem; optimizer)

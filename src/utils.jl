@@ -1,15 +1,15 @@
 """
 $(TYPEDSIGNATURES)
 
-Parse the problem instance found in `uai_filepath` defined in the UAI model
+Parse the problem instance found in `model_filepath` defined in the UAI model
 format.
 
 The UAI file formats are defined in:
 https://personal.utdallas.edu/~vibhav.gogate/uai16-evaluation/uaiformat.html
 """
-function read_model_file(uai_filepath; factor_eltype = Float64)
+function read_model_file(model_filepath; factor_eltype = Float64)
     # Read the uai file into an array of lines
-    str = open(uai_filepath) do file
+    str = open(model_filepath) do file
         read(file, String)
     end
     return read_model_string(str; factor_eltype)
@@ -65,19 +65,19 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Return the observed variables and values in `uai_evid_filepath`. If the passed
+Return the observed variables and values in `evidence_filepath`. If the passed
 file path is an empty string, return empty vectors.
 
 The UAI file formats are defined in:
 https://personal.utdallas.edu/~vibhav.gogate/uai16-evaluation/uaiformat.html
 """
-function read_evidence_file(uai_evid_filepath::AbstractString)
-    if isempty(uai_evid_filepath)
+function read_evidence_file(evidence_filepath::AbstractString)
+    if isempty(evidence_filepath)
         # No evidence
         return Int64[], Int64[]
     else
         # Read the last line of the uai evid file
-        line = open(uai_evid_filepath) do file
+        line = open(evidence_filepath) do file
             readlines(file)
         end |> last
 
@@ -104,10 +104,10 @@ as in the model
 The UAI file formats are defined in:
 https://personal.utdallas.edu/~vibhav.gogate/uai16-evaluation/uaiformat.html
 """
-function read_solution_file(uai_mar_filepath::AbstractString; factor_eltype = Float64)
+function read_solution_file(solution_filepath::AbstractString; factor_eltype = Float64)
 
     # Read the uai mar file into an array of lines
-    rawlines = open(uai_mar_filepath) do file
+    rawlines = open(solution_filepath) do file
         readlines(file)
     end
 
@@ -178,14 +178,14 @@ $(TYPEDSIGNATURES)
 Read a UAI problem instance from a file.
 """
 function read_instance(
-    uai_filepath::AbstractString;
-    uai_evid_filepath::AbstractString = "",
-    uai_mar_filepath::AbstractString = "",
+    model_filepath::AbstractString;
+    evidence_filepath::AbstractString = "",
+    solution_filepath::AbstractString = "",
     eltype = Float64
 )::UAIInstance
-    nvars, cards, ncliques, factors = read_model_file(uai_filepath; factor_eltype = eltype)
-    obsvars, obsvals = read_evidence_file(uai_evid_filepath)
-    reference_marginals = isempty(uai_mar_filepath) ? Vector{eltype}[] : read_solution_file(uai_mar_filepath)
+    nvars, cards, ncliques, factors = read_model_file(model_filepath; factor_eltype = eltype)
+    obsvars, obsvals = read_evidence_file(evidence_filepath)
+    reference_marginals = isempty(solution_filepath) ? Vector{eltype}[] : read_solution_file(solution_filepath)
     return UAIInstance(nvars, ncliques, cards, factors, obsvars, obsvals, reference_marginals)
 end
 

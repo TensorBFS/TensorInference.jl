@@ -12,8 +12,8 @@ using TensorInference
 end
 
 @testset "cached, rescaled contract" begin
-    model_filepath, evid_filepath, sol_filepath = get_instance_filepaths("Promedus_14", "MAR")
-    problem = read_instance(model_filepath; uai_evid_filepath = evid_filepath, uai_mar_filepath = sol_filepath)
+    model_filepath, evidence_filepath, solution_filepath = get_instance_filepaths("Promedus_14", "MAR")
+    problem = read_instance(model_filepath; evidence_filepath, solution_filepath)
     ref_sol = problem.reference_marginals
     optimizer = TreeSA(ntrials = 1, niters = 5, βs = 0.1:0.1:100)
     tn = TensorNetworkModel(problem; optimizer)
@@ -66,8 +66,8 @@ end
             for problem in problems
                 @info "Testing: $problem"
                 @testset "$(problem)" begin
-                    model_filepath, evid_filepath, sol_filepath = get_instance_filepaths(problem, "MAR")
-                    problem = read_instance(model_filepath; uai_evid_filepath = evid_filepath, uai_mar_filepath = sol_filepath)
+                    model_filepath, evidence_filepath, solution_filepath = get_instance_filepaths(problem, "MAR")
+                    problem = read_instance(model_filepath; evidence_filepath, solution_filepath)
                     ref_sol = problem.reference_marginals
                     obsvars = problem.obsvars
 
