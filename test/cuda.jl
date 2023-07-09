@@ -5,7 +5,8 @@ CUDA.allowscalar(false)
 
 @testset "gradient-based tensor network solvers" begin
     ################# Load problem ####################
-    instance = read_uai_problem("Promedus_14")
+    model_filepath, evid_filepath, sol_filepath = get_instance_filepaths("Promedus_14", "MAR")
+    instance = uai_problem_from_file(model_filepath; uai_evid_filepath = evid_filepath, uai_mar_filepath = sol_filepath)
 
     # does not optimize over open vertices
     tn = TensorNetworkModel(instance; optimizer = TreeSA(ntrials = 1, niters = 2, βs = 1:0.1:40))
@@ -22,7 +23,8 @@ end
 
 @testset "map" begin
     ################# Load problem ####################
-    instance = read_uai_problem("Promedus_14")
+    model_filepath, evid_filepath, sol_filepath = get_instance_filepaths("Promedus_14", "MAR")
+    instance = uai_problem_from_file(model_filepath; uai_evid_filepath = evid_filepath, uai_mar_filepath = sol_filepath)
 
     # does not optimize over open vertices
     tn = TensorNetworkModel(instance; optimizer = TreeSA(ntrials = 1, niters = 2, βs = 1:0.1:40))
@@ -37,7 +39,8 @@ end
 
 @testset "mmap" begin
     ################# Load problem ####################
-    instance = read_uai_problem("Promedus_14")
+    model_filepath, evid_filepath, sol_filepath = get_instance_filepaths("Promedus_14", "MAR")
+    instance = uai_problem_from_file(model_filepath; uai_evid_filepath = evid_filepath, uai_mar_filepath = sol_filepath)
 
     optimizer = TreeSA(ntrials = 1, niters = 2, βs = 1:0.1:40)
     tn_ref = TensorNetworkModel(instance; optimizer)

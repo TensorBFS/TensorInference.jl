@@ -2,7 +2,6 @@ module TensorInference
 
 using OMEinsum, LinearAlgebra
 using DocStringExtensions, TropicalNumbers
-using Artifacts
 # The Tropical GEMM support
 using TropicalGEMM
 using StatsBase
@@ -12,7 +11,7 @@ export RescaledArray
 export contraction_complexity, TreeSA, GreedyMethod, KaHyParBipartite, SABipartite, MergeGreedy, MergeVectors
 
 # read and load uai files
-export read_uai_file, read_td_file, read_uai_evid_file, read_uai_mar_file, read_uai_problem, uai_problem_from_file
+export read_uai_file, read_td_file, read_uai_evid_file, read_uai_mar_file, uai_problem_from_file
 export set_evidence!
 
 # marginals

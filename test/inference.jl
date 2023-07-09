@@ -12,7 +12,8 @@ using TensorInference
 end
 
 @testset "cached, rescaled contract" begin
-    problem = read_uai_problem("Promedus_14")
+    model_filepath, evid_filepath, sol_filepath = get_instance_filepaths("Promedus_14", "MAR")
+    problem = uai_problem_from_file(model_filepath; uai_evid_filepath = evid_filepath, uai_mar_filepath = sol_filepath)
     ref_sol = problem.reference_marginals
     optimizer = TreeSA(ntrials = 1, niters = 5, βs = 0.1:0.1:100)
     tn = TensorNetworkModel(problem; optimizer)
@@ -36,7 +37,7 @@ end
 function get_problems(problem_set::String)
     # Capture the problem names that belong to the current problem_set
     regex = Regex("($(problem_set)_\\d*)(\\.uai)\$")
-    return readdir(artifact"MAR_prob"; sort = false) |>
+    return readdir(joinpath(artifact"uai2014", "MAR"); sort = false) |>
            x -> map(y -> match(regex, y), x) |> # apply regex
                 x -> filter(!isnothing, x) |> # filter out `nothing` values
                      x -> map(first, x) # get the first capture of each element
@@ -65,7 +66,8 @@ end
             for problem in problems
                 @info "Testing: $problem"
                 @testset "$(problem)" begin
-                    problem = read_uai_problem(problem)
+                    model_filepath, evid_filepath, sol_filepath = get_instance_filepaths(problem, "MAR")
+                    problem = uai_problem_from_file(model_filepath; uai_evid_filepath = evid_filepath, uai_mar_filepath = sol_filepath)
                     ref_sol = problem.reference_marginals
                     obsvars = problem.obsvars
 

@@ -175,18 +175,6 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Read a UAI problem from an artifact.
-"""
-function read_uai_problem(problem::AbstractString; eltype = Float64)::UAIInstance
-    uai_filepath = joinpath(artifact"MAR_prob", problem * ".uai")
-    uai_evid_filepath = joinpath(artifact"MAR_prob", problem * ".uai.evid")
-    uai_mar_filepath = joinpath(artifact"MAR_sol", problem * ".uai.MAR")
-    return uai_problem_from_file(uai_filepath; uai_evid_filepath, uai_mar_filepath, eltype)
-end
-
-"""
-$(TYPEDSIGNATURES)
-
 Read a UAI problem from a file.
 """
 function uai_problem_from_file(uai_filepath::String; uai_evid_filepath::String = "", uai_mar_filepath::String = "", eltype = Float64)::UAIInstance

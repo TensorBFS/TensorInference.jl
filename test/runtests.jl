@@ -1,5 +1,7 @@
 using Test, TensorInference, Documenter, Pkg
 
+include("utils.jl")
+
 artifacts_toml = "Artifacts.toml"
 artifacts = Pkg.Artifacts.select_downloadable_artifacts(artifacts_toml)
 for name in keys(artifacts)
@@ -17,6 +19,7 @@ end
 @testset "MMAP" begin
     include("mmap.jl")
 end
+
 @testset "MMAP" begin
     include("sampling.jl")
 end
