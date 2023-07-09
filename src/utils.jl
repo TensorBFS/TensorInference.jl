@@ -189,7 +189,7 @@ $(TYPEDSIGNATURES)
 
 Read a UAI problem from a file.
 """
-function uai_problem_from_file(uai_filepath::String; uai_evid_filepath = "", uai_mar_filepath = "", eltype = Float64)::UAIInstance
+function uai_problem_from_file(uai_filepath::String; uai_evid_filepath::String = "", uai_mar_filepath::String = "", eltype = Float64)::UAIInstance
     nvars, cards, ncliques, factors = read_uai_file(uai_filepath; factor_eltype = eltype)
     obsvars, obsvals = read_uai_evid_file(uai_evid_filepath)
     reference_marginals = isempty(uai_mar_filepath) ? Vector{eltype}[] : read_uai_mar_file(uai_mar_filepath)
