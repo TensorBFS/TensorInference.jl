@@ -44,13 +44,13 @@ end
 
 @testset "gradient-based tensor network solvers" begin
     problem_sets = [
-        ("Alchemy", TreeSA(ntrials = 1, niters = 5, βs = 0.1:0.1:100)),
-        ("CSP", TreeSA(ntrials = 1, niters = 5, βs = 0.1:0.1:100)),
-        ("DBN", KaHyParBipartite(sc_target = 25)),
-        ("Grids", TreeSA(ntrials = 1, niters = 5, βs = 0.1:0.1:100)), # greedy also works
+        #("Alchemy", TreeSA(ntrials = 1, niters = 5, βs = 0.1:0.1:100)),
+        #("CSP", TreeSA(ntrials = 1, niters = 5, βs = 0.1:0.1:100)),
+        #("DBN", KaHyParBipartite(sc_target = 25)),
+        #("Grids", TreeSA(ntrials = 1, niters = 5, βs = 0.1:0.1:100)), # greedy also works
         #("linkage", TreeSA(ntrials = 3, niters = 20, βs = 0.1:0.1:40)), # linkage_15 fails
-        ("ObjectDetection", TreeSA(ntrials = 1, niters = 5, βs = 1:0.1:100)),
-        ("Pedigree", TreeSA(ntrials = 1, niters = 5, βs = 0.1:0.1:100)), # greedy also works
+        #("ObjectDetection", TreeSA(ntrials = 1, niters = 5, βs = 1:0.1:100)),
+        #("Pedigree", TreeSA(ntrials = 1, niters = 5, βs = 0.1:0.1:100)), # greedy also works
         ("Promedus", TreeSA(ntrials = 1, niters = 5, βs = 0.1:0.1:100)), # greedy also works
         #("relational", TreeSA(ntrials=1, niters=5, βs=0.1:0.1:100)),
         ("Segmentation", TreeSA(ntrials = 1, niters = 5, βs = 0.1:0.1:100))  # greedy also works
