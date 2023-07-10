@@ -10,7 +10,7 @@ The sampled configurations are stored in `samples`, which is a vector of vector.
 The `setmask` is an boolean indicator to denote whether the sampling process of a variable is complete.
 """
 struct Samples{L}
-    samples::Vector{Vector{Int}}
+    samples::Matrix{Int}  # size is nvars × nsample
     labels::Vector{L}
     setmask::BitVector
 end
@@ -23,7 +23,7 @@ function setmask!(samples::Samples, eliminated_variables)
     return samples
 end
 
-idx4labels(totalset, labels) = map(v->findfirst(==(v), totalset), labels)
+idx4labels(totalset, labels)::Vector{Int} = map(v->findfirst(==(v), totalset), labels)
 
 """
 $(TYPEDSIGNATURES)
@@ -41,32 +41,52 @@ function backward_sampling!(ixs, @nospecialize(xs::Tuple), iy, @nospecialize(y),
     setmask!(samples, eliminated_variables)
 
     # the contraction code to get probability
-    newiy = eliminated_variables
-    iy_in_sample = idx4labels(samples.labels, iy)
-    slice_y_dim = collect(1:length(iy))
     newixs = map(ix->setdiff(ix, iy), ixs)
     ix_in_sample = map(ix->idx4labels(samples.labels, ix ∩ iy), ixs)
     slice_xs_dim = map(ix->idx4labels(ix, ix ∩ iy), ixs)
-    code = DynamicEinCode(newixs, newiy)
+
+    # relabel and compute probabilities
+    uniquelabels = unique!(vcat(ixs..., iy))
+    labelmap = Dict(zip(uniquelabels, 1:length(uniquelabels)))
+    batchdim = length(labelmap) + 1
+    newnewixs = [Int[getindex.(Ref(labelmap), ix)..., batchdim] for ix in newixs]
+    newnewiy = Int[getindex.(Ref(labelmap), eliminated_variables)..., batchdim]
+    newnewxs = [get_slice(x, dimx, samples.samples[ixloc, :]) for (x, dimx, ixloc) in zip(xs, slice_xs_dim, ix_in_sample)]
+    code = DynamicEinCode(newnewixs, newnewiy)
+    probabilities = code(newnewxs...)
 
     totalset = CartesianIndices((map(x->size_dict[x], eliminated_variables)...,))
-    for (i, sample) in enumerate(samples.samples)
-        newxs = [get_slice(x, dimx, sample[ixloc]) for (x, dimx, ixloc) in zip(xs, slice_xs_dim, ix_in_sample)]
-        newy = get_element(y, slice_y_dim, sample[iy_in_sample])
-        probabilities = einsum(code, (newxs...,), size_dict) / newy
-        config = StatsBase.sample(totalset, Weights(vec(probabilities)))
-        # update the samples
-        samples.samples[i][eliminated_locs] .= config.I .- 1
+    for i=axes(samples.samples, 2)
+        config = StatsBase.sample(totalset, Weights(vec(selectdim(probabilities, ndims(probabilities), i))))
+        # update the samplesS
+        samples.samples[eliminated_locs, i] .= config.I .- 1
     end
     return samples
 end
 
 # type unstable
-function get_slice(x, dim, config)
-    asarray(x[[i ∈ dim ? config[findfirst(==(i), dim)]+1 : Colon() for i in 1:ndims(x)]...], x)
+function get_slice(x::AbstractArray{T}, slicedim, configs::AbstractMatrix) where T
+    outdim = setdiff(1:ndims(x), slicedim)
+    res = similar(x, [size(x, d) for d in outdim]..., size(configs, 2))
+    return get_slice!(res, x, outdim, slicedim, configs)
 end
-function get_element(x, dim, config)
-    x[[config[findfirst(==(i), dim)]+1 for i in 1:ndims(x)]...]
+
+function get_slice!(res, x::AbstractArray{T}, outdim, slicedim, configs::AbstractMatrix) where T
+    xstrides = strides(x)
+    @inbounds for ci in CartesianIndices(res)
+        idx = 1
+        # the output dimension part
+        for (dim, k) in zip(outdim, ci.I)
+            idx += (k-1) * xstrides[dim]
+        end
+        # the sliced part
+        batchidx = ci.I[end]
+        for (dim, k) in zip(slicedim, view(configs, :, batchidx))
+            idx += k * xstrides[dim]
+        end
+        res[ci] = x[idx]
+    end
+    return res
 end
 
 """
@@ -79,7 +99,7 @@ Returns a vector of vector, each element being a configurations defined on `get_
 * `tn` is the tensor network model.
 * `n` is the number of samples to be returned.
 """
-function sample(tn::TensorNetworkModel, n::Int; usecuda = false)::Vector{Vector{Int}}
+function sample(tn::TensorNetworkModel, n::Int; usecuda = false)::AbstractMatrix{Int}
     # generate tropical tensors with its elements being log(p).
     xs = adapt_tensors(tn; usecuda, rescale = false)
     # infer size from the contraction code and the input tensors `xs`, returns a label-size dictionary.
@@ -93,14 +113,18 @@ function sample(tn::TensorNetworkModel, n::Int; usecuda = false)::Vector{Vector{
     idx = map(l->findfirst(==(l), labels), iy)
     setmask[idx] .= true
     indices = StatsBase.sample(CartesianIndices(size(cache.content)), Weights(normalize!(vec(LinearAlgebra.normalize!(cache.content)))), n)
-    configs = map(indices) do ind
-        c=zeros(Int, length(labels))
-        c[idx] .= ind.I .- 1
-        c
+    configs = zeros(Int, length(labels), n)
+    for i=1:n
+        configs[idx, i] .= indices[i].I .- 1
     end
     samples = Samples(configs, labels, setmask)
     # back-propagate
     generate_samples(tn.code, cache, samples, size_dict)
+    # set evidence variables
+    for (k, v) in tn.fixedvertices
+        idx = findfirst(==(k), labels)
+        samples.samples[idx, :] .= v
+    end
     return samples.samples
 end
 
@@ -108,6 +132,8 @@ function generate_samples(code::NestedEinsum, cache::CacheTree{T}, samples, size
     if !OMEinsum.isleaf(code)
         xs = ntuple(i -> cache.siblings[i].content, length(cache.siblings))
         backward_sampling!(OMEinsum.getixs(code.eins), xs, OMEinsum.getiy(code.eins), cache.content, samples, size_dict)
-        generate_samples.(code.args, cache.siblings, Ref(samples), Ref(size_dict))
+        for (arg, sib) in zip(code.args, cache.siblings)
+            generate_samples(arg, sib, samples, size_dict)
+        end
     end
 end
