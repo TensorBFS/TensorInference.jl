@@ -9,8 +9,8 @@ include("utils.jl")
     include("mar.jl")
 end
 
-@testset "MPE" begin
-    include("mpe.jl")
+@testset "MAP" begin
+    include("map.jl")
 end
 
 @testset "MMAP" begin
