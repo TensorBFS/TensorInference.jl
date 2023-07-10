@@ -15,7 +15,7 @@ CUDA.allowscalar(false)
     # for dangling vertices, the output size is 1.
     npass = 0
     for i in 1:(instance.nvars)
-        npass += (length(marginals2[i]) == 1 && instance.reference_marginals[i] == [0.0, 1]) || isapprox(Array(marginals2[i]), instance.reference_marginals[i]; atol = 1e-6)
+        npass += (length(marginals2[i]) == 1 && instance.reference_solution[i] == [0.0, 1]) || isapprox(Array(marginals2[i]), instance.reference_solution[i]; atol = 1e-6)
     end
     @test npass == instance.nvars
 end

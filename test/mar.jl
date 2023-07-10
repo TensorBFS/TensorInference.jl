@@ -14,7 +14,7 @@ end
 @testset "cached, rescaled contract" begin
     model_filepath, evidence_filepath, solution_filepath = get_instance_filepaths("Promedus_14", "MAR")
     instance = read_instance(model_filepath; evidence_filepath, solution_filepath)
-    ref_sol = instance.reference_marginals
+    ref_sol = instance.reference_solution
     optimizer = TreeSA(ntrials = 1, niters = 5, βs = 0.1:0.1:100)
     tn = TensorNetworkModel(instance; optimizer)
     p1 = probability(tn; usecuda = false, rescale = false)
@@ -68,7 +68,7 @@ end
                 @testset "$(problem_name)" begin
                     model_filepath, evidence_filepath, solution_filepath = get_instance_filepaths(problem_name, "MAR")
                     instance = read_instance(model_filepath; evidence_filepath, solution_filepath)
-                    ref_sol = instance.reference_marginals
+                    ref_sol = instance.reference_solution
                     obsvars = instance.obsvars
 
                     # does not optimize over open vertices
