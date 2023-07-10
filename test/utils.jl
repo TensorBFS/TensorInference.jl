@@ -5,7 +5,7 @@ task.
 
 # Arguments
 - `problem_name::String`: The name of the problem or instance.
-- `task::String`: The task type. Supported tasks are "MAR", "MPE", "MMAP", and "PR".
+- `task::String`: The task type. Supported tasks are "MAR", "MAP", "MMAP", and "PR".
 """
 function get_instance_filepaths(problem_name::AbstractString, task::AbstractString)
     model_filepath = joinpath(artifact"uai2014", task, problem_name * ".uai")

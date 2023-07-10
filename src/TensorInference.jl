@@ -29,8 +29,8 @@ export MMAPModel
 include("Core.jl")
 include("RescaledArray.jl")
 include("utils.jl")
-include("inference.jl")
-include("maxprob.jl")
+include("mar.jl")
+include("map.jl")
 include("mmap.jl")
 include("sampling.jl")
 
