@@ -196,6 +196,11 @@ function probability(tn::TensorNetworkModel; usecuda = false, rescale = true)::A
     return tn.code(adapt_tensors(tn; usecuda, rescale)...)
 end
 
+"""
+    contraction_complexity(tensor_network)
+
+Returns the contraction complexity of a tensor newtork model.
+"""
 function OMEinsum.contraction_complexity(tn::TensorNetworkModel)
     return contraction_complexity(tn.code, Dict(zip(get_vars(tn), get_cards(tn; fixedisone = true))))
 end

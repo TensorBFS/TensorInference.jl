@@ -3,8 +3,9 @@
 
 Let us use the independent set problem on 3-regular graphs as an example.
 ```julia
-julia> using TensorInferece, Artifacts
+julia> using TensorInference, Artifacts, Pkg
 
+julia> Pkg.ensure_artifact_installed("uai2014", pkgdir(TensorInference, "test", "Artifacts.toml"));
 
 julia> function get_instance_filepaths(problem_name::AbstractString, task::AbstractString)
         model_filepath = joinpath(artifact"uai2014", task, problem_name * ".uai")

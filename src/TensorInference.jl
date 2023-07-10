@@ -11,7 +11,7 @@ export RescaledArray
 export contraction_complexity, TreeSA, GreedyMethod, KaHyParBipartite, SABipartite, MergeGreedy, MergeVectors
 
 # read and load uai files
-export read_model_file, read_td_file, read_evidence_file, read_solution_file, read_instance
+export read_model_file, read_td_file, read_evidence_file, read_solution_file, read_instance, UAIInstance
 export set_evidence!
 
 # marginals
@@ -44,7 +44,7 @@ PrecompileTools.@setup_workload begin
     # Putting some things in `@setup_workload` instead of `@compile_workload` can reduce the size of the
     # precompile file and potentially make loading faster.
     #PrecompileTools.@compile_workload begin
-    #    include("../example/asia/asia.jl")
+    #    include("../example/asia/main.jl")
     #end
 end
 
