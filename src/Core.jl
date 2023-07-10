@@ -41,15 +41,6 @@ end
 $TYPEDSIGNATURES
 
 Set the evidence of an UAI instance.
-
-### Examples
-```jldoctest; setup=:(using TensorInference)
-julia> problem = read_uai_problem("Promedus_14"); problem.obsvars, problem.obsvals
-([42, 48, 27, 30, 29, 15, 124, 5, 148], [1, 1, 1, 1, 1, 1, 1, 1, 1])
-
-julia> set_evidence!(problem, 2=>0, 4=>1); problem.obsvars, problem.obsvals
-([2, 4], [0, 1])
-```
 """
 function set_evidence!(uai::UAIInstance, pairs::Pair{Int}...)
     empty!(uai.obsvars)

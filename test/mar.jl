@@ -12,10 +12,11 @@ using TensorInference
 end
 
 @testset "cached, rescaled contract" begin
-    problem = read_uai_problem("Promedus_14")
-    ref_sol = problem.reference_marginals
+    model_filepath, evidence_filepath, solution_filepath = get_instance_filepaths("Promedus_14", "MAR")
+    instance = read_instance(model_filepath; evidence_filepath, solution_filepath)
+    ref_sol = instance.reference_marginals
     optimizer = TreeSA(ntrials = 1, niters = 5, βs = 0.1:0.1:100)
-    tn = TensorNetworkModel(problem; optimizer)
+    tn = TensorNetworkModel(instance; optimizer)
     p1 = probability(tn; usecuda = false, rescale = false)
     p2 = probability(tn; usecuda = false, rescale = true)
     @test p1 ≈ Array(p2)
@@ -29,14 +30,14 @@ end
 
     # compute marginals
     ti_sol = marginals(tn)
-    ref_sol[problem.obsvars] .= fill([1.0], length(problem.obsvars)) # imitate dummy vars
+    ref_sol[instance.obsvars] .= fill([1.0], length(instance.obsvars)) # imitate dummy vars
     @test isapprox(ti_sol, ref_sol; atol = 1e-5)
 end
 
-function get_problems(problem_set::String)
+function get_problems_names(problem_set::String)
     # Capture the problem names that belong to the current problem_set
     regex = Regex("($(problem_set)_\\d*)(\\.uai)\$")
-    return readdir(artifact"MAR_prob"; sort = false) |>
+    return readdir(joinpath(artifact"uai2014", "MAR"); sort = false) |>
            x -> map(y -> match(regex, y), x) |> # apply regex
                 x -> filter(!isnothing, x) |> # filter out `nothing` values
                      x -> map(first, x) # get the first capture of each element
@@ -60,17 +61,18 @@ end
         @testset "$(problem_set) problem_set" begin
 
             # Capture the problem names that belong to the current problem set
-            problems = get_problems(problem_set)
+            problem_names = get_problems_names(problem_set)
 
-            for problem in problems
-                @info "Testing: $problem"
-                @testset "$(problem)" begin
-                    problem = read_uai_problem(problem)
-                    ref_sol = problem.reference_marginals
-                    obsvars = problem.obsvars
+            for problem_name in problem_names
+                @info "Testing: $problem_name"
+                @testset "$(problem_name)" begin
+                    model_filepath, evidence_filepath, solution_filepath = get_instance_filepaths(problem_name, "MAR")
+                    instance = read_instance(model_filepath; evidence_filepath, solution_filepath)
+                    ref_sol = instance.reference_marginals
+                    obsvars = instance.obsvars
 
                     # does not optimize over open vertices
-                    tn = TensorNetworkModel(problem; optimizer)
+                    tn = TensorNetworkModel(instance; optimizer)
                     sc = contraction_complexity(tn).sc
                     sc > 28 && error("space complexity too large! got $(sc)")
                     @debug contraction_complexity(tn)
