@@ -29,5 +29,19 @@ pkg> add TensorInference
 
 To update, just type `up` in the package mode.
 
-## Example
-Please check the [example](example) folder.
+## Examples
+Examples are in the [example](example) folder, which contains the following list of example problems
+- [asia network](example/asia)
+
+
+## Supporting and Citing
+
+Much of the software in this ecosystem was developed as a part of an academic research project.
+If you would like to help support it, please star the repository.
+If you use our software as part of your research, teaching, or other activities, we would like to request you to cite our [work (TBA)](). 
+The
+[CITATION.bib](CITATION.bib) file in the root of this repository lists the relevant papers.
+
+## Questions and Contributions
+
+Please Open an [issue](https://github.com/TensorBFS/TensorInference.jl/issues) if you encounter any problems, or have any feature request.
