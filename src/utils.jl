@@ -1,21 +1,21 @@
 """
 $(TYPEDSIGNATURES)
 
-Parse the problem instance found in `uai_filepath` defined in the UAI model
+Parse the problem instance found in `model_filepath` defined in the UAI model
 format.
 
 The UAI file formats are defined in:
 https://personal.utdallas.edu/~vibhav.gogate/uai16-evaluation/uaiformat.html
 """
-function read_uai_file(uai_filepath; factor_eltype = Float64)
+function read_model_file(model_filepath; factor_eltype = Float64)
     # Read the uai file into an array of lines
-    str = open(uai_filepath) do file
+    str = open(model_filepath) do file
         read(file, String)
     end
-    return read_uai_string(str; factor_eltype)
+    return read_model_string(str; factor_eltype)
 end
 
-function read_uai_string(str; factor_eltype = Float64)
+function read_model_string(str; factor_eltype = Float64)
     rawlines = split(str, "\n")
     # Filter out empty lines
     lines = filter(!isempty, rawlines)
@@ -65,19 +65,19 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Return the observed variables and values in `uai_evid_filepath`. If the passed
+Return the observed variables and values in `evidence_filepath`. If the passed
 file path is an empty string, return empty vectors.
 
 The UAI file formats are defined in:
 https://personal.utdallas.edu/~vibhav.gogate/uai16-evaluation/uaiformat.html
 """
-function read_uai_evid_file(uai_evid_filepath::AbstractString)
-    if isempty(uai_evid_filepath)
+function read_evidence_file(evidence_filepath::AbstractString)
+    if isempty(evidence_filepath)
         # No evidence
         return Int64[], Int64[]
     else
         # Read the last line of the uai evid file
-        line = open(uai_evid_filepath) do file
+        line = open(evidence_filepath) do file
             readlines(file)
         end |> last
 
@@ -104,10 +104,10 @@ as in the model
 The UAI file formats are defined in:
 https://personal.utdallas.edu/~vibhav.gogate/uai16-evaluation/uaiformat.html
 """
-function read_uai_mar_file(uai_mar_filepath::AbstractString; factor_eltype = Float64)
+function read_solution_file(solution_filepath::AbstractString; factor_eltype = Float64)
 
     # Read the uai mar file into an array of lines
-    rawlines = open(uai_mar_filepath) do file
+    rawlines = open(solution_filepath) do file
         readlines(file)
     end
 
@@ -175,29 +175,22 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Read a UAI problem from an artifact.
+Read a UAI problem instance from a file.
 """
-function read_uai_problem(problem::AbstractString; eltype=Float64)::UAIInstance
-    uai_filepath = joinpath(artifact"MAR_prob", problem * ".uai")
-    uai_evid_filepath = joinpath(artifact"MAR_prob", problem * ".uai.evid")
-    uai_mar_filepath = joinpath(artifact"MAR_sol", problem * ".uai.MAR")
-    return uai_problem_from_file(uai_filepath; uai_evid_filepath, uai_mar_filepath, eltype)
-end
-
-"""
-$(TYPEDSIGNATURES)
-
-Read a UAI problem from a file.
-"""
-function uai_problem_from_file(uai_filepath::String; uai_evid_filepath="", uai_mar_filepath="", eltype=Float64)::UAIInstance
-    nvars, cards, ncliques, factors = read_uai_file(uai_filepath; factor_eltype = eltype)
-    obsvars, obsvals = read_uai_evid_file(uai_evid_filepath)
-    reference_marginals = isempty(uai_mar_filepath) ? Vector{eltype}[] : read_uai_mar_file(uai_mar_filepath)
+function read_instance(
+    model_filepath::AbstractString;
+    evidence_filepath::AbstractString = "",
+    solution_filepath::AbstractString = "",
+    eltype = Float64
+)::UAIInstance
+    nvars, cards, ncliques, factors = read_model_file(model_filepath; factor_eltype = eltype)
+    obsvars, obsvals = read_evidence_file(evidence_filepath)
+    reference_marginals = isempty(solution_filepath) ? Vector{eltype}[] : read_solution_file(solution_filepath)
     return UAIInstance(nvars, ncliques, cards, factors, obsvars, obsvals, reference_marginals)
 end
 
-function uai_problem_from_string(uai::String; eltype=Float64)::UAIInstance
-    nvars, cards, ncliques, factors = read_uai_string(uai; factor_eltype = eltype)
+function read_instance_from_string(uai::AbstractString; eltype = Float64)::UAIInstance
+    nvars, cards, ncliques, factors = read_model_string(uai; factor_eltype = eltype)
     return UAIInstance(nvars, ncliques, cards, factors, Int[], Int[], Vector{eltype}[])
 end
 

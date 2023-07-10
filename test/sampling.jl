@@ -1,7 +1,7 @@
 using TensorInference, Test
 
 @testset "sampling" begin
-    instance = TensorInference.uai_problem_from_string("""MARKOV
+    instance = TensorInference.read_instance_from_string("""MARKOV
 8
  2 2 2 2 2 2 2 2
 8
@@ -46,7 +46,6 @@ using TensorInference, Test
  0.9 0.7 0.8 0.1
  0.1 0.3 0.2 0.9
 """)
-    # general sampling
     n = 10000
     tnet = TensorNetworkModel(instance)
     samples = sample(tnet, n)

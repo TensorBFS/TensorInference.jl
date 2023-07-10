@@ -1,7 +1,7 @@
 using TensorInference
 
 # Load the model that detailed in the README and `asia.uai`.
-instance = uai_problem_from_file(joinpath(@__DIR__, "asia.uai"))
+instance = read_instance(joinpath(@__DIR__, "asia.uai"))
 tnet = TensorNetworkModel(instance)
 
 # Get the probabilities (PR)

@@ -1,24 +1,20 @@
-using Test, TensorInference, Documenter, Pkg
+using Test, TensorInference, Documenter, Pkg, Artifacts
 
-artifacts_toml = "Artifacts.toml"
-artifacts = Pkg.Artifacts.select_downloadable_artifacts(artifacts_toml)
-for name in keys(artifacts)
-    Pkg.Artifacts.ensure_artifact_installed(name, artifacts[name], artifacts_toml)
-end
+import Pkg;
+Pkg.ensure_artifact_installed("uai2014", joinpath(@__DIR__, "Artifacts.toml"));
 
-@testset "inference" begin
-    include("inference.jl")
+include("utils.jl")
+
+@testset "MAR" begin
+    include("mar.jl")
 end
 
 @testset "MAP" begin
-    include("maxprob.jl")
+    include("map.jl")
 end
 
 @testset "MMAP" begin
     include("mmap.jl")
-end
-@testset "MMAP" begin
-    include("sampling.jl")
 end
 
 using CUDA

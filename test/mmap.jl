@@ -7,9 +7,9 @@ using TensorInference
     @test TensorInference.connected_clusters(ixs, [2, 3, 6]) == [[2, 3] => [1, 2], [6] => [3]]
 end
 
-@testset "mmap" begin
-    ################# Load problem ####################
-    instance = read_uai_problem("Promedus_14")
+@testset "gradient-based tensor network solvers" begin
+    model_filepath, evidence_filepath, solution_filepath = get_instance_filepaths("Promedus_14", "MAR")
+    instance = read_instance(model_filepath; evidence_filepath, solution_filepath)
 
     optimizer = TreeSA(ntrials = 1, niters = 2, βs = 1:0.1:40)
     tn_ref = TensorNetworkModel(instance; optimizer)
