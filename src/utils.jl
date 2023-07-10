@@ -72,27 +72,39 @@ The UAI file formats are defined in:
 https://personal.utdallas.edu/~vibhav.gogate/uai16-evaluation/uaiformat.html
 """
 function read_evidence_file(evidence_filepath::AbstractString)
-    if isempty(evidence_filepath)
-        # No evidence
-        return Int64[], Int64[]
-    else
-        # Read the last line of the uai evid file
-        line = open(evidence_filepath) do file
-            readlines(file)
-        end |> last
 
-        # Extract number of observed vars, and their id together with their corresponding value
-        nobsvars, rest = split(line) |> x -> parse.(Int, x) |> x -> (x[1], x[2:end])
-        observations = reshape(rest, 2, :)
+    isempty(evidence_filepath) && return Int64[], Int64[] # no evidence
 
-        # Convert to 1-based indexing
-        obsvars = observations[1, :] .+ 1
-        obsvals = observations[2, :]
+    # Read the last line of the uai evid file
+    line = open(evidence_filepath) do file
+        readlines(file)
+    end |> last
 
-        @assert nobsvars == length(obsvars)
-    end
+    # Extract number of observed vars, and their id together with their corresponding value
+    nobsvars, rest = split(line) |> x -> parse.(Int, x) |> x -> (x[1], x[2:end])
+    observations = reshape(rest, 2, :)
+
+    # Convert to 1-based indexing
+    obsvars = observations[1, :] .+ 1
+    obsvals = observations[2, :]
+
+    @assert nobsvars == length(obsvars)
 
     return obsvars, obsvals
+end
+
+function read_solution_file(solution_filepath::AbstractString; factor_eltype = Float64)
+    result = Vector{factor_eltype}[]
+    extension = splitext(solution_filepath)[2]
+    if extension == ".MAR"
+        return read_mar_solution_file(solution_filepath; factor_eltype)
+    elseif extension == ".MAP" || extension == ".MMAP" || extension == ".PR"
+      # Return the last line of the file as a vector of integers
+      result = open(solution_filepath) do file
+          readlines(file)
+      end |> last |> split |> x -> parse.(Int, x)
+    end
+    return result
 end
 
 """
@@ -104,7 +116,7 @@ as in the model
 The UAI file formats are defined in:
 https://personal.utdallas.edu/~vibhav.gogate/uai16-evaluation/uaiformat.html
 """
-function read_solution_file(solution_filepath::AbstractString; factor_eltype = Float64)
+function read_mar_solution_file(solution_filepath::AbstractString; factor_eltype = Float64)
 
     # Read the uai mar file into an array of lines
     rawlines = open(solution_filepath) do file
@@ -185,8 +197,8 @@ function read_instance(
 )::UAIInstance
     nvars, cards, ncliques, factors = read_model_file(model_filepath; factor_eltype = eltype)
     obsvars, obsvals = read_evidence_file(evidence_filepath)
-    reference_marginals = isempty(solution_filepath) ? Vector{eltype}[] : read_solution_file(solution_filepath)
-    return UAIInstance(nvars, ncliques, cards, factors, obsvars, obsvals, reference_marginals)
+    reference_solution = isempty(solution_filepath) ? Vector{eltype}[] : read_solution_file(solution_filepath)
+    return UAIInstance(nvars, ncliques, cards, factors, obsvars, obsvals, reference_solution)
 end
 
 function read_instance_from_string(uai::AbstractString; eltype = Float64)::UAIInstance

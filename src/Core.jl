@@ -24,7 +24,7 @@ $(TYPEDEF)
 
 * `obsvars` is a vector of observed variables,
 * `obsvals` is a vector of observed values,
-* `reference_marginals` is a vector of marginal probabilities.
+* `reference_solution` is a vector with the reference solution.
 """
 struct UAIInstance{ET, FT <: Factor{ET}}
     nvars::Int
@@ -34,7 +34,7 @@ struct UAIInstance{ET, FT <: Factor{ET}}
 
     obsvars::Vector{Int}
     obsvals::Vector{Int}
-    reference_marginals::Vector{Vector{ET}}
+    reference_solution::Union{Vector{Vector{ET}}, Vector{Int}}
 end
 
 """
