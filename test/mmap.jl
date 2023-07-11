@@ -33,21 +33,17 @@ end
 end
 
 @testset "UAI Reference Solution Comparison" begin
-
     problems = [
         ("Segmentation_12", TreeSA(ntrials = 1, niters = 2, βs = 1:0.1:40)),
         # ("Segmentation_13", TreeSA(ntrials = 1, niters = 2, βs = 1:0.1:40)), # fails!
         # ("Segmentation_14", TreeSA(ntrials = 1, niters = 2, βs = 1:0.1:40))  # fails!
     ]
-
     for (problem_name, optimizer) in problems
-
+      @info "Testing: $problem_name"
       model_filepath, evidence_filepath, query_filepath, solution_filepath = get_instance_filepaths(problem_name, "MMAP")
       instance = read_instance(model_filepath; evidence_filepath, query_filepath, solution_filepath)
       model = MMAPModel(instance; marginalized = setdiff(1:(instance.nvars), instance.queryvars), optimizer)
       _, solution = most_probable_config(model)
       @test solution == instance.reference_solution
-
     end
-
 end

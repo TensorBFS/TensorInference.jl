@@ -43,7 +43,7 @@ function get_problems_names(problem_set::String)
                      x -> map(first, x) # get the first capture of each element
 end
 
-@testset "gradient-based tensor network solvers" begin
+@testset "UAI Reference Solution Comparison" begin
     problem_sets = [
         #("Alchemy", TreeSA(ntrials = 1, niters = 5, βs = 0.1:0.1:100)),
         #("CSP", TreeSA(ntrials = 1, niters = 5, βs = 0.1:0.1:100)),
@@ -56,13 +56,10 @@ end
         #("relational", TreeSA(ntrials=1, niters=5, βs=0.1:0.1:100)),
         ("Segmentation", TreeSA(ntrials = 1, niters = 5, βs = 0.1:0.1:100))  # greedy also works
     ]
-
     for (problem_set, optimizer) in problem_sets
         @testset "$(problem_set) problem_set" begin
-
             # Capture the problem names that belong to the current problem set
             problem_names = get_problems_names(problem_set)
-
             for problem_name in problem_names
                 @info "Testing: $problem_name"
                 @testset "$(problem_name)" begin

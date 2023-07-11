@@ -16,7 +16,9 @@ using TensorInference
 end
 
 @testset "UAI Reference Solution Comparison" begin
-    model_filepath, evidence_filepath, _, solution_filepath = get_instance_filepaths("Promedas_70", "MAP")
+    problem_name = "Promedas_70"
+    @info "Testing: $problem_name"
+    model_filepath, evidence_filepath, _, solution_filepath = get_instance_filepaths(problem_name, "MAP")
     instance = read_instance(model_filepath; evidence_filepath, solution_filepath)
     tn = TensorNetworkModel(instance; optimizer = TreeSA(ntrials = 1, niters = 5, βs = 0.1:0.1:100))
     _, solution = most_probable_config(tn)
