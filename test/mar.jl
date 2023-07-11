@@ -50,7 +50,7 @@ end
     for (problem_set, optimizer) in problem_sets
         @testset "$(problem_set) problem_set" begin
             # Capture the problem names that belong to the current problem set
-            problem_names = get_problems_names(problem_set)
+            problem_names = get_problem_names(problem_set, "MAR")
             for problem_name in problem_names
                 @info "Testing: $problem_name"
                 @testset "$(problem_name)" begin

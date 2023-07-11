@@ -18,9 +18,9 @@ end
 """
 # Capture the problem names that belong to `problem_set`.
 """
-function get_problems_names(problem_set::String)
+function get_problem_names(problem_set::AbstractString, task::AbstractString)
     regex = Regex("($(problem_set)_\\d*)(\\.uai)\$")
-    return readdir(joinpath(artifact"uai2014", "MAR"); sort = false) |>
+    return readdir(joinpath(artifact"uai2014", task); sort = false) |>
            x -> map(y -> match(regex, y), x) |> # apply regex
                 x -> filter(!isnothing, x) |> # filter out `nothing` values
                      x -> map(first, x) # get the first capture of each element
