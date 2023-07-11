@@ -126,11 +126,17 @@ function read_solution_file(solution_filepath::AbstractString; factor_eltype = F
     extension = splitext(solution_filepath)[2]
     if extension == ".MAR"
         return read_mar_solution_file(solution_filepath; factor_eltype)
-    elseif extension == ".MAP" || extension == ".MMAP" || extension == ".PR"
-      # Return the last line of the file as a vector of integers
-      result = open(solution_filepath) do file
-          readlines(file)
-      end |> last |> split |> x -> parse.(Int, x)
+    elseif extension == ".MAP" || extension == ".MMAP"
+        # Return all elements except the first in the last line of the file as a vector of integers
+        result = open(solution_filepath) do file
+                     readlines(file)
+                 end |> last |> split |> x -> x[2:end] |> x -> parse.(Int, x)
+    elseif extension == ".PR"
+        # Extract all elements except the first from the last line of the file
+        # and return them as a vector of integers
+        result = open(solution_filepath) do file
+                     readlines(file)
+                 end |> last |> x -> x[1] |> x -> parse.(Int, x) |> x -> Vector([x])
     end
     return result
 end

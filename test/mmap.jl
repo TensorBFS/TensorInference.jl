@@ -44,10 +44,9 @@ end
 
       model_filepath, evidence_filepath, query_filepath, solution_filepath = get_instance_filepaths(problem_name, "MMAP")
       instance = read_instance(model_filepath; evidence_filepath, query_filepath, solution_filepath)
-      ref_sol = instance.reference_solution[2:end] # TODO: in read_solution_file, drop first element
       model = MMAPModel(instance; marginalized = setdiff(1:(instance.nvars), instance.queryvars), optimizer)
-      _, ti_sol = most_probable_config(model)
-      @test ti_sol == ref_sol
+      _, solution = most_probable_config(model)
+      @test solution == instance.reference_solution
 
     end
 
