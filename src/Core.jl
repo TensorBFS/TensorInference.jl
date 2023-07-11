@@ -12,6 +12,7 @@ struct Factor{T, N}
     vars::NTuple{N, Int64}
     vals::Array{T, N}
 end
+summary(f::Factor) = "Factor($(join(f.vars, ", "))), size = $(size(f.vals))"
 
 """
 $(TYPEDEF)
@@ -37,6 +38,20 @@ struct UAIInstance{ET, FT <: Factor{ET}}
     obsvals::Vector{Int}
     queryvars::Vector{Int}
     reference_solution::Union{Vector{Vector{ET}}, Vector{Int}, Float64}
+end
+
+Base.show(io::IO, ::MIME"text/plain", uai::UAIInstance) = Base.show(io, uai)
+function Base.show(io::IO, uai::UAIInstance)
+    println(io, "UAIInstance(nvars = $(uai.nvars), nclique = $(uai.nclique))")
+    println(io, " variables :")
+    for (var, card) in zip(1:uai.nvars, uai.cards)
+        println(io, string_var("  $var of size $card", var ∈ uai.queryvars, Dict(zip(uai.obsvars, uai.obsvals))))
+    end
+    println(io, " factors : ")
+    for f in uai.factors
+        println(io, "  $(summary(f))")
+    end
+    print(io, " reference_solution : $(uai.reference_solution)")
 end
 
 """
@@ -198,6 +213,11 @@ function probability(tn::TensorNetworkModel; usecuda = false, rescale = true)::A
     return tn.code(adapt_tensors(tn; usecuda, rescale)...)
 end
 
+"""
+    contraction_complexity(tensor_network)
+
+Returns the contraction complexity of a tensor newtork model.
+"""
 function OMEinsum.contraction_complexity(tn::TensorNetworkModel)
     return contraction_complexity(tn.code, Dict(zip(get_vars(tn), get_cards(tn; fixedisone = true))))
 end

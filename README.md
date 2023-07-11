@@ -30,8 +30,8 @@ pkg> add TensorInference
 To update, just type `up` in the package mode.
 
 ## Examples
-Examples are in the [example](example) folder, which contains the following list of example problems
-- [asia network](example/asia)
+Examples are in the [examples](examples) folder, which contains the following list of example problems
+- [asia network](examples/asia)
 
 
 ## Supporting and Citing

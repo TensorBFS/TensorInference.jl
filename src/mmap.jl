@@ -17,11 +17,11 @@ Computing the most likely assignment to the query variables,  Xₘ ⊆ X after m
 ```
 
 ### Fields
-* `vars` is the remaining (or not marginalized) degree of freedoms in the tensor network.
+* `vars` is the query variables in the tensor network.
 * `code` is the tropical tensor network contraction pattern.
 * `tensors` is the tensors fed into the tensor network.
 * `clusters` is the clusters, each element of this cluster is a [`TensorNetworkModel`](@ref) instance for marginalizing certain variables.
-* `fixedvertices` is a dictionary to specifiy degree of freedoms fixed to certain values, which should not have overlap with the marginalized variables.
+* `fixedvertices` is a dictionary to specifiy degree of freedoms fixed to certain values, which should not have overlap with the query variables.
 """
 struct MMAPModel{LT, AT <: AbstractArray}
     vars::Vector{LT}
@@ -37,7 +37,7 @@ function Base.show(io::IO, mmap::MMAPModel)
     tc, sc, rw = contraction_complexity(mmap)
     println(io, "$(typeof(mmap))")
     println(io, "variables: $variables")
-    println(io, "marginalized variables: $(map(x->x.eliminated_vars, mmap.clusters))")
+    println(io, "query variables: $(map(x->x.eliminated_vars, mmap.clusters))")
     print_tcscrw(io, tc, sc, rw)
 end
 Base.show(io::IO, ::MIME"text/plain", mmap::MMAPModel) = Base.show(io, mmap)
@@ -58,26 +58,28 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function MMAPModel(instance::UAIInstance; marginalized, openvertices = (), optimizer = GreedyMethod(), simplifier = nothing)::MMAPModel
+function MMAPModel(instance::UAIInstance; queryvars, openvertices = (), optimizer = GreedyMethod(), simplifier = nothing)::MMAPModel
     return MMAPModel(
-        1:(instance.nvars), instance.factors; marginalized, fixedvertices = Dict(zip(instance.obsvars, instance.obsvals)), optimizer, simplifier, openvertices
+        1:(instance.nvars), instance.cards, instance.factors; queryvars, fixedvertices = Dict(zip(instance.obsvars, instance.obsvals)), optimizer, simplifier, openvertices
     )
 end
 
 """
 $(TYPEDSIGNATURES)
 """
-function MMAPModel(vars::AbstractVector{LT}, factors::Vector{<:Factor{T}}; marginalized, openvertices = (),
-    fixedvertices = Dict{LT, Int}(),
-    optimizer = GreedyMethod(), simplifier = nothing,
-    marginalize_optimizer = GreedyMethod(), marginalize_simplifier = nothing
-)::MMAPModel where {T, LT}
+function MMAPModel(vars::AbstractVector{LT}, cards::AbstractVector{Int}, factors::Vector{<:Factor{T}}; queryvars, openvertices = (),
+            fixedvertices = Dict{LT, Int}(),
+            optimizer = GreedyMethod(), simplifier = nothing,
+            marginalize_optimizer = GreedyMethod(), marginalize_simplifier = nothing
+        )::MMAPModel where {T, LT}
     all_ixs = [[[var] for var in vars]..., [[factor.vars...] for factor in factors]...]  # labels for vertex tensors (unity tensors) and edge tensors
     iy = collect(LT, openvertices)
-    if !isempty(setdiff(iy, vars))
-        error("Marginalized variables should not contain any output variable.")
+    evidencevars = collect(LT, keys(fixedvertices))
+    marginalized = setdiff(vars, iy ∪ queryvars ∪ evidencevars)
+    if !isempty(setdiff(iy, marginalized))
+        error("Marginalized variables should not contain any output variable, got $(marginalized) and $iy.")
     end
-    all_tensors = [[ones(T, 2) for _ in 1:length(vars)]..., getfield.(factors, :vals)...]
+    all_tensors = [[ones(T, cards[i]) for i in 1:length(vars)]..., getfield.(factors, :vals)...]
     size_dict = OMEinsum.get_size_dict(all_ixs, all_tensors)
 
     # detect clusters for marginalize variables

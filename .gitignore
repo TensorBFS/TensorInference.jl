@@ -3,5 +3,6 @@ Manifest.toml
 *.jl.cov
 *.jl.mem
 /docs/build/
+/docs/src/generated/
 .vscode/
 Session.vim

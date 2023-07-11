@@ -1,7 +1,7 @@
 using TensorInference
 
 # Load the model that detailed in the README and `asia.uai`.
-instance = read_instance(joinpath(@__DIR__, "asia.uai"))
+instance = read_instance(pkgdir(TensorInference, "examples", "asia", "asia.uai"))
 tnet = TensorNetworkModel(instance)
 
 # Get the probabilities (PR)
@@ -31,9 +31,8 @@ logp, cfg = most_probable_config(tnet)
 
 # Get the maximum log-probabilities (MMAP)
 # To get the probability of lung cancer, we need to marginalize out other variables.
-mmap = MMAPModel(instance; marginalized=[1,2,3,5,6,8])
+mmap = MMAPModel(instance; queryvars=[4,7])
 # We get the most probable configurations on [4, 7]
 most_probable_config(mmap)
 # The total probability of having lung cancer is roughly half.
-log_probability(mmap, [1, 0])
-log_probability(mmap, [0, 0])
+log_probability(mmap, [1, 0]), log_probability(mmap, [0, 0])
