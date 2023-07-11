@@ -34,15 +34,6 @@ end
     @test isapprox(ti_sol, ref_sol; atol = 1e-5)
 end
 
-function get_problems_names(problem_set::String)
-    # Capture the problem names that belong to the current problem_set
-    regex = Regex("($(problem_set)_\\d*)(\\.uai)\$")
-    return readdir(joinpath(artifact"uai2014", "MAR"); sort = false) |>
-           x -> map(y -> match(regex, y), x) |> # apply regex
-                x -> filter(!isnothing, x) |> # filter out `nothing` values
-                     x -> map(first, x) # get the first capture of each element
-end
-
 @testset "UAI Reference Solution Comparison" begin
     problem_sets = [
         #("Alchemy", TreeSA(ntrials = 1, niters = 5, βs = 0.1:0.1:100)),
