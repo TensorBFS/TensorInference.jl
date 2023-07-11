@@ -93,6 +93,34 @@ function read_evidence_file(evidence_filepath::AbstractString)
     return obsvars, obsvals
 end
 
+"""
+$(TYPEDSIGNATURES)
+
+Return the query variables in `query_filepath`. If the passed file path is an
+empty string, return an empty vector.
+
+The UAI file formats are defined in:
+https://uaicompetition.github.io/uci-2022/file-formats/
+"""
+function read_query_file(query_filepath::AbstractString)
+    isempty(query_filepath) && return Int64[]
+
+    # Read the first line of the uai query file
+    line = open(query_filepath) do file
+        readlines(file)
+    end |> first
+
+    # Separate the number of query vars and their indices
+    nqueryvars, queryvars_zero_based = split(line) |> x -> parse.(Int, x) |> x -> (x[1], x[2:end])
+
+    # Convert to 1-based indexing
+    queryvars = queryvars_zero_based .+ 1
+
+    @assert nqueryvars == length(queryvars)
+
+    return queryvars
+end
+
 function read_solution_file(solution_filepath::AbstractString; factor_eltype = Float64)
     result = Vector{factor_eltype}[]
     extension = splitext(solution_filepath)[2]
