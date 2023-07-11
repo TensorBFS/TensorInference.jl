@@ -12,7 +12,7 @@ using TensorInference
 end
 
 @testset "cached, rescaled contract" begin
-    model_filepath, evidence_filepath, solution_filepath = get_instance_filepaths("Promedus_14", "MAR")
+    model_filepath, evidence_filepath, _, solution_filepath = get_instance_filepaths("Promedus_14", "MAR")
     instance = read_instance(model_filepath; evidence_filepath, solution_filepath)
     ref_sol = instance.reference_solution
     optimizer = TreeSA(ntrials = 1, niters = 5, βs = 0.1:0.1:100)
@@ -66,7 +66,7 @@ end
             for problem_name in problem_names
                 @info "Testing: $problem_name"
                 @testset "$(problem_name)" begin
-                    model_filepath, evidence_filepath, solution_filepath = get_instance_filepaths(problem_name, "MAR")
+                    model_filepath, evidence_filepath, _, solution_filepath = get_instance_filepaths(problem_name, "MAR")
                     instance = read_instance(model_filepath; evidence_filepath, solution_filepath)
                     ref_sol = instance.reference_solution
                     obsvars = instance.obsvars

@@ -3,7 +3,7 @@ using OMEinsum
 using TensorInference
 
 @testset "gradient-based tensor network solvers" begin
-    model_filepath, evidence_filepath, solution_filepath = get_instance_filepaths("Promedus_14", "MAR")
+    model_filepath, evidence_filepath, _, solution_filepath = get_instance_filepaths("Promedus_14", "MAR")
     instance = read_instance(model_filepath; evidence_filepath, solution_filepath)
 
     # does not optimize over open vertices
@@ -16,7 +16,7 @@ using TensorInference
 end
 
 @testset "UAI Reference Solution Comparison" begin
-    model_filepath, evidence_filepath, solution_filepath = get_instance_filepaths("Promedas_70", "MAP")
+    model_filepath, evidence_filepath, _, solution_filepath = get_instance_filepaths("Promedas_70", "MAP")
     instance = read_instance(model_filepath; evidence_filepath, solution_filepath)
     ref_sol = read_solution_file(solution_filepath)[2:end]
     tn = TensorNetworkModel(instance; optimizer = TreeSA(ntrials = 1, niters = 5, βs = 0.1:0.1:100))

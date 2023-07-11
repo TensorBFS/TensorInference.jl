@@ -8,7 +8,7 @@ using TensorInference
 end
 
 @testset "gradient-based tensor network solvers" begin
-    model_filepath, evidence_filepath, solution_filepath = get_instance_filepaths("Promedus_14", "MAR")
+    model_filepath, evidence_filepath, _, solution_filepath = get_instance_filepaths("Promedus_14", "MAR")
     instance = read_instance(model_filepath; evidence_filepath, solution_filepath)
 
     optimizer = TreeSA(ntrials = 1, niters = 2, βs = 1:0.1:40)

@@ -10,6 +10,7 @@ task.
 function get_instance_filepaths(problem_name::AbstractString, task::AbstractString)
     model_filepath = joinpath(artifact"uai2014", task, problem_name * ".uai")
     evidence_filepath = joinpath(artifact"uai2014", task, problem_name * ".uai.evid")
+    query_filepath = joinpath(artifact"uai2014", task, problem_name * ".uai.query")
     solution_filepath = joinpath(artifact"uai2014", task, problem_name * ".uai." * task)
-    return model_filepath, evidence_filepath, solution_filepath
+    return model_filepath, evidence_filepath, query_filepath, solution_filepath
 end
