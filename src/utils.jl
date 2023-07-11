@@ -5,7 +5,7 @@ Parse the problem instance found in `model_filepath` defined in the UAI model
 format.
 
 The UAI file formats are defined in:
-https://personal.utdallas.edu/~vibhav.gogate/uai16-evaluation/uaiformat.html
+https://uaicompetition.github.io/uci-2022/file-formats/
 """
 function read_model_file(model_filepath; factor_eltype = Float64)
     # Read the uai file into an array of lines
@@ -69,7 +69,7 @@ Return the observed variables and values in `evidence_filepath`. If the passed
 file path is an empty string, return empty vectors.
 
 The UAI file formats are defined in:
-https://personal.utdallas.edu/~vibhav.gogate/uai16-evaluation/uaiformat.html
+https://uaicompetition.github.io/uci-2022/file-formats/
 """
 function read_evidence_file(evidence_filepath::AbstractString)
 
@@ -151,7 +151,7 @@ Parse the solution marginals of all variables from the UAI MAR solution file.
 The order of the variables is the same as in the model definition.
 
 The UAI file formats are defined in:
-https://personal.utdallas.edu/~vibhav.gogate/uai16-evaluation/uaiformat.html
+https://uaicompetition.github.io/uci-2022/file-formats/
 """
 function parse_mar_solution_file(rawlines::Vector{String}; factor_eltype = Float64)
 
