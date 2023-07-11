@@ -47,3 +47,12 @@ end
       @test solution == instance.reference_solution
     end
 end
+
+using Artifacts
+include("utils.jl")
+model_filepath, evidence_filepath, query_filepath, solution_filepath = get_instance_filepaths("Segmentation_11", "MMAP")
+instance = read_instance(model_filepath; evidence_filepath, query_filepath, solution_filepath)
+ref_sol = read_solution_file(solution_filepath)[2:end]
+
+optimizer = TreeSA(ntrials=1, niters=2, βs=1:0.1:40)
+mmap = MMAPModel(instance; marginalized=setdiff(1:instance.nvars, instance.queryvars), optimizer)

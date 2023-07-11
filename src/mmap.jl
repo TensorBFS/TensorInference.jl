@@ -60,14 +60,14 @@ $(TYPEDSIGNATURES)
 """
 function MMAPModel(instance::UAIInstance; marginalized, openvertices = (), optimizer = GreedyMethod(), simplifier = nothing)::MMAPModel
     return MMAPModel(
-        1:(instance.nvars), instance.factors; marginalized, fixedvertices = Dict(zip(instance.obsvars, instance.obsvals)), optimizer, simplifier, openvertices
+        1:(instance.nvars), instance.cards, instance.factors; marginalized, fixedvertices = Dict(zip(instance.obsvars, instance.obsvals)), optimizer, simplifier, openvertices
     )
 end
 
 """
 $(TYPEDSIGNATURES)
 """
-function MMAPModel(vars::AbstractVector{LT}, factors::Vector{<:Factor{T}}; marginalized, openvertices = (),
+function MMAPModel(vars::AbstractVector{LT}, cards::AbstractVector{Int}, factors::Vector{<:Factor{T}}; marginalized, openvertices = (),
     fixedvertices = Dict{LT, Int}(),
     optimizer = GreedyMethod(), simplifier = nothing,
     marginalize_optimizer = GreedyMethod(), marginalize_simplifier = nothing
@@ -77,7 +77,7 @@ function MMAPModel(vars::AbstractVector{LT}, factors::Vector{<:Factor{T}}; margi
     if !isempty(setdiff(iy, vars))
         error("Marginalized variables should not contain any output variable.")
     end
-    all_tensors = [[ones(T, 2) for _ in 1:length(vars)]..., getfield.(factors, :vals)...]
+    all_tensors = [[ones(T, cards[i]) for i in 1:length(vars)]..., getfield.(factors, :vals)...]
     size_dict = OMEinsum.get_size_dict(all_ixs, all_tensors)
 
     # detect clusters for marginalize variables
