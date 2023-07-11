@@ -17,6 +17,10 @@ end
     include("mmap.jl")
 end
 
+@testset "PR" begin
+    include("pr.jl")
+end
+
 using CUDA
 if CUDA.functional()
     include("cuda.jl")

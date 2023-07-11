@@ -8,24 +8,42 @@ using TensorInference
 end
 
 @testset "gradient-based tensor network solvers" begin
-    model_filepath, evidence_filepath, solution_filepath = get_instance_filepaths("Promedus_14", "MAR")
+    model_filepath, evidence_filepath, _, solution_filepath = get_instance_filepaths("Promedus_14", "MAR")
     instance = read_instance(model_filepath; evidence_filepath, solution_filepath)
 
     optimizer = TreeSA(ntrials = 1, niters = 2, βs = 1:0.1:40)
     tn_ref = TensorNetworkModel(instance; optimizer)
-    # does not marginalize any var
+
+    # Does not marginalize any var
     mmap = MMAPModel(instance; marginalized = Int[], optimizer)
     @debug(mmap)
     @test maximum_logp(tn_ref) ≈ maximum_logp(mmap)
 
-    # marginalize all vars
+    # Marginalize all vars
     mmap2 = MMAPModel(instance; marginalized = collect(1:(instance.nvars)), optimizer)
     @debug(mmap2)
     @test Array(probability(tn_ref))[] ≈ exp(maximum_logp(mmap2)[])
 
-    # does not optimize over open vertices
+    # Does not optimize over open vertices
     mmap3 = MMAPModel(instance; marginalized = [2, 4, 6], optimizer)
     @debug(mmap3)
     logp, config = most_probable_config(mmap3)
     @test log_probability(mmap3, config) ≈ logp
+
+end
+
+@testset "UAI Reference Solution Comparison" begin
+    problems = [
+        ("Segmentation_12", TreeSA(ntrials = 1, niters = 2, βs = 1:0.1:40)),
+        # ("Segmentation_13", TreeSA(ntrials = 1, niters = 2, βs = 1:0.1:40)), # fails!
+        # ("Segmentation_14", TreeSA(ntrials = 1, niters = 2, βs = 1:0.1:40))  # fails!
+    ]
+    for (problem_name, optimizer) in problems
+      @info "Testing: $problem_name"
+      model_filepath, evidence_filepath, query_filepath, solution_filepath = get_instance_filepaths(problem_name, "MMAP")
+      instance = read_instance(model_filepath; evidence_filepath, query_filepath, solution_filepath)
+      model = MMAPModel(instance; marginalized = setdiff(1:(instance.nvars), instance.queryvars), optimizer)
+      _, solution = most_probable_config(model)
+      @test solution == instance.reference_solution
+    end
 end
