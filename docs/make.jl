@@ -6,6 +6,7 @@ using Documenter, Literate
 # Literate
 const EXAMPLE_DIR = pkgdir(TensorInference, "examples")
 const LITERATE_GENERATED_DIR = pkgdir(TensorInference, "docs", "src", "generated")
+mkpath(LITERATE_GENERATED_DIR)
 for each in readdir(EXAMPLE_DIR)
     workdir = joinpath(LITERATE_GENERATED_DIR, each)
     cp(joinpath(EXAMPLE_DIR, each), workdir; force=true)
