@@ -48,7 +48,7 @@ end
         ("Segmentation", TreeSA(ntrials = 1, niters = 5, βs = 0.1:0.1:100))  # greedy also works
     ]
     for (problem_set, optimizer) in problem_sets
-        @testset "$(problem_set) problem_set" begin
+        @testset "$(problem_set) problem set" begin
             # Capture the problem names that belong to the current problem set
             problem_names = get_problem_names(problem_set, "MAR")
             for problem_name in problem_names
