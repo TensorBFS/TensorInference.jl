@@ -24,6 +24,7 @@ $(TYPEDEF)
 
 * `obsvars` is a vector of observed variables,
 * `obsvals` is a vector of observed values,
+* `queryvars` is a vector of query variables,
 * `reference_solution` is a vector with the reference solution.
 """
 struct UAIInstance{ET, FT <: Factor{ET}}
@@ -34,6 +35,7 @@ struct UAIInstance{ET, FT <: Factor{ET}}
 
     obsvars::Vector{Int}
     obsvals::Vector{Int}
+    queryvars::Vector{Int}
     reference_solution::Union{Vector{Vector{ET}}, Vector{Int}}
 end
 

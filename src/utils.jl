@@ -220,13 +220,15 @@ Read a UAI problem instance from a file.
 function read_instance(
     model_filepath::AbstractString;
     evidence_filepath::AbstractString = "",
+    query_filepath::AbstractString = "",
     solution_filepath::AbstractString = "",
     eltype = Float64
 )::UAIInstance
     nvars, cards, ncliques, factors = read_model_file(model_filepath; factor_eltype = eltype)
     obsvars, obsvals = read_evidence_file(evidence_filepath)
+    queryvars = read_query_file(query_filepath)
     reference_solution = isempty(solution_filepath) ? Vector{eltype}[] : read_solution_file(solution_filepath)
-    return UAIInstance(nvars, ncliques, cards, factors, obsvars, obsvals, reference_solution)
+    return UAIInstance(nvars, ncliques, cards, factors, obsvars, obsvals, queryvars, reference_solution)
 end
 
 function read_instance_from_string(uai::AbstractString; eltype = Float64)::UAIInstance
