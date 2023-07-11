@@ -122,40 +122,39 @@ function read_query_file(query_filepath::AbstractString)
 end
 
 function read_solution_file(solution_filepath::AbstractString; factor_eltype = Float64)
+
     result = Vector{factor_eltype}[]
     extension = splitext(solution_filepath)[2]
-    if extension == ".MAR"
-        return read_mar_solution_file(solution_filepath; factor_eltype)
-    elseif extension == ".MAP" || extension == ".MMAP"
-        # Return all elements except the first in the last line of the file as a vector of integers
-        result = open(solution_filepath) do file
-                     readlines(file)
-                 end |> last |> split |> x -> x[2:end] |> x -> parse.(Int, x)
-    elseif extension == ".PR"
-        # Extract all elements except the first from the last line of the file
-        # and return them as a vector of integers
-        result = open(solution_filepath) do file
-                     readlines(file)
-                 end |> last |> x -> x[1] |> x -> parse.(Int, x) |> x -> Vector([x])
+
+    # Read the solution file into an array of lines
+    rawlines = open(solution_filepath) do file
+        readlines(file)
     end
+
+    if extension == ".MAR"
+        result = parse_mar_solution_file(rawlines; factor_eltype)
+    elseif extension == ".MAP" || extension == ".MMAP"
+        # Return all elements except the first in the last line as a vector of integers
+        result = rawlines |> last |> split |> x -> x[2:end] |> x -> parse.(Int, x)
+    elseif extension == ".PR"
+        # Extract all elements except the first from the last line and return
+        # them as a vector of integers
+        result = rawlines |> last |> first |> x -> parse.(Int, x) |> x -> Vector([x])
+    end
+
     return result
 end
 
 """
 $(TYPEDSIGNATURES)
 
-Return the marginals of all variables. The order of the variables is the same
-as in the model
+Parse the solution marginals of all variables from the UAI MAR solution file.
+The order of the variables is the same as in the model definition.
 
 The UAI file formats are defined in:
 https://personal.utdallas.edu/~vibhav.gogate/uai16-evaluation/uaiformat.html
 """
-function read_mar_solution_file(solution_filepath::AbstractString; factor_eltype = Float64)
-
-    # Read the uai mar file into an array of lines
-    rawlines = open(solution_filepath) do file
-        readlines(file)
-    end
+function parse_mar_solution_file(rawlines::Vector{String}; factor_eltype = Float64)
 
     parsed_margs = split(rawlines[2]) |> x -> x[2:end] |> x -> parse.(factor_eltype, x)
 
