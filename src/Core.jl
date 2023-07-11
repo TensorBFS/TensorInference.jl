@@ -36,7 +36,7 @@ struct UAIInstance{ET, FT <: Factor{ET}}
     obsvars::Vector{Int}
     obsvals::Vector{Int}
     queryvars::Vector{Int}
-    reference_solution::Union{Vector{Vector{ET}}, Vector{Int}}
+    reference_solution::Union{Vector{Vector{ET}}, Vector{Int}, Float64}
 end
 
 """

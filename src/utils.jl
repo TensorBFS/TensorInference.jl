@@ -135,11 +135,10 @@ function read_solution_file(solution_filepath::AbstractString; factor_eltype = F
         result = parse_mar_solution_file(rawlines; factor_eltype)
     elseif extension == ".MAP" || extension == ".MMAP"
         # Return all elements except the first in the last line as a vector of integers
-        result = rawlines |> last |> split |> x -> x[2:end] |> x -> parse.(Int, x)
+        result = last(rawlines) |> split |> x -> x[2:end] |> x -> parse.(Int, x)
     elseif extension == ".PR"
-        # Extract all elements except the first from the last line and return
-        # them as a vector of integers
-        result = rawlines |> last |> first |> x -> parse.(Int, x) |> x -> Vector([x])
+        # Parse the number in the last line as a floating point
+        result = last(rawlines) |> x -> parse(Float64, x)
     end
 
     return result
