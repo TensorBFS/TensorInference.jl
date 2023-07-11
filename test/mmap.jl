@@ -36,8 +36,8 @@ end
 
     problems = [
         ("Segmentation_12", TreeSA(ntrials = 1, niters = 2, βs = 1:0.1:40)),
-        # ("Segmentation_13", TreeSA(ntrials = 1, niters = 2, βs = 1:0.1:40)),
-        # ("Segmentation_14", TreeSA(ntrials = 1, niters = 2, βs = 1:0.1:40))
+        # ("Segmentation_13", TreeSA(ntrials = 1, niters = 2, βs = 1:0.1:40)), # fails!
+        # ("Segmentation_14", TreeSA(ntrials = 1, niters = 2, βs = 1:0.1:40))  # fails!
     ]
 
     for (problem_name, optimizer) in problems
