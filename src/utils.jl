@@ -5,7 +5,7 @@ Parse the problem instance found in `model_filepath` defined in the UAI model
 format.
 
 The UAI file formats are defined in:
-https://personal.utdallas.edu/~vibhav.gogate/uai16-evaluation/uaiformat.html
+https://uaicompetition.github.io/uci-2022/file-formats/
 """
 function read_model_file(model_filepath; factor_eltype = Float64)
     # Read the uai file into an array of lines
@@ -69,7 +69,7 @@ Return the observed variables and values in `evidence_filepath`. If the passed
 file path is an empty string, return empty vectors.
 
 The UAI file formats are defined in:
-https://personal.utdallas.edu/~vibhav.gogate/uai16-evaluation/uaiformat.html
+https://uaicompetition.github.io/uci-2022/file-formats/
 """
 function read_evidence_file(evidence_filepath::AbstractString)
 
@@ -93,35 +93,67 @@ function read_evidence_file(evidence_filepath::AbstractString)
     return obsvars, obsvals
 end
 
+"""
+$(TYPEDSIGNATURES)
+
+Return the query variables in `query_filepath`. If the passed file path is an
+empty string, return an empty vector.
+
+The UAI file formats are defined in:
+https://uaicompetition.github.io/uci-2022/file-formats/
+"""
+function read_query_file(query_filepath::AbstractString)
+    isempty(query_filepath) && return Int64[]
+
+    # Read the first line of the uai query file
+    line = open(query_filepath) do file
+        readlines(file)
+    end |> first
+
+    # Separate the number of query vars and their indices
+    nqueryvars, queryvars_zero_based = split(line) |> x -> parse.(Int, x) |> x -> (x[1], x[2:end])
+
+    # Convert to 1-based indexing
+    queryvars = queryvars_zero_based .+ 1
+
+    @assert nqueryvars == length(queryvars)
+
+    return queryvars
+end
+
 function read_solution_file(solution_filepath::AbstractString; factor_eltype = Float64)
+
     result = Vector{factor_eltype}[]
     extension = splitext(solution_filepath)[2]
-    if extension == ".MAR"
-        return read_mar_solution_file(solution_filepath; factor_eltype)
-    elseif extension == ".MAP" || extension == ".MMAP" || extension == ".PR"
-      # Return the last line of the file as a vector of integers
-      result = open(solution_filepath) do file
-          readlines(file)
-      end |> last |> split |> x -> parse.(Int, x)
+
+    # Read the solution file into an array of lines
+    rawlines = open(solution_filepath) do file
+        readlines(file)
     end
+
+    if extension == ".MAR"
+        result = parse_mar_solution_file(rawlines; factor_eltype)
+    elseif extension == ".MAP" || extension == ".MMAP"
+        # Return all elements except the first in the last line as a vector of integers
+        result = last(rawlines) |> split |> x -> x[2:end] |> x -> parse.(Int, x)
+    elseif extension == ".PR"
+        # Parse the number in the last line as a floating point
+        result = last(rawlines) |> x -> parse(Float64, x)
+    end
+
     return result
 end
 
 """
 $(TYPEDSIGNATURES)
 
-Return the marginals of all variables. The order of the variables is the same
-as in the model
+Parse the solution marginals of all variables from the UAI MAR solution file.
+The order of the variables is the same as in the model definition.
 
 The UAI file formats are defined in:
-https://personal.utdallas.edu/~vibhav.gogate/uai16-evaluation/uaiformat.html
+https://uaicompetition.github.io/uci-2022/file-formats/
 """
-function read_mar_solution_file(solution_filepath::AbstractString; factor_eltype = Float64)
-
-    # Read the uai mar file into an array of lines
-    rawlines = open(solution_filepath) do file
-        readlines(file)
-    end
+function parse_mar_solution_file(rawlines::Vector{String}; factor_eltype = Float64)
 
     parsed_margs = split(rawlines[2]) |> x -> x[2:end] |> x -> parse.(factor_eltype, x)
 
@@ -192,13 +224,15 @@ Read a UAI problem instance from a file.
 function read_instance(
     model_filepath::AbstractString;
     evidence_filepath::AbstractString = "",
+    query_filepath::AbstractString = "",
     solution_filepath::AbstractString = "",
     eltype = Float64
 )::UAIInstance
     nvars, cards, ncliques, factors = read_model_file(model_filepath; factor_eltype = eltype)
     obsvars, obsvals = read_evidence_file(evidence_filepath)
+    queryvars = read_query_file(query_filepath)
     reference_solution = isempty(solution_filepath) ? Vector{eltype}[] : read_solution_file(solution_filepath)
-    return UAIInstance(nvars, ncliques, cards, factors, obsvars, obsvals, reference_solution)
+    return UAIInstance(nvars, ncliques, cards, factors, obsvars, obsvals, queryvars, reference_solution)
 end
 
 function read_instance_from_string(uai::AbstractString; eltype = Float64)::UAIInstance
