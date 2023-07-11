@@ -31,7 +31,7 @@ logp, cfg = most_probable_config(tnet)
 
 # Get the maximum log-probabilities (MMAP)
 # To get the probability of lung cancer, we need to marginalize out other variables.
-mmap = MMAPModel(instance; marginalized=[1,2,3,5,6,8])
+mmap = MMAPModel(instance; queryvars=[4,7])
 # We get the most probable configurations on [4, 7]
 most_probable_config(mmap)
 # The total probability of having lung cancer is roughly half.

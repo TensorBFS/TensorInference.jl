@@ -15,17 +15,17 @@ end
     tn_ref = TensorNetworkModel(instance; optimizer)
 
     # Does not marginalize any var
-    mmap = MMAPModel(instance; marginalized = Int[], optimizer)
+    mmap = MMAPModel(instance; queryvars = collect(1:instance.nvars), optimizer)
     @debug(mmap)
     @test maximum_logp(tn_ref) ≈ maximum_logp(mmap)
 
     # Marginalize all vars
-    mmap2 = MMAPModel(instance; marginalized = collect(1:(instance.nvars)), optimizer)
+    mmap2 = MMAPModel(instance; queryvars = Int[], optimizer)
     @debug(mmap2)
     @test Array(probability(tn_ref))[] ≈ exp(maximum_logp(mmap2)[])
 
     # Does not optimize over open vertices
-    mmap3 = MMAPModel(instance; marginalized = [2, 4, 6], optimizer)
+    mmap3 = MMAPModel(instance; queryvars = setdiff(1:instance.nvars, [2, 4, 6]), optimizer)
     @debug(mmap3)
     logp, config = most_probable_config(mmap3)
     @test log_probability(mmap3, config) ≈ logp
@@ -42,17 +42,8 @@ end
       @info "Testing: $problem_name"
       model_filepath, evidence_filepath, query_filepath, solution_filepath = get_instance_filepaths(problem_name, "MMAP")
       instance = read_instance(model_filepath; evidence_filepath, query_filepath, solution_filepath)
-      model = MMAPModel(instance; marginalized = setdiff(1:(instance.nvars), instance.queryvars), optimizer)
+      model = MMAPModel(instance; queryvars = instance.queryvars, optimizer)
       _, solution = most_probable_config(model)
       @test solution == instance.reference_solution
     end
 end
-
-using Artifacts
-include("utils.jl")
-model_filepath, evidence_filepath, query_filepath, solution_filepath = get_instance_filepaths("Segmentation_11", "MMAP")
-instance = read_instance(model_filepath; evidence_filepath, query_filepath, solution_filepath)
-ref_sol = read_solution_file(solution_filepath)[2:end]
-
-optimizer = TreeSA(ntrials=1, niters=2, βs=1:0.1:40)
-mmap = MMAPModel(instance; marginalized=setdiff(1:instance.nvars, instance.queryvars), optimizer)
