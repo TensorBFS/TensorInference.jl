@@ -1,6 +1,6 @@
 # The "Asia" Bayesian network
 
-Please check the Julia code [asia.jl](asia.jl).
+Please check the Julia code [main.jl](main.jl).
 
 The variables and factors for the asia model is described in the [asia.uai](asia.uai) file.
 The UAI file format is detailed in:

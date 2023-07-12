@@ -171,84 +171,40 @@ variables, the query file would contain the following:
 
 ## Results file format (.MAR, .MAP, .MMAP .PR)
 
-The first line must contain only the task solved: `MAR|MAP|MAPP|PR`. The rest of
-the file will contain the solution for the task. Solvers can write more then one
-solution by writing `-BEGIN-` at the head of the new solution. We will only
-consider the last solution in the file. In the example below the task we choose
-is `PR`. We have two solutions. The format of the `<SOLUTION>` part will be
-described below.
+The rest of the file will contain the solution for the task. The first line must
+contain one of the tasks (PR, MPE, MAR, MMAP, or MLC) solved.
 
-    PR
-    <SOLUTION>
-    -BEGIN-
-    <SOLUTION>
+### Marginals, MAR
 
-The first line in each solution will contain the number of evidence samples.
-This will be the number of lines (not include this line) in the solution part.
-Hence each line from here will contain the solution with a different sample of
-evidence - ordered as in the evidence file. If there is no evidence (the first
-line of the evidence file is 0), the output should include the results for the
-empty evidence scenario. This is regarded as a single-evidence case - one with
-the empty evidence.
+A space separated line that includes:
 
-Solvers that can bound their estimation are encouraged to specify if their
-solution is lower or upper bound. Doing so by adding at the end of the solution
-the letters `L` (for lower bound) or `U` (for upper bound).
-
-The line format is as follows (according to the task):
-
-- **Partition function, PR**: Line with the value of the log10 of the partition
-  function. For example, an approximation log10 Pr(e) = -0.2008 which is known
-  to be an upper bound may have a solution line:
-
-      -0.2008 U
-
-- **Most probable explanation, MAP**: A space separated line that includes:
-  1. the number n of model variables, and
-  2. the `MAP` instantiation, a list of value indices for all n variables.
-  For example, an input model with 3 binary variables may have a solution line:
-
-      3 0 1 0
-
-- **Marginals, MAR**: A space separated line that includes:
-  1. The number of variables in the model.
-  2. A list of marginal approximations of all the variables. For each variable
-     its cardinality is first stated, then the probability of each state is
-     stated. The order of the variables is the same as in the model, all data
-     is space separated.
-
-  For example, a model with 3 variables, with cardinalities of 2, 2, 3
+- The number of variables in the model.
+- A list of marginal approximations of all the variables. For each variable its
+  cardinality is first stated, then the probability of each state is stated. The
+  order of the variables is the same as in the model, all data is space
+  separated.
+- For example, a model with 3 variables, with cardinalities of 2, 2, 3
   respectively. The solution might look like this:
 
-      3 2 0.1 0.9 2 0.3 0.7 3 0.2 0.2 0.6
+        3 2 0.1 0.9 2 0.3 0.7 3 0.2 0.2 0.6
 
-- **Beliefs, BEL**: A space separated line that includes:
+### Marginal MAP, MMAP
 
-  1. The number n of model cliques, and
+A space separated line that includes:
 
-  2. A list of belief approximations for all n cliques. Each marginal
-     approximation is specified by a list, starting with the number of entries
-     of the factor, followed by the approximation ``Pr(x|e)`` for each value of
-     ``x`` (where is a vector of the clique variables).
+- The number q of query variables
+- the most probable instantiation, a list of variable value pairs for all q
+  variables.
+- For example, if the solution is an assignment of 0, 1 and 0 to three query
+  variables indexed by 2 3 and 4 respectively, the solution will look as follows
 
-  For example, if an input model has 2 cliques the first with 2 binary variable
-  and the second with 3. The solution line may look like:
+        3 2 0 3 1 4 0
 
-      2 4 0.25 0.25 0.4 0.1 8 0.1 0.05 0.05 0.2 0.1 0.01 0.04 0.45
+### Partition function, PR
 
-  The order of the entries is as in the model description.
+Line with the value of the log10 of the partition function.
 
-Here is a complete example for a solution for the `MAP` task. The evidence file
-contains one evidence samples.
+For example, an approximation ``log10 Pr(e) = -0.2008`` which is known to be an
+upper bound may have a solution line:
 
-    MAP
-    1
-    4 0 2 0 4
-    -BEGIN-
-    1
-    4 0 2 0 4
-
-If a solver does not produce a solution by the given time, it would be
-considered as having failed on the instance. This will be treated as equivalent
-to a naive solution (e.g. bit-wise singleton clique maximum for a `MAP`
-problem).
+    -0.2008
