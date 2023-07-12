@@ -33,7 +33,8 @@ makedocs(;
         "Examples" => [
             "Asia network" => "generated/asia/main.md",
            ],
-        "Performance Tips" => "performance.md",
+        "UAI file formats" => "uai-file-formats.md",
+        "Performance tips" => "performance.md",
         "References" => "ref.md",
     ],
     doctest = false,
