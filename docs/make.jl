@@ -26,7 +26,7 @@ makedocs(;
         prettyurls=get(ENV, "CI", "false") == "true",
         canonical="https://TensorBFS.github.io/TensorInference.jl",
         edit_link="main",
-        assets=String[],
+        assets = [joinpath("assets", "favicon.ico")],
     ),
     pages=[
         "Home" => "index.md",
