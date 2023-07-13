@@ -1,15 +1,15 @@
 # Background
 
 *TensorInference* implements efficient methods to perform Bayesian inference in
-probabilistic graphical models, such as Bayesian Networks or Markov random
+*probabilistic graphical models*, such as Bayesian Networks or Markov random
 fields.
 
-## Probabilistic graphical models (PGMs)
+## Probabilistic graphical models
 
-PGMs capture the mathematical modeling of reasoning in the presence of
-uncertainty. Bayesian networks and Markov random fields are popular types of
-PGMs. Consider the following Bayesian network known as the *ASIA network*
-[^lauritzen1988local]. 
+Probabilistic graphical models (PGMs) capture the mathematical modeling of
+reasoning in the presence of uncertainty. Bayesian networks and Markov random
+fields are popular types of PGMs. Consider the following Bayesian network known
+as the *ASIA network* [^lauritzen1988local]. 
 
 | **Random variable**  | **Meaning**                     |
 |        :---:         | :---                            |
@@ -90,22 +90,22 @@ P(\bm{V}) = \prod_{V\in\bm{V}} P(V \mid pa(V)).
 
 ## The inference tasks
 
-Given a set of **random variables** ``\bm{V}`` and their **joint
-distribution** ``P(\bm{V})``, compute one or more conditional
-distributions over a set of **query variables** ``\bm{Q}`` given observations
-``\bm{e}`` for the set of **observed variables** ``\bm{E}``.
-
-Tasks are each with respect to a graphical model ``\mathcal{M} = \{\bm{V},
-\bm{D}, \bm{\phi}\}``, where:
+Each task is performed with respect to a graphical model, denoted as
+``\mathcal{M} = \{\bm{V}, \bm{D}, \bm{\phi}\}``, where:
 
 ``\bm{V} = \{ V_1 , V_2 , \dots , V_N \}`` is the set of the model’s variables
 
-``\bm{D} = \{ D_{V_1} , D_{V_2} , \dots , D_{V_N} \}`` is the set of discrete domains for each variable
+``\bm{D} = \{ D_{V_1} , D_{V_2} , \dots , D_{V_N} \}`` is the set of discrete
+domains for each variable, and
 
-``\bm{\phi} = \{ \phi_1 , \phi_2 , \dots , \phi_N \}`` is the set of the model’s functions
+``\bm{\phi} = \{ \phi_1 , \phi_2 , \dots , \phi_N \}`` is the set of factors
+that define the joint probability distribution of the model.
 
-``\bm{V}`` can be further partitioned into two sets, evidence variables
-``\bm{E}`` and the rest ``\bm{V}^\prime = \bm{V} \setminus \bm{E}``.
+The variable set ``\bm{V}`` can be further partitioned into two subsets: the
+evidence variables ``\bm{E}`` and the remaining variables ``\bm{V}^\prime =
+\bm{V} \setminus \bm{E}``. Furthermore, within the set ``\bm{V}^\prime``, the
+subset ``\bm{Q}`` denotes the query variables. These are the variables for which
+we aim to estimate or infer values.
 
 ```@eval
 using TikzPictures
