@@ -21,7 +21,7 @@ jobs:
           version: '1'
       # TexLive installation (taken from https://github.com/JuliaTeX/TikzPictures.jl/blob/master/.github/workflows/CI.yml)
       - name: Install TexLive
-        run: sudo apt-get install pdf2svg texlive-latex-base texlive-binaries texlive-pictures texlive-latex-extra texlive-luatex
+        run: sudo apt-get update --fix-missing; sudo apt-get install pdf2svg texlive-latex-base texlive-binaries texlive-pictures texlive-latex-extra texlive-luatex
       - name: Install dependencies
         run: julia --project=docs/ -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate()'
       - name: Build and deploy
