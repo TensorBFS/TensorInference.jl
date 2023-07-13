@@ -36,7 +36,10 @@ makedocs(;
            ],
         "UAI file formats" => "uai-file-formats.md",
         "Performance tips" => "performance.md",
-        "References" => "ref.md",
+        "API" => [
+          "Public" => "api/public.md",
+          "Internal" => "api/internal.md"
+        ],
     ],
     doctest = false,
 )
