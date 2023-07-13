@@ -26,15 +26,20 @@ makedocs(;
         prettyurls=get(ENV, "CI", "false") == "true",
         canonical="https://TensorBFS.github.io/TensorInference.jl",
         edit_link="main",
-        assets=String[],
+        assets = [joinpath("assets", "favicon.ico")],
     ),
     pages=[
         "Home" => "index.md",
+        "Background" => "background.md",
         "Examples" => [
             "Asia network" => "generated/asia/main.md",
            ],
-        "Performance Tips" => "performance.md",
-        "References" => "ref.md",
+        "UAI file formats" => "uai-file-formats.md",
+        "Performance tips" => "performance.md",
+        "API" => [
+          "Public" => "api/public.md",
+          "Internal" => "api/internal.md"
+        ],
     ],
     doctest = false,
 )

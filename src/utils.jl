@@ -121,6 +121,15 @@ function read_query_file(query_filepath::AbstractString)
     return queryvars
 end
 
+"""
+$(TYPEDSIGNATURES)
+
+Return the solution in `solution_filepath`. Returns an empty vector if the
+extension is not supported.
+
+The UAI file formats are defined in:
+https://uaicompetition.github.io/uci-2022/file-formats/
+"""
 function read_solution_file(solution_filepath::AbstractString; factor_eltype = Float64)
 
     result = Vector{factor_eltype}[]

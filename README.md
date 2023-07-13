@@ -1,4 +1,6 @@
-# TensorInference
+<p align="center">
+<img width="700px" src="./docs/src/assets/logo-with-name.svg"/>
+</p>
 
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://TensorBFS.github.io/TensorInference.jl/stable/)
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://TensorBFS.github.io/TensorInference.jl/dev/)

@@ -1,3 +1,10 @@
+"""
+Main module for `TensorInference.jl` -- A toolbox for probabilistic inference using contraction of tensor networks.
+
+# Exports
+
+$(EXPORTS)
+"""
 module TensorInference
 
 using OMEinsum, LinearAlgebra
