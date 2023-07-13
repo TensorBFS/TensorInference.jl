@@ -11,17 +11,6 @@ reasoning in the presence of uncertainty. Bayesian networks and Markov random
 fields are popular types of PGMs. Consider the following Bayesian network known
 as the *ASIA network* [^lauritzen1988local]. 
 
-| **Random variable**  | **Meaning**                     |
-|        :---:         | :---                            |
-|        ``A``         | Recent trip to Asia             |
-|        ``T``         | Patient has tuberculosis        |
-|        ``S``         | Patient is a smoker             |
-|        ``L``         | Patient has lung cancer         |
-|        ``B``         | Patient has bronchitis          |
-|        ``E``         | Patient hast ``T`` and/or ``L`` |
-|        ``X``         | Chest X-Ray is positive         |
-|        ``D``         | Patient has dyspnoea            |
-
 ```@eval
 using TikzPictures
 
@@ -70,6 +59,17 @@ tp = TikzPicture(
 save(SVG(joinpath(@__DIR__, "asia-bayesian-network")), tp)
 ```
 ![](asia-bayesian-network.svg)
+
+| **Random variable**  | **Meaning**                     |
+|        :---:         | :---                            |
+|        ``A``         | Recent trip to Asia             |
+|        ``T``         | Patient has tuberculosis        |
+|        ``S``         | Patient is a smoker             |
+|        ``L``         | Patient has lung cancer         |
+|        ``B``         | Patient has bronchitis          |
+|        ``E``         | Patient hast ``T`` and/or ``L`` |
+|        ``X``         | Chest X-Ray is positive         |
+|        ``D``         | Patient has dyspnoea            |
 
 The ASIA network corresponds a simplified example from the context of medical
 diagnosis that describes the probabilistic relationships between different
