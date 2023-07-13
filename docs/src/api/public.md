@@ -32,33 +32,34 @@ TensorInference
 ## Types
 
 ```@docs
-RescaledArray
-TreeSA
 GreedyMethod
 KaHyParBipartite
-SABipartite
 MergeGreedy
 MergeVectors
-UAIInstance
-TensorNetworkModel
+SABipartite
+TreeSA
 MMAPModel
+RescaledArray
+TensorNetworkModel
+UAIInstance
 ```
 
 ## Functions
 
 ```@docs
 contraction_complexity
-read_model_file
-read_td_file
-read_evidence_file
-read_solution_file
-read_instance
-get_vars
 get_cards
+get_vars
 log_probability
-probability
 marginals
-most_probable_config
 maximum_logp
+most_probable_config
+probability
+read_evidence_file
+read_instance
+read_model_file
+read_solution_file
+read_td_file
 sample
+set_evidence!
 ```
