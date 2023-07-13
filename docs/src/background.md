@@ -209,13 +209,14 @@ explanation or prediction according to the model.
 
 ### Marginal Maximum a Posteriori (MMAP)
 
-Computing the most likely assignment to the query variables, ``\bm{V}_M \subset
-\bm{V}^{\prime}`` after marginalizing out the remaining variables ``\bm{V}_S =
-\bm{V}^{\prime} \setminus \bm{V}_M``:
+Computing the most likely assignment to the query variables, ``\bm{Q} \subset
+\bm{V}^{\prime}`` after marginalizing out the remaining variables ``\bm{Z} =
+\bm{V}^{\prime} \setminus \bm{Q}``, also known as *hidden* or *latent*
+variables:
 
 ```math
-MMAP(V_i \mid \bm{E}=e) = \arg \max_{V_M \in \bm{V}_M} \sum_{V_S \in \bm{V}_S}
-\prod_{\phi \in \bm{\phi}} f(V_M, V_S, e)
+MMAP(V_i \mid \bm{E}=e) = \arg \max_{Q \in \bm{Q}} \sum_{Z \in \bm{Z}}
+\prod_{\phi \in \bm{\phi}} \phi(Q, Z, e)
 ```
 
 This task is essentially a combination of the MAR and MAP tasks. The MMAP task
