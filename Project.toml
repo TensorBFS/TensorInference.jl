@@ -1,7 +1,7 @@
 name = "TensorInference"
 uuid = "c2297e78-99bd-40ad-871d-f50e56b81012"
 authors = ["Jin-Guo Liu", "Martin Roa Villescas"]
-version = "0.1.1"
+version = "0.1.0"
 
 [deps]
 CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
