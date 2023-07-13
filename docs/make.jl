@@ -30,6 +30,7 @@ makedocs(;
     ),
     pages=[
         "Home" => "index.md",
+        "Background" => "background.md",
         "Examples" => [
             "Asia network" => "generated/asia/main.md",
            ],

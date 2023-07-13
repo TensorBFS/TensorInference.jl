@@ -12,6 +12,9 @@ probabilistic inference in graphical models.
 
 Solutions to the most common probabilistic inference tasks, including:
 
+- **Probability of evidence (PR)**: Calculates the total probability of the
+  observed evidence across all possible states of the unobserved variables.
+
 - **Marginal inference (MAR)**: Computes the probability distribution of a
   subset of variables, ignoring the states of all other variables.
 
@@ -21,12 +24,10 @@ Solutions to the most common probabilistic inference tasks, including:
 - **Marginal Maximum a Posteriori (MMAP)**: Finds the most probable state of a
   subset of variables, averaging out the uncertainty over the remaining ones.
 
-- **Probability of evidence (PR)**: Calculates the total probability of the
-  observed evidence across all possible states of the unobserved variables.
-
 ## Outline
 ```@contents
 Pages = [
+  "background.md",
   "generated/asia/README.md",
   "uai-file-formats.md",
   "performance.md",
