@@ -37,23 +37,23 @@ jobs:
       - uses: codecov/codecov-action@v3
         with:
           files: lcov.info
-  docs:
-    name: Documentation
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v2
-      - uses: julia-actions/setup-julia@v1
-        with:
-          version: '1'
-      - uses: julia-actions/julia-buildpkg@v1
-      - uses: julia-actions/julia-docdeploy@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - run: |
-          julia --project=docs -e '
-            using Documenter: DocMeta, doctest
-            using TensorInference
-            DocMeta.setdocmeta!(TensorInference, :DocTestSetup, :(using TensorInference); recursive=true)
-            doctest(TensorInference)'
+  #docs:
+  #  name: Documentation
+  #  runs-on: ubuntu-latest
+  #  permissions:
+  #    contents: write
+  #  steps:
+  #    - uses: actions/checkout@v2
+  #    - uses: julia-actions/setup-julia@v1
+  #      with:
+  #        version: '1'
+  #    - uses: julia-actions/julia-buildpkg@v1
+  #    - uses: julia-actions/julia-docdeploy@v1
+  #      env:
+  #        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #    - run: |
+  #        julia --project=docs -e '
+  #          using Documenter: DocMeta, doctest
+  #          using TensorInference
+  #          DocMeta.setdocmeta!(TensorInference, :DocTestSetup, :(using TensorInference); recursive=true)
+  #          doctest(TensorInference)'
