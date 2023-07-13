@@ -64,7 +64,7 @@ tp = TikzPicture(
   \draw [myarrow] (e) edge (d);
   \draw [myarrow] (b) edge (d);
   """,
-  options="transform shape, scale=1.4",
+  options="every node/.style={scale=1.5}",
   preamble="\\input{" * joinpath(@__DIR__, "assets", "preambles", "asia-network") * "}",
 )
 save(SVG(joinpath(@__DIR__, "asia-bayesian-network")), tp)
@@ -153,7 +153,7 @@ tp = TikzPicture(
     \draw[myarrow] (ie) -- (map);
     \draw[myarrow] (ie) -- (mmap);
   """,
-  options="transform shape, scale=1.4",
+  options="transform shape, scale=1.8",
   preamble="\\input{" * joinpath(@__DIR__, "assets", "preambles", "the-inference-tasks") * "}",
 )
 save(SVG("the-inference-tasks"), tp)
