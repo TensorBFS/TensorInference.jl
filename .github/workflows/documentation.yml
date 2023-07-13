@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: julia-actions/setup-julia@v1
+      - uses: julia-actions/setup-julia@latest
         with:
           version: '1'
       # TexLive installation (taken from https://github.com/JuliaTeX/TikzPictures.jl/blob/master/.github/workflows/CI.yml)
