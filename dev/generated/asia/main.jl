@@ -1,8 +1,8 @@
 # # The ASIA network
 
-# The graph below corresponds to the *ASIA network*, a simple Bayesian model
-# used extensively in educational settings. It was introduced by Lauritzen in
-# 1988 [^lauritzen1988local].
+# The graph depicted below represents the structure of the renowned *ASIA
+# network*, a simple Bayesian model used extensively in educational settings.
+# It was introduced by Lauritzen in 1988 [^lauritzen1988local].
 
 # ```
 # ┌─┐         ┌─┐
@@ -34,8 +34,6 @@
 # |        ``E``         | Patient hast ``T`` and/or ``L`` |
 # |        ``X``         | Chest X-Ray is positive         |
 # |        ``D``         | Patient has dyspnoea            |
-
-# ---
 
 # We now demonstrate how to use the TensorInference.jl package for conducting a
 # variety of inference tasks on the Asia network.
