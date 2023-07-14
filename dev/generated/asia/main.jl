@@ -1,38 +1,116 @@
+# # The ASIA network
+
+# The graph below corresponds to the *ASIA network*, a simple Bayesian model
+# used extensively in educational settings. It was introduced by Lauritzen in
+# 1988 [^lauritzen1988local].
+
+# ```
+# ┌─┐         ┌─┐
+# │A│      ┌──┤S├──┐
+# └┬┘      │  └─┘  │
+#  │       │       │
+#  ▼       ▼       ▼
+# ┌─┐     ┌─┐     ┌─┐
+# │T│     │L│     │B│
+# └┬┘     └┬┘     └┬┘
+#  │  ┌─┐  │       │
+#  └─►│E│◄─┘       │
+#     └┬┘          │
+# ┌─┐  │  ┌─┐      │
+# │X│◄─┘  │D│◄─────┘
+# └─┘     └─┘
+# ```
+
+# The table below explains the meanings of each random variable used in the
+# ASIA network model.
+
+# | **Random variable**  | **Meaning**                     |
+# |        :---:         | :---                            |
+# |        ``A``         | Recent trip to Asia             |
+# |        ``T``         | Patient has tuberculosis        |
+# |        ``S``         | Patient is a smoker             |
+# |        ``L``         | Patient has lung cancer         |
+# |        ``B``         | Patient has bronchitis          |
+# |        ``E``         | Patient hast ``T`` and/or ``L`` |
+# |        ``X``         | Chest X-Ray is positive         |
+# |        ``D``         | Patient has dyspnoea            |
+
+# ---
+
+# We now demonstrate how to use the TensorInference.jl package for conducting a
+# variety of inference tasks on the Asia network.
+
+# Import the TensorInference package, which provides the functionality needed
+# for working with tensor networks and probabilistic graphical models.
 using TensorInference
 
-# Load the model that detailed in the README and `asia.uai`.
+# ---
+
+# Load the ASIA network model from the `asia.uai` file located in the examples directory.
+# See [Model file format (.uai)](@ref) for a description of the format of this file.
 instance = read_instance(pkgdir(TensorInference, "examples", "asia", "asia.uai"))
-tnet = TensorNetworkModel(instance)
 
-# Get the probabilities (PR)
-probability(tnet)
+# ---
 
-# Get the marginal probabilities (MAR)
-marginals(tnet) .|> first
+# Create a tensor network representation of the loaded model.
+tn = TensorNetworkModel(instance)
 
-# The corresponding variables are
-get_vars(tnet)
+# ---
 
-# Set the evidence variables "X-ray" (7) to be positive.
+# Calculate the ``\log_{10}`` partition function 
+probability(tn) |> first |> log10
+
+# ---
+
+# Calculate the marginal probabilities of each random variable in the model.
+marginals(tn)
+
+# ---
+
+# Retrieve the variables associated with the tensor network model.
+get_vars(tn)
+
+# ---
+
+# Set an evidence: Assume that the "X-ray" result (variable 7) is positive.
 set_evidence!(instance, 7=>0)
 
-# Since the evidence variable may change the contraction order, we re-compute the tensor network.
-tnet = TensorNetworkModel(instance)
+# ---
 
-# Get the maximum log-probabilities (MAP)
-maximum_logp(tnet)
+# Since setting an evidence may affect the contraction order of the tensor network, recompute it.
+tn = TensorNetworkModel(instance)
 
-# To sample from the probability model
-sample(tnet, 10)
+# ---
 
-# Get not only the maximum log-probability, but also the most probable conifguration
-# In the most probable configuration, the most probable one is the patient smoke (3) and has lung cancer (4)
-logp, cfg = most_probable_config(tnet)
+# Calculate the maximum log-probability among all configurations.
+maximum_logp(tn)
 
-# Get the maximum log-probabilities (MMAP)
-# To get the probability of lung cancer, we need to marginalize out other variables.
+# ---
+
+# Generate 10 samples from the probability distribution represented by the model.
+sample(tn, 10)
+
+# ---
+
+# Retrieve not only the maximum log-probability but also the most probable configuration.
+# In this configuration, the most likely outcomes are that the patient smokes (variable 3) and has lung cancer (variable 4).
+logp, cfg = most_probable_config(tn)
+
+# ---
+
+# Compute the most probable values of certain variables (e.g., 4 and 7) while marginalizing over others.
+# This is known as Maximum a Posteriori (MAP) estimation.
 mmap = MMAPModel(instance; queryvars=[4,7])
-# We get the most probable configurations on [4, 7]
+
+# ---
+
+# Get the most probable configurations for variables 4 and 7.
 most_probable_config(mmap)
-# The total probability of having lung cancer is roughly half.
+
+# ---
+
+# Compute the total log-probability of having lung cancer. The results suggest that the probability is roughly half.
 log_probability(mmap, [1, 0]), log_probability(mmap, [0, 0])
+
+# [^lauritzen1988local]:
+#     Steffen L Lauritzen and David J Spiegelhalter. Local computations with probabilities on graphical structures and their application to expert systems. *Journal of the Royal Statistical Society: Series B (Methodological)*, 50(2):157–194, 1988.
