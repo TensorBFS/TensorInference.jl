@@ -28,10 +28,11 @@ Solutions to the most common probabilistic inference tasks, including:
 ```@contents
 Pages = [
   "background.md",
-  "generated/asia/README.md",
+  "examples-overview.md",
   "uai-file-formats.md",
   "performance.md",
-  "ref.md",
+  "api/public.md",
+  "api/internal.md",
 ]
 Depth = 1
 ```

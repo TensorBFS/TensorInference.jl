@@ -32,13 +32,14 @@ makedocs(;
         "Home" => "index.md",
         "Background" => "background.md",
         "Examples" => [
+            "Overview" => "examples-overview.md",
             "Asia network" => "generated/asia/main.md",
            ],
         "UAI file formats" => "uai-file-formats.md",
         "Performance tips" => "performance.md",
         "API" => [
-          "Public" => "api/public.md",
-          "Internal" => "api/internal.md"
+            "Public" => "api/public.md",
+            "Internal" => "api/internal.md"
         ],
     ],
     doctest = false,
