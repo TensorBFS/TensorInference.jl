@@ -2,14 +2,21 @@
 
 *TensorInference* implements efficient methods to perform Bayesian inference in
 *probabilistic graphical models*, such as Bayesian Networks or Markov random
-fields.
+fields. This page introduces probabilistic graphical models, provides an example
+using a Bayesian network, and explains what probabilistic inference is,
+including the different tasks it can involve.
 
 ## Probabilistic graphical models
 
-Probabilistic graphical models (PGMs) capture the mathematical modeling of
-reasoning in the presence of uncertainty. Bayesian networks and Markov random
-fields are popular types of PGMs. Consider the following Bayesian network known
-as the *ASIA network* [^lauritzen1988local]. 
+A probabilistic graphical model (PGM) is a mathematical framework that uses
+graphs to compactly represent complex multivariate statistical distributions.
+They are used to reason in the presence of uncertainty. This reasoning process
+is known as *probabilistic inference* and will be defined and discussed in
+detail later on.
+
+*Bayesian networks* and *Markov random fields* are popular types of PGMs. The
+following PGM is an example of a Bayesian network called the *ASIA network*. It
+was introduced by Lauritzen in 1988 [^lauritzen1988local].
 
 ```@eval
 using TikzPictures
@@ -71,27 +78,45 @@ save(SVG(joinpath(@__DIR__, "asia-bayesian-network")), tp)
 |        ``X``         | Chest X-Ray is positive         |
 |        ``D``         | Patient has dyspnoea            |
 
-The ASIA network corresponds a simplified example from the context of medical
-diagnosis that describes the probabilistic relationships between different
-random variables corresponding to possible diseases, symptoms, risk factors and
-test results. It consists of a graph ``G = (\bm{V},\mathcal{E})`` and a
-probability distribution ``P(\bm{V})`` where ``G`` is a directed acyclic graph,
-``\bm{V}`` is the set of variables and ``\mathcal{E}`` is the set of edges
-connecting the variables. We assume all variables to be discrete. Each variable
-``V`` is quantified with a *conditional probability distribution* ``P(V \mid
-pa(V))`` where ``pa(V)`` are the parents of ``V``. These conditional probability
-distributions together with the graph ``G`` induce a *joint probability
-distribution* over ``P(\bm{V})``, given by
+This network represents a simplified example from the realm of medical
+diagnosis, illustrating the probabilistic relationships between various random
+variables that correspond to potential diseases, symptoms, risk factors, and
+test results. It comprises a graph ``G = (\bm{V},\mathcal{E})`` and a
+probability distribution ``P(\bm{V})``, where ``G`` is a directed acyclic graph,
+``\bm{V}`` represents the set of variables, and ``\mathcal{E}`` is the set of
+edges connecting these variables. We assume all variables are discrete. Each
+variable ``V`` is quantified by a *conditional probability distribution* (CPD)
+``P(V \mid pa(V))``, where ``pa(V)`` denotes the parent variables of `V.`
+Collectively, these conditional probability distributions, together with the
+graph G, induce a joint probability distribution over ``P(\bm{V})``, given by
 
 ```math
 P(\bm{V}) = \prod_{V\in\bm{V}} P(V \mid pa(V)).
 ```
 
+A *factor*, denoted as ``\phi_{\bm{V}}``, is defined over a set of variables
+``\bm{V}``. It's a function that maps each instantiation ``\bm{V} = \bm{v}`` to
+a non-negative number. It's important to note that a probability distribution is
+a specific case of a *factor*. The *product* of two *factors*, ``\phi_{\bm{X}}``
+and ``\phi_{\bm{Y}}``, is another *factor*, ``\phi_{\bm{Z}}``, where ``\bm{Z} =
+\bm{X} \cup \bm{Y}``, and ``\phi_{\bm{Z}}(\bm{z}) =
+\phi_{\bm{X}}(\bm{x})\phi_{\bm{Y}}(\bm{y})`` for the instantiations ``\bm{x}``
+and ``\bm{y}`` that align with the instantiation ``\bm{z}``. The
+*marginalization* of a *factor* ``\phi_{\bm{Y}}`` into ``\bm{X} \subseteq
+\bm{Y}`` results in a new *factor* ``\phi_{\bm{X}}``, where each
+``\phi_{\bm{X}}(\bm{x})`` is calculated by summing the values of
+``\phi_{\bm{Y}}(\bm{y})`` for all ``\bm{y}`` that are consistent with
+``\bm{x}``. **Importantly, factor marginalization and product operations form
+the fundamental basis for conducting probabilistic inference in PGMs.**
 
 ## The inference tasks
 
+Probabilistic inference is the process of determining the probability
+distribution of a set of unknown variables, given the values of known variables
+in a PGM. It encompasses several tasks that will be explained next.
+
 Each task is performed with respect to a graphical model, denoted as
-``\mathcal{M} = \{\bm{V}, \bm{D}, \bm{\phi}\}``, where:
+``G = \{\bm{V}, \bm{D}, \bm{\phi}\}``, where:
 
 ``\bm{V} = \{ V_1 , V_2 , \dots , V_N \}`` is the set of the model’s variables
 
@@ -173,7 +198,7 @@ This task involves calculating the probability of the observed evidence, which
 can be useful for model comparison or anomaly detection. This involves summing
 the joint probability over all possible states of the unobserved variables in
 the model, given some observed variables. This is a fundamental task in Bayesian
-statistics and is often used as a stepping stone for other types of inference."
+statistics and is often used as a stepping stone for other types of inference.
 
 ### Marginal inference (MAR): 
 
