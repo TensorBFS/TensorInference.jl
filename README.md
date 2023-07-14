@@ -21,14 +21,18 @@ which include:
   marginalizing out the remaining variables.
 
 ## Installation
+
 <p>
 <code>TensorInference</code> is a &nbsp;
     <a href="https://julialang.org">
         <img src="https://raw.githubusercontent.com/JuliaLang/julia-logo-graphics/master/images/julia.ico" width="16em">
         Julia Language
     </a>
-    &nbsp; package. To install <code>TensorInference</code>,
-    start Julia's <a href="https://docs.julialang.org/en/v1/manual/getting-started/">REPL</a> and press <kbd>]</kbd> key in the REPL to use the package mode, then type
+    &nbsp; package. To install it, start Julia's <a
+    href="https://docs.julialang.org/en/v1/manual/getting-started/">REPL</a>,
+    press the <kbd>]</kbd> key to start the <a
+    href="https://docs.julialang.org/en/v1/stdlib/Pkg/">package mode</a>, and
+    then type
 </p>
 
 ```julia
@@ -40,7 +44,7 @@ To update, type `up` in the package mode.
 ## Examples
 
 Check out the [examples](examples) directory to learn how to use the API of
-*TensorInference.jl*.
+`TensorInference`.
 
 ## Supporting and Citing
 
