@@ -192,19 +192,20 @@ A space separated line that includes:
 
 A space separated line that includes:
 
-- The number q of query variables
-- the most probable instantiation, a list of variable value pairs for all q
-  variables.
+- The number ``\bm{Q}`` of query variables.
+- the most probable instantiation, a list of variable value pairs for all
+  ``\bm{Q}`` variables.
 - For example, if the solution is an assignment of 0, 1 and 0 to three query
-  variables indexed by 2 3 and 4 respectively, the solution will look as follows
+  variables indexed by 2 3 and 4 respectively, the solution will look as
+  follows:
 
         3 2 0 3 1 4 0
 
 ### Partition function, PR
 
-Line with the value of the log10 of the partition function.
+Line with the value of the ``\log_{10}`` of the partition function.
 
-For example, an approximation ``log10 Pr(e) = -0.2008`` which is known to be an
+For example, an approximation ``\log_{10} Pr(\bm{e}) = -0.2008``, which is known to be an
 upper bound may have a solution line:
 
     -0.2008
