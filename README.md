@@ -7,52 +7,50 @@
 [![Build Status](https://github.com/TensorBFS/TensorInference.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/TensorBFS/TensorInference.jl/actions/workflows/CI.yml?query=branch%3Amain)
 [![Coverage](https://codecov.io/gh/TensorBFS/TensorInference.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/TensorBFS/TensorInference.jl)
 
-This package presents a tensor network-based probabilistic modeling toolbox for
-probabilistic inference. It features solutions for the [probability inference
+<p>
+TensorInference is an open source &nbsp;
+    <a href="https://julialang.org">
+        <img src="https://raw.githubusercontent.com/JuliaLang/julia-logo-graphics/master/images/julia.ico" width="16em">
+        Julia
+    </a>
+&nbsp; package for probabilistic inference over discrete graphical models. It
+leverages tensor-based technology for efficiently solving various inference
+tasks.
+</p>
+
+## Features
+
+TensorInference supports finding solutions to the most common [probability
+inference
 tasks](https://uaicompetition.github.io/uci-2022/competition-entry/tasks/) of
 the [UAI inference competitions](https://uaicompetition.github.io/uci-2022/),
-which include:
+which include: 
 
-- **PR**: Computing the partition function or probability of evidence.
-- **MAR**: Computing the marginal probability distribution over all variables
-  given evidence.
-- **MAP**: Computing the most likely assignment to all variables given evidence.
-- **MMAP**: Computing the most likely assignment to the query variables after
-  marginalizing out the remaining variables.
+- **PR**: The partition function or probability of evidence
+- **MAR**: The marginal probability distribution over all variables
+  given evidence
+- **MAP**: The most likely assignment to all variables given evidence
+- **MMAP**: The most likely assignment to the query variables after
+  marginalizing out the remaining variables
 
 ## Installation
 
-<p>
-<code>TensorInference</code> is a &nbsp;
-    <a href="https://julialang.org">
-        <img src="https://raw.githubusercontent.com/JuliaLang/julia-logo-graphics/master/images/julia.ico" width="16em">
-        Julia Language
-    </a>
-    &nbsp; package. To install it, start Julia's <a
-    href="https://docs.julialang.org/en/v1/manual/getting-started/">REPL</a>,
-    press the <kbd>]</kbd> key to start the <a
-    href="https://docs.julialang.org/en/v1/stdlib/Pkg/">package mode</a>, and
-    then type
-</p>
+Install TensorInference through the Julia package manager:
 
 ```julia
 pkg> add TensorInference
 ```
 
-To update, type `up` in the package mode.
-
 ## Examples
 
-Check out the [examples](examples) directory to learn how to use the API of
-`TensorInference`.
+Usage examples can be found in the [examples](examples) folder, and for a
+comprehensive introduction to the package read the
+[documentation](https://TensorBFS.github.io/TensorInference.jl/stable/) .
 
-## Supporting and Citing
+## Citing
 
-Much of the software in this ecosystem was developed as a part of an academic
-research project. If you would like to help support it, please star the
-repository. If you use our software as part of your research, teaching, or other
-activities, please cite our [work (TBA)](). The [CITATION.bib](CITATION.bib)
-file in the root of this repository lists the relevant papers.
+If you use TensorInference for your own research, please consider citing the
+following publication: [TBA)]().
 
 ## Questions and Contributions
 
