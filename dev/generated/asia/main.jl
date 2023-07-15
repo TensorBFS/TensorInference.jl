@@ -40,14 +40,17 @@
 # We now demonstrate how to use the TensorInference.jl package for conducting a
 # variety of inference tasks on the Asia network.
 
+# ---
+
 # Import the TensorInference package, which provides the functionality needed
 # for working with tensor networks and probabilistic graphical models.
 using TensorInference
 
 # ---
 
-# Load the ASIA network model from the `asia.uai` file located in the examples directory.
-# See [Model file format (.uai)](@ref) for a description of the format of this file.
+# Load the ASIA network model from the `asia.uai` file located in the examples
+# directory. See [Model file format (.uai)](@ref) for a description of the
+# format of this file.
 instance = read_instance(pkgdir(TensorInference, "examples", "asia", "asia.uai"))
 
 # ---
@@ -73,11 +76,12 @@ get_vars(tn)
 # ---
 
 # Set an evidence: Assume that the "X-ray" result (variable 7) is positive.
-set_evidence!(instance, 7=>0)
+set_evidence!(instance, 7 => 0)
 
 # ---
 
-# Since setting an evidence may affect the contraction order of the tensor network, recompute it.
+# Since setting an evidence may affect the contraction order of the tensor
+# network, recompute it.
 tn = TensorNetworkModel(instance)
 
 # ---
@@ -87,20 +91,23 @@ maximum_logp(tn)
 
 # ---
 
-# Generate 10 samples from the probability distribution represented by the model.
+# Generate 10 samples from the probability distribution represented by the
+# model.
 sample(tn, 10)
 
 # ---
 
-# Retrieve not only the maximum log-probability but also the most probable configuration.
-# In this configuration, the most likely outcomes are that the patient smokes (variable 3) and has lung cancer (variable 4).
+# Retrieve both the maximum log-probability and the most probable
+# configuration. In this configuration, the most likely outcomes are that the
+# patient smokes (variable 3) and has lung cancer (variable 4).
 logp, cfg = most_probable_config(tn)
 
 # ---
 
-# Compute the most probable values of certain variables (e.g., 4 and 7) while marginalizing over others.
-# This is known as Maximum a Posteriori (MAP) estimation.
-mmap = MMAPModel(instance; queryvars=[4,7])
+# Compute the most probable values of certain variables (e.g., 4 and 7) while
+# marginalizing over others. This is known as Maximum a Posteriori (MAP)
+# estimation.
+mmap = MMAPModel(instance; queryvars = [4, 7])
 
 # ---
 
@@ -109,7 +116,8 @@ most_probable_config(mmap)
 
 # ---
 
-# Compute the total log-probability of having lung cancer. The results suggest that the probability is roughly half.
+# Compute the total log-probability of having lung cancer. The results suggest
+# that the probability is roughly half.
 log_probability(mmap, [1, 0]), log_probability(mmap, [0, 0])
 
 # [^lauritzen1988local]:
