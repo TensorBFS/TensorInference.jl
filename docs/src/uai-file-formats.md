@@ -192,7 +192,7 @@ A space separated line that includes:
 
 A space separated line that includes:
 
-- The number ``\bm{Q}`` of query variables.
+- The number of query variables.
 - the most probable instantiation, a list of variable value pairs for all
   ``\bm{Q}`` variables.
 - For example, if the solution is an assignment of 0, 1 and 0 to three query
