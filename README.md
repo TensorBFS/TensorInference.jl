@@ -49,8 +49,8 @@ comprehensive introduction to the package read the
 
 ## Citing
 
-If you use TensorInference for your own research, please consider citing the
-following publication: [TBA)]().
+If you use TensorInference as part of your research, teaching, or other
+activities, please consider citing the following publication: [(TBA)]().
 
 ## Questions and Contributions
 
