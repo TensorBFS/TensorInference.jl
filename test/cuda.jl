@@ -42,14 +42,16 @@ end
     optimizer = TreeSA(ntrials = 1, niters = 2, βs = 1:0.1:40)
     tn_ref = TensorNetworkModel(instance; optimizer)
     # does not marginalize any var
-    tn = MMAPModel(instance; queryvars = collect(1:instance.nvars), optimizer)
+    set_query!(instance, collect(1:instance.nvars))
+    tn = MMAPModel(instance; optimizer)
     r1, r2 = maximum_logp(tn_ref; usecuda = true), maximum_logp(tn; usecuda = true)
     @test r1 isa CuArray
     @test r2 isa CuArray
     @test r1 ≈ r2
 
     # marginalize all vars
-    tn2 = MMAPModel(instance; queryvars = Int[], optimizer)
+    set_query!(instance, Int[])
+    tn2 = MMAPModel(instance; optimizer)
     cup = probability(tn_ref; usecuda = true)
     culogp = maximum_logp(tn2; usecuda = true)
     @test cup isa RescaledArray{T, N, <:CuArray} where {T, N}
@@ -57,7 +59,8 @@ end
     @test Array(cup)[] ≈ exp(Array(culogp)[])
 
     # does not optimize over open vertices
-    tn3 = MMAPModel(instance; queryvars = setdiff(1:instance.nvars, [2, 4, 6]), optimizer)
+    set_query!(instance, setdiff(1:instance.nvars, [2, 4, 6]))
+    tn3 = MMAPModel(instance; optimizer)
     logp, config = most_probable_config(tn3; usecuda = true)
     @test log_probability(tn3, config) ≈ logp
 end
