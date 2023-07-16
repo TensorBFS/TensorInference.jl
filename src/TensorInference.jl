@@ -10,7 +10,6 @@ module TensorInference
 using OMEinsum, LinearAlgebra
 using DocStringExtensions, TropicalNumbers
 # The Tropical GEMM support
-using TropicalGEMM
 using StatsBase
 
 # reexport OMEinsum functions
