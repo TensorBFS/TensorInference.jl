@@ -128,6 +128,13 @@ function sample(tn::TensorNetworkModel, n::Int; usecuda = false)::AbstractMatrix
     return samples.samples
 end
 
+function generate_samples(se::SlicedEinsum, cache::CacheTree{T}, samples, size_dict::Dict) where {T}
+    # slicing is not supported yet.
+    if length(se.slicing) != 0
+        @warn "Slicing is not supported for caching, got nslices = $(length(se.slicing))! Fallback to `NestedEinsum`."
+    end
+    return generate_samples(se.eins, cache, samples, size_dict)
+end
 function generate_samples(code::NestedEinsum, cache::CacheTree{T}, samples, size_dict::Dict) where {T}
     if !OMEinsum.isleaf(code)
         xs = ntuple(i -> cache.siblings[i].content, length(cache.siblings))
