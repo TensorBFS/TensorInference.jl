@@ -62,4 +62,5 @@ read_solution_file
 read_td_file
 sample
 set_evidence!
+set_query!
 ```
