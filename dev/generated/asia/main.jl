@@ -107,7 +107,8 @@ logp, cfg = most_probable_config(tn)
 # Compute the most probable values of certain variables (e.g., 4 and 7) while
 # marginalizing over others. This is known as Maximum a Posteriori (MAP)
 # estimation.
-mmap = MMAPModel(instance; queryvars = [4, 7])
+set_query!(instance, [4, 7])
+mmap = MMAPModel(instance)
 
 # ---
 
