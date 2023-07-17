@@ -246,7 +246,7 @@ end
 
 function read_instance_from_string(uai::AbstractString; eltype = Float64)::UAIInstance
     nvars, cards, ncliques, factors = read_model_string(uai; factor_eltype = eltype)
-    return UAIInstance(nvars, ncliques, cards, factors, Int[], Int[], Vector{eltype}[])
+    return UAIInstance(nvars, ncliques, cards, factors, Int[], Int[], Int[], nothing)
 end
 
 # patch to get content by broadcasting into array, while keep array size unchanged.

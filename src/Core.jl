@@ -37,7 +37,7 @@ struct UAIInstance{ET, FT <: Factor{ET}}
     obsvars::Vector{Int}
     obsvals::Vector{Int}
     queryvars::Vector{Int}
-    reference_solution::Union{Vector{Vector{ET}}, Vector{Int}, Float64}
+    reference_solution
 end
 
 Base.show(io::IO, ::MIME"text/plain", uai::UAIInstance) = Base.show(io, uai)
@@ -66,6 +66,17 @@ function set_evidence!(uai::UAIInstance, pairs::Pair{Int}...)
         push!(uai.obsvars, var)
         push!(uai.obsvals, val)
     end
+    return uai
+end
+
+"""
+$TYPEDSIGNATURES
+
+Set the query variables of an UAI instance.
+"""
+function set_query!(uai::UAIInstance, vars::AbstractVector{Int})
+    empty!(uai.queryvars)
+    append!(uai.queryvars, vars)
     return uai
 end
 
@@ -122,6 +133,9 @@ function TensorNetworkModel(
     optimizer = GreedyMethod(),
     simplifier = nothing
 )::TensorNetworkModel
+    if !isempty(instance.queryvars)
+        @warn "The `queryvars` field of the input `UAIInstance` instance is designed for the `MMAPModel`, which is not respected by `TensorNetworkModel`. Got non-empty value: $(uai.queryvars)"
+    end
     return TensorNetworkModel(
         1:(instance.nvars),
         instance.cards,

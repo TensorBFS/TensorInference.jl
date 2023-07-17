@@ -21,6 +21,10 @@ end
     include("pr.jl")
 end
 
+@testset "sampling" begin
+    include("sampling.jl")
+end
+
 using CUDA
 if CUDA.functional()
     include("cuda.jl")

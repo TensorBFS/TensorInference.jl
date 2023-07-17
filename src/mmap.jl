@@ -58,9 +58,9 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function MMAPModel(instance::UAIInstance; queryvars, openvertices = (), optimizer = GreedyMethod(), simplifier = nothing)::MMAPModel
+function MMAPModel(instance::UAIInstance; openvertices = (), optimizer = GreedyMethod(), simplifier = nothing)::MMAPModel
     return MMAPModel(
-        1:(instance.nvars), instance.cards, instance.factors; queryvars, fixedvertices = Dict(zip(instance.obsvars, instance.obsvals)), optimizer, simplifier, openvertices
+        1:(instance.nvars), instance.cards, instance.factors; queryvars=instance.queryvars, fixedvertices = Dict(zip(instance.obsvars, instance.obsvals)), optimizer, simplifier, openvertices
     )
 end
 
