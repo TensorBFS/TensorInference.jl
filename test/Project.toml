@@ -1,5 +1,4 @@
 [deps]
-Artifacts = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
 CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 KaHyPar = "2a6221f6-aa48-11e9-3542-2d9e0ef01880"

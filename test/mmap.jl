@@ -8,8 +8,7 @@ using TensorInference
 end
 
 @testset "gradient-based tensor network solvers" begin
-    model_filepath, evidence_filepath, _, solution_filepath = get_instance_filepaths("Promedus_14", "MAR")
-    instance = read_instance(model_filepath; evidence_filepath, solution_filepath)
+    instance = read_instance_from_artifact("uai2014", "Promedus_14", "MAR")
 
     optimizer = TreeSA(ntrials = 1, niters = 2, βs = 1:0.1:40)
     tn_ref = TensorNetworkModel(instance; optimizer)
@@ -43,8 +42,7 @@ end
     ]
     for (problem_name, optimizer) in problems
       @info "Testing: $problem_name"
-      model_filepath, evidence_filepath, query_filepath, solution_filepath = get_instance_filepaths(problem_name, "MMAP")
-      instance = read_instance(model_filepath; evidence_filepath, query_filepath, solution_filepath)
+      instance = read_instance_from_artifact("uai2014", problem_name, "MMAP")
       model = MMAPModel(instance; optimizer)
       _, solution = most_probable_config(model)
       @test solution == instance.reference_solution

@@ -1,4 +1,4 @@
-using Test, Artifacts
+using Test
 using OMEinsum
 using KaHyPar
 using TensorInference
@@ -12,8 +12,7 @@ using TensorInference
 end
 
 @testset "cached, rescaled contract" begin
-    model_filepath, evidence_filepath, _, solution_filepath = get_instance_filepaths("Promedus_14", "MAR")
-    instance = read_instance(model_filepath; evidence_filepath, solution_filepath)
+    instance = read_instance_from_artifact("uai2014", "Promedus_14", "MAR")
     ref_sol = instance.reference_solution
     optimizer = TreeSA(ntrials = 1, niters = 5, βs = 0.1:0.1:100)
     tn = TensorNetworkModel(instance; optimizer)
@@ -50,12 +49,11 @@ end
     for (problem_set, optimizer) in problem_sets
         @testset "$(problem_set) problem set" begin
             # Capture the problem names that belong to the current problem set
-            problem_names = get_problem_names(problem_set, "MAR")
+            problem_names = TensorInference.get_problem_names("uai2014", problem_set, "MAR")
             for problem_name in problem_names
                 @info "Testing: $problem_name"
                 @testset "$(problem_name)" begin
-                    model_filepath, evidence_filepath, _, solution_filepath = get_instance_filepaths(problem_name, "MAR")
-                    instance = read_instance(model_filepath; evidence_filepath, solution_filepath)
+                    instance = read_instance_from_artifact("uai2014", problem_name, "MAR")
                     ref_sol = instance.reference_solution
                     obsvars = instance.obsvars
 

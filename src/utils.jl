@@ -2,12 +2,12 @@
 $(TYPEDSIGNATURES)
 
 Parse the problem instance found in `model_filepath` defined in the UAI model
-format.
+format. If the provided file path is empty, return `nothing`.
 
 The UAI file formats are defined in:
 https://uaicompetition.github.io/uci-2022/file-formats/
 """
-function read_model_file(model_filepath; factor_eltype = Float64)
+function read_model_file(model_filepath::AbstractString; factor_eltype = Float64)
     # Read the uai file into an array of lines
     str = open(model_filepath) do file
         read(file, String)
@@ -244,10 +244,79 @@ function read_instance(
     return UAIInstance(nvars, ncliques, cards, factors, obsvars, obsvals, queryvars, reference_solution)
 end
 
-function read_instance_from_string(uai::AbstractString; eltype = Float64)::UAIInstance
-    nvars, cards, ncliques, factors = read_model_string(uai; factor_eltype = eltype)
+function read_instance_from_string(model::AbstractString; eltype = Float64)::UAIInstance
+    nvars, cards, ncliques, factors = read_model_string(model; factor_eltype = eltype)
     return UAIInstance(nvars, ncliques, cards, factors, Int[], Int[], Int[], nothing)
 end
 
 # patch to get content by broadcasting into array, while keep array size unchanged.
 broadcasted_content(x) = asarray(content.(x), x)
+
+"""
+$(TYPEDSIGNATURES)
+
+Load a specific instance, identified by `task/name`, from the provided
+artifact.
+"""
+function read_instance_from_artifact(
+    artifact_name::AbstractString,
+    problem_name::AbstractString,
+    task::AbstractString;
+    eltype = Float64
+)
+    model_filepath, evidence_filepath, query_filepath, solution_filepath = get_instance_filepaths(
+        artifact_name,
+        problem_name,
+        task
+    )
+    read_instance(model_filepath; evidence_filepath, query_filepath, solution_filepath, eltype)
+end
+
+"""
+Helper function to obtain the filepaths for an instance's model, evidence, and
+solution files within the provided artifact, corresponding to the provided
+task. If a given file path does not exist in the instance's directory, an
+empty file path is returned.
+"""
+function get_instance_filepaths(
+    artifact_name::AbstractString,
+    problem_name::AbstractString,
+    task::AbstractString
+)
+    artifact_toml = pkgdir(TensorInference, "Artifacts.toml")
+    Pkg.ensure_artifact_installed(artifact_name, artifact_toml)
+    artifact_hash = Pkg.Artifacts.artifact_hash(artifact_name, artifact_toml)
+    artifact_path = Pkg.Artifacts.artifact_path(artifact_hash)
+    model_filepath = joinpath(artifact_path, task, problem_name * ".uai") |> topath
+    evidence_filepath = joinpath(artifact_path, task, problem_name * ".uai.evid") |> topath
+    query_filepath = joinpath(artifact_path, task, problem_name * ".uai.query") |> topath
+    solution_filepath = joinpath(artifact_path, task, problem_name * ".uai." * task) |> topath
+    return model_filepath, evidence_filepath, query_filepath, solution_filepath
+end
+
+"""
+This function returns the provided file path if it exists on disk, otherwise it
+  returns an empty string.
+"""
+topath(filepath::AbstractString) = isfile(filepath) ? filepath : ""
+
+"""
+Helper function that captures the problem names that belong to `problem_set`
+for the given task.
+"""
+function get_problem_names(
+    artifact_name::AbstractString,
+    problem_set::AbstractString,
+    task::AbstractString
+)
+    artifact_toml = pkgdir(TensorInference, "Artifacts.toml")
+    Pkg.ensure_artifact_installed(artifact_name, artifact_toml)
+    artifact_hash = Pkg.Artifacts.artifact_hash(artifact_name, artifact_toml)
+    artifact_path = Pkg.Artifacts.artifact_path(artifact_hash)
+
+    regex = Regex("($(problem_set)_\\d*)(\\.uai)\$")
+    return readdir(joinpath(artifact_path, task); sort = false) |>
+           x -> map(y -> match(regex, y), x) |> # apply regex
+                x -> filter(!isnothing, x) |> # filter out `nothing` values
+                     x -> map(first, x) # get the first capture of each element
+end

@@ -4,8 +4,7 @@ using TensorInference, CUDA
 CUDA.allowscalar(false)
 
 @testset "gradient-based tensor network solvers" begin
-    model_filepath, evidence_filepath, _, solution_filepath = get_instance_filepaths("Promedus_14", "MAR")
-    instance = read_instance(model_filepath; evidence_filepath, solution_filepath)
+    instance = read_instance_from_artifact("uai2014", "Promedus_14", "MAR")
 
     # does not optimize over open vertices
     tn = TensorNetworkModel(instance; optimizer = TreeSA(ntrials = 1, niters = 2, βs = 1:0.1:40))
@@ -21,8 +20,7 @@ CUDA.allowscalar(false)
 end
 
 @testset "map" begin
-    model_filepath, evidence_filepath, _, solution_filepath = get_instance_filepaths("Promedus_14", "MAR")
-    instance = read_instance(model_filepath; evidence_filepath, solution_filepath)
+    instance = read_instance_from_artifact("uai2014", "Promedus_14", "MAR")
 
     # does not optimize over open vertices
     tn = TensorNetworkModel(instance; optimizer = TreeSA(ntrials = 1, niters = 2, βs = 1:0.1:40))
@@ -36,8 +34,7 @@ end
 end
 
 @testset "mmap" begin
-    model_filepath, evidence_filepath, _, solution_filepath = get_instance_filepaths("Promedus_14", "MAR")
-    instance = read_instance(model_filepath; evidence_filepath, solution_filepath)
+    instance = read_instance_from_artifact("uai2014", "Promedus_14", "MAR")
 
     optimizer = TreeSA(ntrials = 1, niters = 2, βs = 1:0.1:40)
     tn_ref = TensorNetworkModel(instance; optimizer)

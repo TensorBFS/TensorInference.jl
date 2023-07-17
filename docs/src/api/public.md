@@ -57,6 +57,7 @@ most_probable_config
 probability
 read_evidence_file
 read_instance
+read_instance_from_artifact
 read_model_file
 read_solution_file
 read_td_file
