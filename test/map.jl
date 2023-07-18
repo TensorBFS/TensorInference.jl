@@ -3,10 +3,12 @@ using OMEinsum
 using TensorInference
 
 @testset "gradient-based tensor network solvers" begin
-    instance = read_instance_from_artifact("uai2014", "Promedus_14", "MAR")
+    model = problem_from_artifact("uai2014", "MAR", "Promedus", 14)
 
     # does not optimize over open vertices
-    tn = TensorNetworkModel(instance; optimizer = TreeSA(ntrials = 3, niters = 2, βs = 1:0.1:80))
+    tn = TensorNetworkModel(read_instance(model);
+        evidence=read_evidence(model),
+        optimizer = TreeSA(ntrials = 3, niters = 2, βs = 1:0.1:80))
     @debug contraction_complexity(tn)
     most_probable_config(tn)
     @time logp, config = most_probable_config(tn)
@@ -15,10 +17,9 @@ using TensorInference
 end
 
 @testset "UAI Reference Solution Comparison" begin
-    problem_name = "Promedas_70"
-    @info "Testing: $problem_name"
-    instance = read_instance_from_artifact("uai2014", problem_name, "MAP")
-    tn = TensorNetworkModel(instance; optimizer = TreeSA(ntrials = 1, niters = 5, βs = 0.1:0.1:100))
+    problem = problem_from_artifact("uai2014", "MAP", "Promedas", 70)
+    evidence = read_evidence(problem)
+    tn = TensorNetworkModel(read_instance(problem); optimizer = TreeSA(ntrials = 1, niters = 5, βs = 0.1:0.1:100), evidence)
     _, solution = most_probable_config(tn)
-    @test solution == instance.reference_solution
+    @test solution == read_solution(problem)
 end

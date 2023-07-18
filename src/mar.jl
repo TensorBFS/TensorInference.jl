@@ -1,11 +1,11 @@
 # generate tensors based on which vertices are fixed.
-adapt_tensors(gp::TensorNetworkModel; usecuda, rescale) = adapt_tensors(gp.code, gp.tensors, gp.fixedvertices; usecuda, rescale)
-function adapt_tensors(code, tensors, fixedvertices; usecuda, rescale)
+adapt_tensors(gp::TensorNetworkModel; usecuda, rescale) = adapt_tensors(gp.code, gp.tensors, gp.evidence; usecuda, rescale)
+function adapt_tensors(code, tensors, evidence; usecuda, rescale)
     ixs = getixsv(code)
     # `ix` is the vector of labels (or a degree of freedoms) for a tensor,
     # if a label in `ix` is fixed to a value, do the slicing to the tensor it associates to.
     map(tensors, ixs) do t, ix
-        dims = map(ixi -> ixi ∉ keys(fixedvertices) ? Colon() : ((fixedvertices[ixi] + 1):(fixedvertices[ixi] + 1)), ix)
+        dims = map(ixi -> ixi ∉ keys(evidence) ? Colon() : ((evidence[ixi] + 1):(evidence[ixi] + 1)), ix)
         t2 = t[dims...]
         t3 = usecuda ? CuArray(t2) : t2
         rescale ? rescale_array(t3) : t3

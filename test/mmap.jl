@@ -8,43 +8,43 @@ using TensorInference
 end
 
 @testset "gradient-based tensor network solvers" begin
-    instance = read_instance_from_artifact("uai2014", "Promedus_14", "MAR")
+    problem = problem_from_artifact("uai2014", "MAR", "Promedus", 14)
+    instance, evidence = read_instance(problem), read_evidence(problem)
 
     optimizer = TreeSA(ntrials = 1, niters = 2, βs = 1:0.1:40)
-    tn_ref = TensorNetworkModel(instance; optimizer)
+    tn_ref = TensorNetworkModel(instance; optimizer, evidence)
 
     # Does not marginalize any var
-    set_query!(instance, collect(1:instance.nvars))
-    mmap = MMAPModel(instance; optimizer)
+    mmap = MMAPModel(instance; optimizer, queryvars=collect(1:instance.nvars), evidence)
     @debug(mmap)
     @test maximum_logp(tn_ref) ≈ maximum_logp(mmap)
 
     # Marginalize all vars
-    set_query!(instance, Int[])
-    mmap2 = MMAPModel(instance; optimizer)
+    mmap2 = MMAPModel(instance; optimizer, queryvars=Int[], evidence)
     @debug(mmap2)
     @test Array(probability(tn_ref))[] ≈ exp(maximum_logp(mmap2)[])
 
     # Does not optimize over open vertices
-    set_query!(instance, setdiff(1:instance.nvars, [2, 4, 6]))
-    mmap3 = MMAPModel(instance; optimizer)
+    mmap3 = MMAPModel(instance; optimizer, queryvars=setdiff(1:instance.nvars, [2, 4, 6]), evidence)
     @debug(mmap3)
     logp, config = most_probable_config(mmap3)
     @test log_probability(mmap3, config) ≈ logp
-
 end
 
 @testset "UAI Reference Solution Comparison" begin
+    problem_sets = dataset_from_artifact("uai2014")["MMAP"]
     problems = [
-        ("Segmentation_12", TreeSA(ntrials = 1, niters = 2, βs = 1:0.1:40)),
-        # ("Segmentation_13", TreeSA(ntrials = 1, niters = 2, βs = 1:0.1:40)), # fails!
-        # ("Segmentation_14", TreeSA(ntrials = 1, niters = 2, βs = 1:0.1:40))  # fails!
+        ("Segmentation", 12, TreeSA(ntrials = 1, niters = 2, βs = 1:0.1:40)),
+        # ("Segmentation", 13, TreeSA(ntrials = 1, niters = 2, βs = 1:0.1:40)), # fails!
+        # ("Segmentation", 14, TreeSA(ntrials = 1, niters = 2, βs = 1:0.1:40))  # fails!
     ]
-    for (problem_name, optimizer) in problems
-      @info "Testing: $problem_name"
-      instance = read_instance_from_artifact("uai2014", problem_name, "MMAP")
-      model = MMAPModel(instance; optimizer)
-      _, solution = most_probable_config(model)
-      @test solution == instance.reference_solution
+    for (problem_set_name, id, optimizer) in problems
+        @testset "$(problem_set_name) problem set, id = $id" begin
+            problem = problem_sets[problem_set_name][id]
+            @info "Testing: $(problem_set_name)_$id"
+            model = MMAPModel(read_instance(problem); optimizer, evidence=read_evidence(problem), queryvars=read_queryvars(problem))
+            _, solution = most_probable_config(model)
+            @test solution == read_solution(problem)
+        end
     end
 end

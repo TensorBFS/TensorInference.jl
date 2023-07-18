@@ -76,13 +76,9 @@ get_vars(tn)
 # ---
 
 # Set an evidence: Assume that the "X-ray" result (variable 7) is positive.
-set_evidence!(instance, 7 => 0)
-
-# ---
-
 # Since setting an evidence may affect the contraction order of the tensor
 # network, recompute it.
-tn = TensorNetworkModel(instance)
+tn = TensorNetworkModel(instance, evidence=Dict(7=>0))
 
 # ---
 
@@ -107,8 +103,7 @@ logp, cfg = most_probable_config(tn)
 # Compute the most probable values of certain variables (e.g., 4 and 7) while
 # marginalizing over others. This is known as Maximum a Posteriori (MAP)
 # estimation.
-set_query!(instance, [4, 7])
-mmap = MMAPModel(instance)
+mmap = MMAPModel(instance, queryvars=[4,7])
 
 # ---
 
