@@ -1,11 +1,19 @@
 # Journal of Open Source Software (JOSS) paper
 
-This directory contains the source code to compile the paper submitted to the
-[Journal of Open Source Software](https://joss.theoj.org/).
+This directory contains the source code required to compile the paper submitted
+to the [Journal of Open Source Software](https://joss.theoj.org/).
 
-# Compilation
+## Compilation
 
-*TIP*: If using Neovim, use the following command to compile and open the paper:
+Make sure to have Docker installed. To compile the paper, navigate to the paper
+directory and execute the compile.sh script using the following command:
+
+```
+./compile.sh
+```
+
+*TIP*: If you are using Neovim, you can compile and open the paper using the
+following command:
 
 ```
 :AsyncRun -silent ./compile.sh; xdg-open ./paper.pdf
