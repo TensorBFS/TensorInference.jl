@@ -9,18 +9,18 @@ tags:
   - tensor networks
   - probabilistic inference
 authors:
-  - name: Jin-Guo Liu
-    orcid: 0000-0003-1635-2679
-    equal-contrib: true
-    affiliation: 1
   - name: Martin Roa-Villescas
     orcid: 0009-0009-0291-503X
     equal-contrib: true
+    affiliation: 1
+  - name: Jin-Guo Liu
+    orcid: 0000-0003-1635-2679
+    equal-contrib: true
     affiliation: 2
 affiliations:
- - name: Hong Kong University of Science and Technology (Guangzhou)
-   index: 1
  - name: Eindhoven University of Technology
+   index: 1
+ - name: Hong Kong University of Science and Technology (Guangzhou)
    index: 2
 date: 18 July 2023
 bibliography: paper.bib
