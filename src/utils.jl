@@ -7,7 +7,7 @@ format. If the provided file path is empty, return `nothing`.
 The UAI file formats are defined in:
 https://uaicompetition.github.io/uci-2022/file-formats/
 """
-function read_instance_from_file(instance_filepath::AbstractString; factor_eltype = Float64)::UAIInstance
+function read_instance_file(instance_filepath::AbstractString; factor_eltype = Float64)::UAIInstance
     # Read the uai file into an array of lines
     str = open(instance_filepath) do file
         read(file, String)
@@ -221,7 +221,7 @@ Read an UAI instance from an artifact.
 """
 function read_instance(instance::ArtifactProblemSpec; eltype=Float64)
     problem_name = "$(instance.problem_set)_$(instance.problem_id).uai"
-    return read_instance_from_file(joinpath(instance.artifact_path, instance.task, problem_name); factor_eltype = eltype)
+    return read_instance_file(joinpath(instance.artifact_path, instance.task, problem_name); factor_eltype = eltype)
 end
 
 """

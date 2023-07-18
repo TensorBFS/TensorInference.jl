@@ -62,7 +62,7 @@ read_instance
 read_evidence
 read_solution
 read_queryvars
-read_instance_from_file
+read_instance_file
 read_evidence_file
 read_solution_file
 read_td_file

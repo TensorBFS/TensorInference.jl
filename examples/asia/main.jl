@@ -51,7 +51,7 @@ using TensorInference
 # Load the ASIA network model from the `asia.uai` file located in the examples
 # directory. See [Model file format (.uai)](@ref) for a description of the
 # format of this file.
-instance = read_instance_from_file(pkgdir(TensorInference, "examples", "asia", "asia.uai"))
+instance = read_instance_file(pkgdir(TensorInference, "examples", "asia", "asia.uai"))
 
 # ---
 

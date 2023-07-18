@@ -18,7 +18,7 @@ export RescaledArray
 export contraction_complexity, TreeSA, GreedyMethod, KaHyParBipartite, SABipartite, MergeGreedy, MergeVectors
 
 # read and load uai files
-export read_instance_from_file, read_td_file, read_evidence_file, read_solution_file
+export read_instance_file, read_td_file, read_evidence_file, read_solution_file
 export problem_from_artifact, ArtifactProblemSpec
 export read_instance, UAIInstance, read_evidence, read_solution, read_queryvars, dataset_from_artifact
 
