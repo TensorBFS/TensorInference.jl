@@ -1,9 +1,4 @@
-using Test, TensorInference, Documenter, Pkg, Artifacts
-
-import Pkg;
-Pkg.ensure_artifact_installed("uai2014", joinpath(@__DIR__, "Artifacts.toml"));
-
-include("utils.jl")
+using Test, TensorInference, Documenter, Pkg
 
 @testset "MAR" begin
     include("mar.jl")

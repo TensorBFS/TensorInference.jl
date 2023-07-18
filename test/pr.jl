@@ -18,12 +18,11 @@ using TensorInference
     ]
     for (problem_set_name, optimizer) in problem_sets
         @testset "$(problem_set_name) problem set" begin
-            problem_names = get_problem_names(problem_set_name, "PR")
+            problem_names = TensorInference.get_problem_names("uai2014", problem_set_name, "PR")
             for problem_name in problem_names
                 @testset "$(problem_name)" begin
                     @info "Testing: $problem_name"
-                    model_filepath, evidence_filepath, _, solution_filepath = get_instance_filepaths(problem_name, "PR")
-                    instance = read_instance(model_filepath; evidence_filepath, solution_filepath)
+                    instance = read_instance_from_artifact("uai2014", problem_name, "PR")
                     tn = TensorNetworkModel(instance; optimizer)
                     solution = probability(tn) |> first |> log10
                     @test isapprox(solution, instance.reference_solution; atol = 1e-3)

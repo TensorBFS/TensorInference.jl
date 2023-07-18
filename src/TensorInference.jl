@@ -11,13 +11,15 @@ using OMEinsum, LinearAlgebra
 using DocStringExtensions, TropicalNumbers
 # The Tropical GEMM support
 using StatsBase
+import Pkg
 
 # reexport OMEinsum functions
 export RescaledArray
 export contraction_complexity, TreeSA, GreedyMethod, KaHyParBipartite, SABipartite, MergeGreedy, MergeVectors
 
 # read and load uai files
-export read_model_file, read_td_file, read_evidence_file, read_solution_file, read_instance, UAIInstance
+export read_model_file, read_td_file, read_evidence_file, read_solution_file
+export read_instance, read_instance_from_artifact, UAIInstance
 export set_evidence!, set_query!
 
 # marginals
