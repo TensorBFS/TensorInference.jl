@@ -51,7 +51,7 @@ using TensorInference
 # Load the ASIA network model from the `asia.uai` file located in the examples
 # directory. See [Model file format (.uai)](@ref) for a description of the
 # format of this file.
-instance = read_instance(pkgdir(TensorInference, "examples", "asia", "asia.uai"))
+instance = read_instance_from_file(pkgdir(TensorInference, "examples", "asia", "asia.uai"))
 
 # ---
 
@@ -103,7 +103,7 @@ logp, cfg = most_probable_config(tn)
 # Compute the most probable values of certain variables (e.g., 4 and 7) while
 # marginalizing over others. This is known as Maximum a Posteriori (MAP)
 # estimation.
-mmap = MMAPModel(instance, queryvars=[4,7])
+mmap = MMAPModel(instance, evidence=Dict(7=>0), queryvars=[4,7])
 
 # ---
 
