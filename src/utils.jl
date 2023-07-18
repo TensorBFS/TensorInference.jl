@@ -252,6 +252,9 @@ function read_solution(instance::ArtifactProblemSpec; factor_eltype=Float64)
     end
 end
 
+"""
+$TYPEDSIGNATURES
+"""
 function read_evidence(instance::ArtifactProblemSpec)
     problem_name = "$(instance.problem_set)_$(instance.problem_id).uai.evid"
     evidence_filepath = joinpath(instance.artifact_path, instance.task, problem_name)
@@ -259,6 +262,9 @@ function read_evidence(instance::ArtifactProblemSpec)
     return Dict(zip(obsvars, obsvals))
 end
 
+"""
+$TYPEDSIGNATURES
+"""
 function read_queryvars(instance::ArtifactProblemSpec)
     problem_name = "$(instance.problem_set)_$(instance.problem_id).uai.query"
     query_filepath = joinpath(instance.artifact_path, instance.task, problem_name)
