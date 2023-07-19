@@ -69,7 +69,7 @@ methods include the *recursive multi-tensor contraction method* (`TreeSA`)
 method* (`KaHyParBipartite`) [@gray2021hyper], the *hierarchical partitioning
 with dynamic slicing method* (`SABipartite`) [@pan2021simulating], and a
 *greedy-based memory minimization method* (`GreedyMethod`) [@liu2022computing].
-Finally, `TensorInference.jl` leverages the latest developments in computational
+Finally, `TensorInference.jl` harnesses the latest developments in computational
 technology, including a highly optimized set of BLAS routines and GPU
 technology.
 
@@ -89,25 +89,26 @@ independence between variables in the model. Additionally, they form the
 foundation for various algorithms that enable efficient probabilistic inference.
 
 However, performing probabilistic inference on many real-world problems remains
-intractable due to the high dimensional spaces and lack of structure in their
-data. To address these problems, more efficient and scalable inference
-algorithms are needed.
+intractable due to the intrinsic complexity of performing combinatorial
+optimization tasks in high dimensional spaces. To tackle these challenge, more
+efficient and scalable inference algorithms are needed.
 
 We present `TensorInference.jl`, a Julia [@bezanson2012julia;
-@bezanson2017julia] package for probabilistic inference that combines the
-representational capabilities of PGMs with the computational power of tensor
-networks.
+@bezanson2017julia] package for probabilistic inference. This package combines
+the representational capabilities of PGMs with the computational power of tensor
+networks. By harnessing the best of both worlds, `TensorInference.jl` aims to
+enhance the performance of probabilistic inference, thereby expanding the
+tractability spectrum of exact inference for more complex models.
 
 # Usage example
 
-The graph below corresponds to the *ASIA network*, a simple Bayesian model
-used extensively in educational settings. It was introduced by Lauritzen in
-[@lauritzen1988local].
+The graph below corresponds to the *ASIA network*, a simple Bayesian model used
+extensively in educational settings. It was introduced in [@lauritzen1988local].
 
 ![](./figures/asia-network/out/asia-network.pdf)
 
-We now demonstrate how to use the TensorInference.jl package for conducting a
-variety of inference tasks on this toy example.
+We now demonstrate how to use `TensorInference.jl` for conducting a variety of
+inference tasks on this toy example.
 
 ```julia
 
