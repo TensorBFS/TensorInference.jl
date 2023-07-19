@@ -47,10 +47,10 @@ $(TYPEDEF)
 Probabilistic modeling with a tensor network.
 
 ### Fields
-* `vars` is the degree of freedoms in the tensor network.
+* `vars` are the degrees of freedom in the tensor network.
 * `code` is the tensor network contraction pattern.
-* `tensors` is the tensors fed into the tensor network.
-* `evidence` is a dictionary to specifiy degree of freedoms fixed to certain values.
+* `tensors` are the tensors fed into the tensor network.
+* `evidence` is a dictionary used to specify degrees of freedom that are fixed to certain values.
 """
 struct TensorNetworkModel{LT, ET, MT <: AbstractArray}
     vars::Vector{LT}

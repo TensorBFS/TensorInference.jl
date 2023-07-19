@@ -78,7 +78,7 @@ get_vars(tn)
 # Set an evidence: Assume that the "X-ray" result (variable 7) is positive.
 # Since setting an evidence may affect the contraction order of the tensor
 # network, recompute it.
-tn = TensorNetworkModel(instance, evidence=Dict(7=>0))
+tn = TensorNetworkModel(instance, evidence = Dict(7 => 0))
 
 # ---
 
