@@ -93,19 +93,23 @@ intractable due to the intrinsic complexity of performing combinatorial
 optimization tasks in high dimensional spaces. To tackle these challenge, more
 efficient and scalable inference algorithms are needed.
 
-We present `TensorInference.jl`, a Julia [@bezanson2012julia;
-@bezanson2017julia] package for probabilistic inference. This package combines
-the representational capabilities of PGMs with the computational power of tensor
-networks. By harnessing the best of both worlds, `TensorInference.jl` aims to
-enhance the performance of probabilistic inference, thereby expanding the
-tractability spectrum of exact inference for more complex models.
+We present `TensorInference.jl`, a Julia [@bezanson2017julia] package for
+probabilistic inference. This package combines the representational capabilities
+of PGMs with the computational power of tensor networks. By harnessing the best
+of both worlds, `TensorInference.jl` aims to enhance the performance of
+probabilistic inference, thereby expanding the tractability spectrum of exact
+inference for more complex models.
 
 # Usage example
 
-The graph below corresponds to the *ASIA network*, a simple Bayesian model used
-extensively in educational settings. It was introduced in [@lauritzen1988local].
+The graph below corresponds to the *ASIA network* [@lauritzen1988local], a
+simple Bayesian model used extensively in educational settings.
 
-![](./figures/asia-network/out/asia-network.pdf)
+![The ASIA network: a simplified example of a Bayesian network from the context
+of medical diagnosis [@lauritzen1988local]. It describes the probabilistic
+relationships between different random variables which correspond to possible
+diseases, symptoms, risk factors and test results.
+](./figures/asia-network/out/asia-network.pdf)
 
 We now demonstrate how to use `TensorInference.jl` for conducting a variety of
 inference tasks on this toy example.
