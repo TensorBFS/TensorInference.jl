@@ -79,26 +79,30 @@ A major challenge in developing intelligent systems is the ability to reason
 under uncertainty, a challenge that appears in many real-world problems across
 various domains, including artificial intelligence, medical diagnosis, computer
 vision, computational biology, and natural language processing. Reasoning under
-uncertainty involves drawing global insights from local observations, a process
-known as *probabilistic inference*.
+uncertainty involves calculating the probabilities of relevant variables while
+taking into account any information that is acquired. This process, which can be
+thought of as drawing global insights from local observations, is known as
+*probabilistic inference*.
 
-*Probabilistic graphical models* (PGMs) provide a unified framework to address
-these challenges. These models use graphs to concisely represent the joint
-probability distribution of complex systems by exploiting the conditional
-independence between variables in the model. Additionally, they form the
-foundation for various algorithms that enable efficient probabilistic inference.
+*Probabilistic graphical models* (PGMs) provide a unified framework to perform
+probabilistic inference. These models use graphs to represent the joint
+probability distribution of complex systems concisely by exploiting the
+conditional independence between variables in the model. Additionally, they form
+the foundation for various algorithms that enable efficient probabilistic
+inference.
 
-However, performing probabilistic inference on many real-world problems remains
-intractable due to the intrinsic complexity of performing combinatorial
-optimization tasks in high dimensional spaces. To tackle these challenge, more
-efficient and scalable inference algorithms are needed.
+However, even with the representational aid of PGMs, performing probabilistic
+inference remains an intractable endeavor on many real-world models. The reason
+is that performing probabilistic inference involves complex combinatorial
+optimization problems in very high dimensional spaces. To tackle these
+challenges, more efficient and scalable inference algorithms are needed.
 
-We present `TensorInference.jl`, a Julia [@bezanson2017julia] package for
-probabilistic inference. This package combines the representational capabilities
-of PGMs with the computational power of tensor networks. By harnessing the best
-of both worlds, `TensorInference.jl` aims to enhance the performance of
-probabilistic inference, thereby expanding the tractability spectrum of exact
-inference for more complex models.
+As an attempt to tackle the aforementioned challenges, we present
+`TensorInference.jl`, a Julia package for probabilistic inference that combines
+the representational capabilities of PGMs with the computational power of tensor
+networks. By harnessing the best of both worlds, `TensorInference.jl` aims to
+enhance the performance of probabilistic inference, thereby expanding the
+tractability spectrum of exact inference for more complex, real-world models.
 
 # Usage example
 
