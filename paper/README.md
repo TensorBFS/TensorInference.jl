@@ -23,7 +23,7 @@ To compile and open the paper with Neovim, run:
 Or map the command a above to a keybinding, e.g.:
 
 ```
-:lua vim.keymap.set("n", "<Leader>e", ":AsyncRun -silent ./compile.sh; xdg-open ./paper.pdf<CR>")
+:lua vim.keymap.set("n", "<Leader>e", ":AsyncStop <bar> sleep 1 <bar> AsyncRun -silent ./compile.sh; xdg-open ./paper.pdf<CR>")
 ```
 
 ---
