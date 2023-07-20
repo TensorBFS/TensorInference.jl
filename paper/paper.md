@@ -56,23 +56,24 @@ bibliography: paper.bib
 
 `TensorInference.jl` is a Julia [@bezanson2017julia] library designed for
 performing probabilistic inference in discrete graphical models. It leverages
-the recent explosion of advances in the field of tensor networks to provide
-high-performance solutions for common inference tasks. These tasks include
-calculating: 1) the partition function or probability of evidence, 2) the
-marginal probability distribution over each variable given evidence, 3) the most
-likely assignment to all variables given evidence, and 4) the most likely
-assignment to the query variables after marginalizing out the remaining
-variables. The infrastructure based on tensor networks allows users to define
-the contraction ordering method, which is known to have a significant impact on
-the computational performance of these algorithms. A predefined set of
-state-of-the-art contraction ordering methods is made available to users. These
-methods include the *recursive multi-tensor contraction method* (`TreeSA`)
-[@kalachev2022multitensor], the *hyper-optimized tensor network contraction
-method* (`KaHyParBipartite`) [@gray2021hyper], the *hierarchical partitioning
-with dynamic slicing method* (`SABipartite`) [@pan2021simulating], and a
-*greedy-based memory minimization method* (`GreedyMethod`) [@liu2022computing].
-Finally, `TensorInference.jl` harnesses the latest developments in computational
-technology, including a highly optimized set of BLAS routines and GPU
+the recent explosion of advances in the field of tensor networks
+[@orus2019tensor] to provide high-performance solutions for common inference
+tasks. These tasks include calculating: 1) the partition function or probability
+of evidence, 2) the marginal probability distribution over each variable given
+evidence, 3) the most likely assignment to all variables given evidence, and 4)
+the most likely assignment to the query variables after marginalizing out the
+remaining variables. The infrastructure based on tensor networks allows users to
+define the contraction ordering method, which is known to have a significant
+impact on the computational performance of these algorithms
+[@orus2014practical]. A predefined set of state-of-the-art contraction ordering
+methods is made available to users. These methods include the *recursive
+multi-tensor contraction method* (`TreeSA`) [@kalachev2022multitensor], the
+*hyper-optimized tensor network contraction method* (`KaHyParBipartite`)
+[@gray2021hyper], the *hierarchical partitioning with dynamic slicing method*
+(`SABipartite`) [@pan2021simulating], and a *greedy-based memory minimization
+method* (`GreedyMethod`) [@liu2022computing]. Finally, `TensorInference.jl`
+harnesses the latest developments in computational technology, including a
+highly optimized set of BLAS [@blackford2002updated] routines and GPU
 technology.
 
 # Statement of need
@@ -106,10 +107,19 @@ networks. By harnessing the best of both worlds, `TensorInference.jl` aims to
 enhance the performance of probabilistic inference, thereby expanding the
 tractability spectrum of exact inference for more complex, real-world models.
 
+In contrast with the `JunctionTrees.jl` package [@roa2022partial;
+@roa2023scaling], which utilizes a tensor-based backend to optimize the
+computation of individual sum-product messages within the context of the
+junction tree algorithm (JTA) [@lauritzen1988local; @jensen1990bayesian],
+`TensorInference.jl` adopts a holistic approach. This approach subsumes the JTA
+in its entirety, greatly simplifying the complexity of the algorithm and opening
+new doors for optimization opportunities.
+
 # Usage example
 
 The graph below corresponds to the *ASIA network* [@lauritzen1988local], a
-simple Bayesian model used extensively in educational settings.
+simple Bayesian network [@pearl1985bayesian] used extensively in educational
+settings.
 
 ![The ASIA network: a simplified example of a Bayesian network from the context
 of medical diagnosis [@lauritzen1988local]. It describes the probabilistic
