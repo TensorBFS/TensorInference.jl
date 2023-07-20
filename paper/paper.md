@@ -1,6 +1,8 @@
 ---
-title: 'TensorInference: A Julia package for probabilistic inference through
-tensor-based technology'
+title: 'TensorInference: A Julia package for tensor-based probabilistic
+inference'
+#title: 'TensorInference: A Julia package for probabilistic inference through
+#tensor-based technology'
 #title: 'TensorInference: A Julia package for probabilistic inference using
 #tensor networks'
 tags:
