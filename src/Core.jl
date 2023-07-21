@@ -23,16 +23,16 @@ $(TYPEDEF)
 * `cards` is a vector of cardinalities for variables,
 * `factors` is a vector of factors,
 """
-struct UAIInstance{ET, FT <: Factor{ET}}
+struct UAIModel{ET, FT <: Factor{ET}}
     nvars::Int
     nclique::Int
     cards::Vector{Int}
     factors::Vector{FT}
 end
 
-Base.show(io::IO, ::MIME"text/plain", uai::UAIInstance) = Base.show(io, uai)
-function Base.show(io::IO, uai::UAIInstance)
-    println(io, "UAIInstance(nvars = $(uai.nvars), nclique = $(uai.nclique))")
+Base.show(io::IO, ::MIME"text/plain", uai::UAIModel) = Base.show(io, uai)
+function Base.show(io::IO, uai::UAIModel)
+    println(io, "UAIModel(nvars = $(uai.nvars), nclique = $(uai.nclique))")
     println(io, " variables :")
     println(io, " factors : ")
     for (k, f) in enumerate(uai.factors)
@@ -89,16 +89,16 @@ end
 $(TYPEDSIGNATURES)
 """
 function TensorNetworkModel(
-    instance::UAIInstance;
+    model::UAIModel;
     openvars = (),
     evidence = Dict{Int,Int}(),
     optimizer = GreedyMethod(),
     simplifier = nothing
 )::TensorNetworkModel
     return TensorNetworkModel(
-        1:(instance.nvars),
-        instance.cards,
-        instance.factors;
+        1:(model.nvars),
+        model.cards,
+        model.factors;
         openvars,
         evidence,
         optimizer,

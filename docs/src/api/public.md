@@ -42,7 +42,7 @@ MMAPModel
 RescaledArray
 TensorNetworkModel
 ArtifactProblemSpec
-UAIInstance
+UAIModel
 ```
 
 ## Functions
@@ -58,13 +58,12 @@ most_probable_config
 probability
 dataset_from_artifact
 problem_from_artifact
-read_instance
+read_model
 read_evidence
 read_solution
 read_queryvars
-read_instance_file
+read_model_file
 read_evidence_file
-read_solution_file
 read_td_file
 sample
 ```

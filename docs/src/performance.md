@@ -1,27 +1,16 @@
 # Performance Tips
 ## Optimize contraction orders
 
-Let us use the independent set problem on 3-regular graphs as an example.
-```julia
-julia> using TensorInference, Artifacts, Pkg
-
-julia> Pkg.ensure_artifact_installed("uai2014", pkgdir(TensorInference, "test", "Artifacts.toml"));
-
-julia> function get_instance_filepaths(problem_name::AbstractString, task::AbstractString)
-        model_filepath = joinpath(artifact"uai2014", task, problem_name * ".uai")
-        evidence_filepath = joinpath(artifact"uai2014", task, problem_name * ".uai.evid")
-        solution_filepath = joinpath(artifact"uai2014", task, problem_name * ".uai." * task)
-        return model_filepath, evidence_filepath, solution_filepath
-    end
-
-julia> model_filepath, evidence_filepath, solution_filepath = get_instance_filepaths("Promedus_14", "MAR")
-
-julia> instance = read_instance(model_filepath; evidence_filepath, solution_filepath)
+Let us use a problem instance from the "Promedus" dataset of the UAI 2014 competition as an example.
+```@repl performance
+using TensorInference
+problem = problem_from_artifact("uai2014", "MAR", "Promedus", 11)
+model, evidence = read_model(problem), read_evidence(problem);
 ```
 
 Next, we select the tensor network contraction order optimizer.
-```julia
-julia> optimizer = TreeSA(ntrials = 1, niters = 5, βs = 0.1:0.1:100)
+```@repl performance
+optimizer = TreeSA(ntrials = 1, niters = 5, βs = 0.1:0.3:100)
 ```
 
 Here, we choose the local search based [`TreeSA`](@ref) algorithm, which often finds the smallest time/space complexity and supports slicing.
@@ -32,18 +21,18 @@ Alternative tensor network contraction order optimizers include
 * [`KaHyParBipartite`](@ref)
 * [`SABipartite`](@ref)
 
-```julia
-julia> tn = TensorNetworkModel(instance; optimizer)
+```@repl performance
+tn = TensorNetworkModel(model; optimizer, evidence);
 ```
 The returned object `tn` contains a field `code` that specifies the tensor network with optimized contraction order. To check the contraction complexity, please type
-```julia
-julia> contraction_complexity(problem)
+```@repl performance
+contraction_complexity(tn)
 ```
 
 The returned object contains log2 values of the number of multiplications, the number elements in the largest tensor during contraction and the number of read-write operations to tensor elements.
 
-```julia
-julia> p1 = probability(tn)
+```@repl performance
+probability(tn)
 ```
 
 ## Slicing technique
@@ -51,22 +40,13 @@ julia> p1 = probability(tn)
 For large scale applications, it is also possible to slice over certain degrees of freedom to reduce the space complexity, i.e.
 loop and accumulate over certain degrees of freedom so that one can have a smaller tensor network inside the loop due to the removal of these degrees of freedom.
 In the [`TreeSA`](@ref) optimizer, one can set `nslices` to a value larger than zero to turn on this feature.
-
-```julia
-julia> tn = TensorNetworkModel(instance; optimizer=TreeSA());
-
-julia> contraction_complexity(tn)
-(20.856518235241687, 16.0, 18.88208476145812)
-```
-
-As a comparision we slice over 5 degrees of freedom, which can reduce the space complexity by at most 5.
+As a comparison we slice over 5 degrees of freedom, which can reduce the space complexity by at most 5.
 In this application, the slicing achieves the largest possible space complexity reduction 5, while the time and read-write complexity are only increased by less than 1,
 i.e. the peak memory usage is reduced by a factor ``32``, while the (theoretical) computing time is increased by at a factor ``< 2``.
-```
-julia> tn = TensorNetworkModel(instance; optimizer=TreeSA(nslices=5));
-
-julia> timespacereadwrite_complexity(problem)
-(21.134967710592804, 11.0, 19.84529401927876)
+```@repl performance
+optimizer = TreeSA(ntrials = 1, niters = 5, βs = 0.1:0.3:100, nslices=5)
+tn = TensorNetworkModel(model; optimizer, evidence);
+contraction_complexity(problem)
 ```
 
 ## GEMM for Tropical numbers
@@ -80,7 +60,7 @@ To upload the computation to GPU, you just add `using CUDA` before calling the `
 julia> using CUDA
 [ Info: OMEinsum loaded the CUDA module successfully
 
-julia> marginals(tn; usecuda = true)
+julia> marginals(tn; usecuda = true);
 ```
 
 Functions support `usecuda` keyword argument includes

@@ -21,7 +21,7 @@ using TensorInference
         @testset "$(problem_set_name) problem set" begin
             for (id, problem) in problems[problem_set_name]
                 @info "Testing: $(problem_set_name)_$id"
-                tn = TensorNetworkModel(read_instance(problem); optimizer, evidence=read_evidence(problem))
+                tn = TensorNetworkModel(read_model(problem); optimizer, evidence=read_evidence(problem))
                 solution = probability(tn) |> first |> log10
                 @test isapprox(solution, read_solution(problem); atol = 1e-3)
             end

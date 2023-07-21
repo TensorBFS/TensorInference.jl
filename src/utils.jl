@@ -1,21 +1,21 @@
 """
 $(TYPEDSIGNATURES)
 
-Parse the problem instance found in `instance_filepath` defined in the UAI instance
+Parse the problem instance found in `model_filepath` defined in the UAI model
 format. If the provided file path is empty, return `nothing`.
 
 The UAI file formats are defined in:
 https://uaicompetition.github.io/uci-2022/file-formats/
 """
-function read_instance_file(instance_filepath::AbstractString; factor_eltype = Float64)::UAIInstance
+function read_model_file(model_filepath::AbstractString; factor_eltype = Float64)::UAIModel
     # Read the uai file into an array of lines
-    str = open(instance_filepath) do file
+    str = open(model_filepath) do file
         read(file, String)
     end
-    return read_instance_from_string(str; factor_eltype)
+    return read_model_from_string(str; factor_eltype)
 end
 
-function read_instance_from_string(str::AbstractString; factor_eltype = Float64)::UAIInstance
+function read_model_from_string(str::AbstractString; factor_eltype = Float64)::UAIModel
     rawlines = split(str, "\n")
     # Filter out empty lines
     lines = filter(!isempty, rawlines)
@@ -59,7 +59,7 @@ function read_instance_from_string(str::AbstractString; factor_eltype = Float64)
     # Wrap the tables with their corresponding scopes in an array of Factor type
     factors = [Factor{factor_eltype, length(scope)}(Tuple(scope), table) for (scope, table) in zip(scopes_sorted, tables_sorted)]
 
-    return UAIInstance(nvars, ntables, cards, factors)
+    return UAIModel(nvars, ntables, cards, factors)
 end
 
 """
@@ -125,7 +125,7 @@ end
 $(TYPEDSIGNATURES)
 
 Parse the solution marginals of all variables from the UAI MAR solution file.
-The order of the variables is the same as in the instance definition.
+The order of the variables is the same as in the model definition.
 
 The UAI file formats are defined in:
 https://uaicompetition.github.io/uci-2022/file-formats/
@@ -190,8 +190,8 @@ broadcasted_content(x) = asarray(content.(x), x)
 """
 $TYPEDEF
 
-Specify the UAI instances from the artifacts.
-It can be used as the input of [`read_instance`](@ref).
+Specify the UAI models from the artifacts.
+It can be used as the input of [`read_model`](@ref).
 
 ### Fields
 $TYPEDFIELDS
@@ -217,11 +217,11 @@ end
 """
 $TYPEDSIGNATURES
 
-Read an UAI instance from an artifact.
+Read an UAI model from an artifact.
 """
-function read_instance(instance::ArtifactProblemSpec; eltype=Float64)
-    problem_name = "$(instance.problem_set)_$(instance.problem_id).uai"
-    return read_instance_file(joinpath(instance.artifact_path, instance.task, problem_name); factor_eltype = eltype)
+function read_model(problem::ArtifactProblemSpec; eltype=Float64)
+    problem_name = "$(problem.problem_set)_$(problem.problem_id).uai"
+    return read_model_file(joinpath(problem.artifact_path, problem.task, problem_name); factor_eltype = eltype)
 end
 
 """
@@ -232,21 +232,21 @@ Return the solution in the artifact.
 The UAI file formats are defined in:
 https://uaicompetition.github.io/uci-2022/file-formats/
 """
-function read_solution(instance::ArtifactProblemSpec; factor_eltype=Float64)
-    problem_name = "$(instance.problem_set)_$(instance.problem_id).uai.$(instance.task)"
-    solution_filepath = joinpath(instance.artifact_path, instance.task, problem_name)
+function read_solution(problem::ArtifactProblemSpec; factor_eltype=Float64)
+    problem_name = "$(problem.problem_set)_$(problem.problem_id).uai.$(problem.task)"
+    solution_filepath = joinpath(problem.artifact_path, problem.task, problem_name)
 
     # Read the solution file into an array of lines
     rawlines = open(solution_filepath) do file
         readlines(file)
     end
 
-    if instance.task == "MAR" || instance.task == "MAR2"
+    if problem.task == "MAR" || problem.task == "MAR2"
         return parse_mar_solution_file(rawlines; factor_eltype)
-    elseif instance.task == "MAP" || instance.task == "MMAP"
+    elseif problem.task == "MAP" || problem.task == "MMAP"
         # Return all elements except the first in the last line as a vector of integers
         return last(rawlines) |> split |> x -> x[2:end] |> x -> parse.(Int, x)
-    elseif instance.task == "PR"
+    elseif problem.task == "PR"
         # Parse the number in the last line as a floating point
         return last(rawlines) |> x -> parse(Float64, x)
     end
@@ -255,9 +255,9 @@ end
 """
 $TYPEDSIGNATURES
 """
-function read_evidence(instance::ArtifactProblemSpec)
-    problem_name = "$(instance.problem_set)_$(instance.problem_id).uai.evid"
-    evidence_filepath = joinpath(instance.artifact_path, instance.task, problem_name)
+function read_evidence(problem::ArtifactProblemSpec)
+    problem_name = "$(problem.problem_set)_$(problem.problem_id).uai.evid"
+    evidence_filepath = joinpath(problem.artifact_path, problem.task, problem_name)
     obsvars, obsvals = read_evidence_file(evidence_filepath)
     return Dict(zip(obsvars, obsvals))
 end
@@ -265,9 +265,9 @@ end
 """
 $TYPEDSIGNATURES
 """
-function read_queryvars(instance::ArtifactProblemSpec)
-    problem_name = "$(instance.problem_set)_$(instance.problem_id).uai.query"
-    query_filepath = joinpath(instance.artifact_path, instance.task, problem_name)
+function read_queryvars(problem::ArtifactProblemSpec)
+    problem_name = "$(problem.problem_set)_$(problem.problem_id).uai.query"
+    query_filepath = joinpath(problem.artifact_path, problem.task, problem_name)
     return read_query_file(query_filepath)
 end
 

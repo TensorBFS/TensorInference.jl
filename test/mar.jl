@@ -16,7 +16,7 @@ end
     ref_sol = read_solution(problem)
     optimizer = TreeSA(ntrials = 1, niters = 5, βs = 0.1:0.1:100)
     evidence = read_evidence(problem)
-    tn = TensorNetworkModel(read_instance(problem); optimizer, evidence)
+    tn = TensorNetworkModel(read_model(problem); optimizer, evidence)
     p1 = probability(tn; usecuda = false, rescale = false)
     p2 = probability(tn; usecuda = false, rescale = true)
     @test p1 ≈ Array(p2)
@@ -53,7 +53,7 @@ end
         @testset "$(problem_set_name) problem set" begin
             for (id, problem) in problems[problem_set_name]
                 @info "Testing: $(problem_set_name)_$id"
-                tn = TensorNetworkModel(read_instance(problem); optimizer, evidence=read_evidence(problem))
+                tn = TensorNetworkModel(read_model(problem); optimizer, evidence=read_evidence(problem))
                 ref_sol = read_solution(problem)
                 evidence = read_evidence(problem)
 

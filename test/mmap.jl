@@ -9,23 +9,23 @@ end
 
 @testset "gradient-based tensor network solvers" begin
     problem = problem_from_artifact("uai2014", "MAR", "Promedus", 14)
-    instance, evidence = read_instance(problem), read_evidence(problem)
+    model, evidence = read_model(problem), read_evidence(problem)
 
     optimizer = TreeSA(ntrials = 1, niters = 2, βs = 1:0.1:40)
-    tn_ref = TensorNetworkModel(instance; optimizer, evidence)
+    tn_ref = TensorNetworkModel(model; optimizer, evidence)
 
     # Does not marginalize any var
-    mmap = MMAPModel(instance; optimizer, queryvars=collect(1:instance.nvars), evidence)
+    mmap = MMAPModel(model; optimizer, queryvars=collect(1:model.nvars), evidence)
     @debug(mmap)
     @test maximum_logp(tn_ref) ≈ maximum_logp(mmap)
 
     # Marginalize all vars
-    mmap2 = MMAPModel(instance; optimizer, queryvars=Int[], evidence)
+    mmap2 = MMAPModel(model; optimizer, queryvars=Int[], evidence)
     @debug(mmap2)
     @test Array(probability(tn_ref))[] ≈ exp(maximum_logp(mmap2)[])
 
     # Does not optimize over open vertices
-    mmap3 = MMAPModel(instance; optimizer, queryvars=setdiff(1:instance.nvars, [2, 4, 6]), evidence)
+    mmap3 = MMAPModel(model; optimizer, queryvars=setdiff(1:model.nvars, [2, 4, 6]), evidence)
     @debug(mmap3)
     logp, config = most_probable_config(mmap3)
     @test log_probability(mmap3, config) ≈ logp
@@ -42,7 +42,7 @@ end
         @testset "$(problem_set_name) problem set, id = $id" begin
             problem = problem_sets[problem_set_name][id]
             @info "Testing: $(problem_set_name)_$id"
-            model = MMAPModel(read_instance(problem); optimizer, evidence=read_evidence(problem), queryvars=read_queryvars(problem))
+            model = MMAPModel(read_model(problem); optimizer, evidence=read_evidence(problem), queryvars=read_queryvars(problem))
             _, solution = most_probable_config(model)
             @test solution == read_solution(problem)
         end

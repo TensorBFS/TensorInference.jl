@@ -6,11 +6,10 @@ using Artifacts
 
 const SUITE = BenchmarkGroup()
 
-model_filepath, evidence_filepath, _, solution_filepath = get_instance_filepaths("Promedus_14", "MAR")
-problem = read_instance(model_filepath; evidence_filepath, solution_filepath)
+problem = problem_from_artifact("uai2014", "MAR" "Promedus", 14)
 
 optimizer = TreeSA(ntrials = 1, niters = 2, βs = 1:0.1:40)
-tn = TensorNetworkModel(problem; optimizer)
+tn = TensorNetworkModel(read_model(problem); optimizer, evidence=get_evidence(problem))
 SUITE["map"] = @benchmarkable most_probable_config(tn)
 
 end  # module

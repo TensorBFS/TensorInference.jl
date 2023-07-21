@@ -58,9 +58,9 @@ end
 """
 $(TYPEDSIGNATURES)
 """
-function MMAPModel(instance::UAIInstance; openvars = (), optimizer = GreedyMethod(), queryvars, evidence = Dict{Int, Int}(), simplifier = nothing)::MMAPModel
+function MMAPModel(model::UAIModel; openvars = (), optimizer = GreedyMethod(), queryvars, evidence = Dict{Int, Int}(), simplifier = nothing)::MMAPModel
     return MMAPModel(
-        1:(instance.nvars), instance.cards, instance.factors; queryvars, evidence, optimizer, simplifier, openvars
+        1:(model.nvars), model.cards, model.factors; queryvars, evidence, optimizer, simplifier, openvars
     )
 end
 

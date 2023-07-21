@@ -1,7 +1,7 @@
 using TensorInference, Test
 
 @testset "sampling" begin
-    instance = TensorInference.read_instance_from_string("""MARKOV
+    model = TensorInference.read_model_from_string("""MARKOV
 8
  2 2 2 2 2 2 2 2
 8
@@ -47,14 +47,14 @@ using TensorInference, Test
  0.1 0.3 0.2 0.9
 """)
     n = 10000
-    tnet = TensorNetworkModel(instance)
+    tnet = TensorNetworkModel(model)
     samples = sample(tnet, n)
     mars = getindex.(marginals(tnet), 2)
     mars_sample = [count(i->samples[k, i]==(1), axes(samples, 2)) for k=1:8] ./ n
     @test isapprox(mars, mars_sample, atol=0.05)
 
     # fix the evidence
-    tnet = TensorNetworkModel(instance, optimizer=TreeSA(), evidence=Dict(7=>1))
+    tnet = TensorNetworkModel(model, optimizer=TreeSA(), evidence=Dict(7=>1))
     samples = sample(tnet, n)
     mars = getindex.(marginals(tnet), 1)
     mars_sample = [count(i->samples[k, i]==(0), axes(samples, 2)) for k=1:8] ./ n

@@ -51,12 +51,12 @@ using TensorInference
 # Load the ASIA network model from the `asia.uai` file located in the examples
 # directory. See [Model file format (.uai)](@ref) for a description of the
 # format of this file.
-instance = read_instance_file(pkgdir(TensorInference, "examples", "asia", "asia.uai"))
+model = read_model_file(pkgdir(TensorInference, "examples", "asia", "asia.uai"))
 
 # ---
 
 # Create a tensor network representation of the loaded model.
-tn = TensorNetworkModel(instance)
+tn = TensorNetworkModel(model)
 
 # ---
 
@@ -78,7 +78,7 @@ get_vars(tn)
 # Set an evidence: Assume that the "X-ray" result (variable 7) is positive.
 # Since setting an evidence may affect the contraction order of the tensor
 # network, recompute it.
-tn = TensorNetworkModel(instance, evidence = Dict(7 => 0))
+tn = TensorNetworkModel(model, evidence = Dict(7 => 0))
 
 # ---
 
@@ -103,7 +103,7 @@ logp, cfg = most_probable_config(tn)
 # Compute the most probable values of certain variables (e.g., 4 and 7) while
 # marginalizing over others. This is known as Maximum a Posteriori (MAP)
 # estimation.
-mmap = MMAPModel(instance, evidence=Dict(7=>0), queryvars=[4,7])
+mmap = MMAPModel(model, evidence=Dict(7=>0), queryvars=[4,7])
 
 # ---
 
