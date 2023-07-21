@@ -53,22 +53,22 @@ bibliography: paper.bib
 # Summary
 
 `TensorInference.jl` is a Julia [@bezanson2017julia] library designed for
-performing probabilistic inference in discrete graphical models. It leverages
+performing probabilistic inference (JG: some text book level reference like PRML) in discrete graphical models. It leverages
 the recent explosion of advances in the field of tensor networks to provide
 high-performance solutions for common inference tasks. These tasks include
 calculating: 1) the partition function or probability of evidence, 2) the
 marginal probability distribution over each variable given evidence, 3) the most
-likely assignment to all variables given evidence, and 4) the most likely
+likely assignment to all variables given evidence, 4) the most likely
 assignment to the query variables after marginalizing out the remaining
-variables. The infrastructure based on tensor networks allows users to define
+variables and 5) samples generated from the variable probability distribution given evidence.
+The infrastructure based on tensor networks [@robeva2019duality,@liu2022computing] allows users to define
 the contraction ordering method, which is known to have a significant impact on
-the computational performance of these algorithms. A predefined set of
+the computational performance [@markov2008simulating,@pan2021simulating] of these algorithms. A predefined set of
 state-of-the-art contraction ordering methods is made available to users. These
 methods include the *recursive multi-tensor contraction method* (`TreeSA`)
 [@kalachev2022multitensor], the *hyper-optimized tensor network contraction
-method* (`KaHyParBipartite`) [@gray2021hyper], the *hierarchical partitioning
-with dynamic slicing method* (`SABipartite`) [@pan2021simulating], and a
-*greedy-based memory minimization method* (`GreedyMethod`) [@liu2022computing].
+method* (`KaHyParBipartite`) [@gray2021hyper] and its simulated annealing variant `SABipartite`, and a
+*greedy-based memory minimization method* `GreedyMethod`.
 Finally, `TensorInference.jl` harnesses the latest developments in computational
 technology, including a highly optimized set of BLAS routines and GPU
 technology.
@@ -90,7 +90,7 @@ foundation for various algorithms that enable efficient probabilistic inference.
 
 However, performing probabilistic inference on many real-world problems remains
 intractable due to the intrinsic complexity of performing combinatorial
-optimization tasks in high dimensional spaces. To tackle these challenge, more
+optimization tasks (JG: why combinatorial optimization?) in high dimensional spaces. To tackle these challenge, more
 efficient and scalable inference algorithms are needed.
 
 We present `TensorInference.jl`, a Julia [@bezanson2012julia;
@@ -122,10 +122,11 @@ using TensorInference
 instance = read_instance(pkgdir(TensorInference, "examples", "asia", "asia.uai"))
 
 # Create a tensor network representation of the loaded model.
-tn = TensorNetworkModel(instance)
+# The variable 7 is the variable of interest, which will be retained in the output.
+tn = TensorNetworkModel(instance; openvars=[7])
 
-# Calculate the log10 partition function 
-probability(tn) |> first |> log10
+# Calculate the partition function for each assignment of variable 7.
+probability(tn)
 
 # Calculate the marginal probabilities of each random variable in the model.
 marginals(tn)
@@ -133,12 +134,10 @@ marginals(tn)
 # Retrieve the variables associated with the tensor network model.
 get_vars(tn)
 
-# Set an evidence: Assume that the "X-ray" result (variable 7) is positive.
-set_evidence!(instance, 7 => 0)
-
+# Assume that the "X-ray" result (variable 7) is positive.
 # Since setting an evidence may affect the contraction order of the tensor
 # network, recompute it.
-tn = TensorNetworkModel(instance)
+tn = TensorNetworkModel(instance; evidence=Dict(7 => 0))
 
 # Calculate the maximum log-probability among all configurations.
 maximum_logp(tn)
@@ -155,8 +154,7 @@ logp, cfg = most_probable_config(tn)
 # Compute the most probable values of certain variables (e.g., 4 and 7) while
 # marginalizing over others. This is known as Maximum a Posteriori (MAP)
 # estimation.
-set_query!(instance, [4, 7])
-mmap = MMAPModel(instance)
+mmap = MMAPModel(instance, queryvars=[4, 7])
 
 # Get the most probable configurations for variables 4 and 7.
 most_probable_config(mmap)
