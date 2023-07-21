@@ -12,11 +12,18 @@ directory and execute the compile.sh script using the following command:
 ./compile.sh
 ```
 
-*TIP*: If you are using Neovim, you can compile and open the paper using the
-following command:
+### Personal note (MRV)
+
+To compile and open the paper with Neovim, run:
 
 ```
 :AsyncRun -silent ./compile.sh; xdg-open ./paper.pdf
+```
+
+Or map the command a above to a keybinding, e.g.:
+
+```
+:lua vim.keymap.set("n", "<Leader>e", ":AsyncStop <bar> sleep 1 <bar> AsyncRun -silent ./compile.sh; xdg-open ./paper.pdf<CR>")
 ```
 
 ---

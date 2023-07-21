@@ -1,6 +1,8 @@
 ---
-title: 'TensorInference: A Julia package for probabilistic inference through
-tensor-based technology'
+title: 'TensorInference: A Julia package for tensor-based probabilistic
+inference'
+#title: 'TensorInference: A Julia package for probabilistic inference through
+#tensor-based technology'
 #title: 'TensorInference: A Julia package for probabilistic inference using
 #tensor networks'
 tags:
@@ -53,24 +55,25 @@ bibliography: paper.bib
 # Summary
 
 `TensorInference.jl` is a Julia [@bezanson2017julia] library designed for
-performing probabilistic inference (JG: some text book level reference like PRML) in discrete graphical models. It leverages
-the recent explosion of advances in the field of tensor networks to provide
-high-performance solutions for common inference tasks. These tasks include
-calculating: 1) the partition function or probability of evidence, 2) the
-marginal probability distribution over each variable given evidence, 3) the most
-likely assignment to all variables given evidence, 4) the most likely
-assignment to the query variables after marginalizing out the remaining
-variables and 5) samples generated from the variable probability distribution given evidence.
-The infrastructure based on tensor networks [@robeva2019duality,@liu2022computing] allows users to define
-the contraction ordering method, which is known to have a significant impact on
-the computational performance [@markov2008simulating,@pan2021simulating] of these algorithms. A predefined set of
-state-of-the-art contraction ordering methods is made available to users. These
-methods include the *recursive multi-tensor contraction method* (`TreeSA`)
-[@kalachev2022multitensor], the *hyper-optimized tensor network contraction
-method* (`KaHyParBipartite`) [@gray2021hyper] and its simulated annealing variant `SABipartite`, and a
-*greedy-based memory minimization method* `GreedyMethod`.
-Finally, `TensorInference.jl` harnesses the latest developments in computational
-technology, including a highly optimized set of BLAS routines and GPU
+performing probabilistic inference in discrete graphical models. It leverages
+the recent explosion of advances in the field of tensor networks
+[@orus2019tensor] to provide high-performance solutions for common inference
+tasks. These tasks include calculating: 1) the partition function or probability
+of evidence, 2) the marginal probability distribution over each variable given
+evidence, 3) the most likely assignment to all variables given evidence, 4)
+the most likely assignment to the query variables after marginalizing out the
+remaining variables, and 5) samples generated from the variable probability distribution given evidence.
+The infrastructure based on tensor networks [@robeva2019duality,@liu2022computing] allows users to
+define the contraction ordering method, which is known to have a significant
+impact on the computational performance [@markov2008simulating,@pan2021simulating] of these algorithms
+[@orus2014practical]. A predefined set of state-of-the-art contraction ordering
+methods is made available to users. These methods include the *recursive
+multi-tensor contraction method* (`TreeSA`) [@kalachev2022multitensor],
+the *hyper-optimized tensor network contraction method* (`KaHyParBipartite`) [@gray2021hyper]
+and its simulated annealing variant (`SABipartite`), and a *greedy-based memory minimization
+method* (`GreedyMethod`). Finally, `TensorInference.jl`
+harnesses the latest developments in computational technology, including a
+highly optimized set of BLAS [@blackford2002updated] routines and GPU
 technology.
 
 # Statement of need
@@ -79,33 +82,50 @@ A major challenge in developing intelligent systems is the ability to reason
 under uncertainty, a challenge that appears in many real-world problems across
 various domains, including artificial intelligence, medical diagnosis, computer
 vision, computational biology, and natural language processing. Reasoning under
-uncertainty involves drawing global insights from local observations, a process
-known as *probabilistic inference*.
+uncertainty involves calculating the probabilities of relevant variables while
+taking into account any information that is acquired. This process, which can be
+thought of as drawing global insights from local observations, is known as
+*probabilistic inference*.
 
-*Probabilistic graphical models* (PGMs) provide a unified framework to address
-these challenges. These models use graphs to concisely represent the joint
-probability distribution of complex systems by exploiting the conditional
-independence between variables in the model. Additionally, they form the
-foundation for various algorithms that enable efficient probabilistic inference.
+*Probabilistic graphical models* (PGMs) provide a unified framework to perform
+probabilistic inference. These models use graphs to represent the joint
+probability distribution of complex systems concisely by exploiting the
+conditional independence between variables in the model. Additionally, they form
+the foundation for various algorithms that enable efficient probabilistic
+inference.
 
-However, performing probabilistic inference on many real-world problems remains
-intractable due to the intrinsic complexity of performing combinatorial
-optimization tasks (JG: why combinatorial optimization?) in high dimensional spaces. To tackle these challenge, more
-efficient and scalable inference algorithms are needed.
+However, even with the representational aid of PGMs, performing probabilistic
+inference remains an intractable endeavor on many real-world models. The reason
+is that performing probabilistic inference involves complex combinatorial
+optimization problems in very high dimensional spaces. To tackle these
+challenges, more efficient and scalable inference algorithms are needed.
 
-We present `TensorInference.jl`, a Julia [@bezanson2012julia;
-@bezanson2017julia] package for probabilistic inference. This package combines
+As an attempt to tackle the aforementioned challenges, we present
+`TensorInference.jl`, a Julia package for probabilistic inference that combines
 the representational capabilities of PGMs with the computational power of tensor
 networks. By harnessing the best of both worlds, `TensorInference.jl` aims to
 enhance the performance of probabilistic inference, thereby expanding the
-tractability spectrum of exact inference for more complex models.
+tractability spectrum of exact inference for more complex, real-world models.
+
+In contrast with the `JunctionTrees.jl` package [@roa2022partial;
+@roa2023scaling], which utilizes a tensor-based backend to optimize the
+computation of individual sum-product messages within the context of the
+junction tree algorithm (JTA) [@lauritzen1988local; @jensen1990bayesian],
+`TensorInference.jl` adopts a holistic approach. This approach subsumes the JTA
+in its entirety, greatly simplifying the complexity of the algorithm and opening
+new doors for optimization opportunities.
 
 # Usage example
 
-The graph below corresponds to the *ASIA network*, a simple Bayesian model used
-extensively in educational settings. It was introduced in [@lauritzen1988local].
+The graph below corresponds to the *ASIA network* [@lauritzen1988local], a
+simple Bayesian network [@pearl1985bayesian] used extensively in educational
+settings.
 
-![](./figures/asia-network/out/asia-network.pdf)
+![The ASIA network: a simplified example of a Bayesian network from the context
+of medical diagnosis [@lauritzen1988local]. It describes the probabilistic
+relationships between different random variables which correspond to possible
+diseases, symptoms, risk factors and test results.
+](./figures/asia-network/out/asia-network.pdf)
 
 We now demonstrate how to use `TensorInference.jl` for conducting a variety of
 inference tasks on this toy example.
