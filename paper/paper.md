@@ -54,27 +54,42 @@ bibliography: paper.bib
 
 # Summary
 
-`TensorInference.jl` is a Julia [@bezanson2017julia] library designed for
+`TensorInference.jl` is a Julia [@bezanson2017julia] package designed for
 performing probabilistic inference in discrete graphical models. It leverages
 the recent explosion of advances in the field of tensor networks
-[@orus2014practical; @orus2019tensor; @robeva2019duality] to provide high-performance solutions for common inference
-tasks. These tasks include calculating: 1) the partition function or probability
-of evidence, 2) the marginal probability distribution over each variable given
-evidence, 3) the most likely assignment to all variables given evidence, 4)
-the most likely assignment to the query variables after marginalizing out the
-remaining variables, and 5) samples generated from the variable probability distribution given evidence [@Han2018; @Cheng2019].
-The infrastructure based on tensor networks allows users to
+[@orus2014practical; @orus2019tensor; @robeva2019duality] to provide
+high-performance solutions for common inference problems. Specifically,
+`TensorInference.jl` offers mechanisms to: 
 
-- differentiate a tensor network program [@Liao2019] with little effort.
-- use generic element types in a tensor network without sacrifice too much performance [@Liu2021; @liu2022computing].
-- define a hyper-optimized contraction order, which is known to have a significant impact on the computational performance [@markov2008simulating; @pan2021simulating; @Gao2021] of these algorithms.
+1. calculate the partition function (also known as the probability of evidence).
+2. compute the marginal probability distribution over each variable given
+   evidence.
+3. find the most likely assignment to all variables given evidence.
+4. find the most likely assignment to a set of query variables after
+   marginalizing out the remaining variables.
+5. draw samples from the posterior distribution given evidence
+   [@han2018unsupervised; @cheng2019tree].
 
-In `TensorInference.jl`, a predefined set of state-of-the-art contraction ordering
-methods is made available to users. These methods include a *local search based method* (`TreeSA`) [@kalachev2022multitensor],
-two *min-cut based methods* (`KaHyParBipartite`) [@gray2021hyper] and (`SABipartite`), and a *greedy method* (`GreedyMethod`).
-Finally, `TensorInference.jl` harnesses the latest developments in computational technology, including a
-highly optimized set of BLAS [@blackford2002updated] routines and GPU
-technology.
+The infrastructure based on tensor networks introduces several benefits in
+handling complex computational tasks. First, it provides a convenient approach
+to differentiate a tensor network program [@liao2019differentiable], a crucial
+operation in the computation of the inference tasks listed above. Second, it
+supports generic element types without sacrificing significant performance. The
+advantage of this generic element type support is that solutions to diverse
+problems can be obtained using the same tensor network contraction algorithm but
+with different element types. This introduces a level of flexibility and
+adaptability that can handle a broad spectrum of problem domains efficiently
+[@liu2021tropical; @liu2022computing]. Third, it allows users to define a
+hyper-optimized contraction order, which is known to have a significant impact
+on the computational performance of contracting tensor networks
+[@markov2008simulating; @pan2021simulating; @gao2021limitations].
+`TensorInference.jl` makes a predefined set of state-of-the-art contraction
+ordering methods available to the users. These methods include a *local search
+based method* (`TreeSA`) [@kalachev2022multitensor], two *min-cut based methods*
+(`KaHyParBipartite`) [@gray2021hyper] and (`SABipartite`), and a *greedy method*
+(`GreedyMethod`). Finally, `TensorInference.jl` harnesses the latest
+developments in computational technology, including a highly optimized set of
+BLAS [@blackford2002updated] routines and GPU technology.
 
 # Statement of need
 
@@ -107,28 +122,39 @@ networks. By harnessing the best of both worlds, `TensorInference.jl` aims to
 enhance the performance of probabilistic inference, thereby expanding the
 tractability spectrum of exact inference for more complex, real-world models.
 
-In contrast with the `JunctionTrees.jl` package [@roa2022partial;
-@roa2023scaling], which utilizes a tensor-based backend to optimize the
-computation of individual sum-product messages within the context of the
-junction tree algorithm (JTA) [@lauritzen1988local; @jensen1990bayesian],
-`TensorInference.jl` adopts a holistic approach. This approach subsumes the JTA
-in its entirety, greatly simplifying the complexity of the algorithm and opening
-new doors for optimization opportunities.
+`TensorInference.jl` succeeds `JunctionTrees.jl` [@roa2022partial;
+@roa2023scaling], a Julia package implementing the Junction Tree Algorithm (JTA)
+[@lauritzen1988local; @jensen1990bayesian]. While the latter optimizes
+computation of individual sum-product messages within the JTA context by
+employing tensor-based technology at the backend level, `TensorInference.jl`
+takes a different route. It adopts a holistic tensor network approach, fully
+integrating the JTA, significantly reducing the algorithm's complexity, and
+thereby opening new doors for optimization opportunities.
 
 # Usage example
 
 The graph below corresponds to the *ASIA network* [@lauritzen1988local], a
 simple Bayesian network [@pearl1985bayesian] used extensively in educational
-settings.
+settings. It describes the probabilistic relationships between different random
+variables which correspond to possible diseases, symptoms, risk factors and test
+results.
 
 ![The ASIA network: a simplified example of a Bayesian network from the context
-of medical diagnosis [@lauritzen1988local]. It describes the probabilistic
-relationships between different random variables which correspond to possible
-diseases, symptoms, risk factors and test results.
+of medical diagnosis [@lauritzen1988local].
 ](./figures/asia-network/out/asia-network.pdf)
 
+In the example, a patient has recently visited Asia and is now experiencing
+dyspnea. These conditions serve as the evidence for the observed variables ($A$
+and $D$). The doctor's task is to assess the likelihood of various diseases —
+tuberculosis, lung cancer, and bronchitis - which constitute the query variables
+in this scenario ($T$, $L$, and $B$).
+
 We now demonstrate how to use `TensorInference.jl` for conducting a variety of
-inference tasks on this toy example.
+inference tasks on this toy example. Please note that as the API may evolve, we
+recommend checking the
+[examples](https://github.com/TensorBFS/TensorInference.jl/tree/main/examples/asia)
+directory of the official `TensorInference.jl` repository for the most
+up-to-date version of this example.
 
 ```julia
 
@@ -187,6 +213,9 @@ log_probability(mmap, [1, 0]), log_probability(mmap, [0, 0])
 # Acknowledgments
 
 This work is partially funded by the Netherlands Organization for Scientific
-Research. The authors want to thank Madelyn Cain for helpful advice.
+Research and the Guangzhou Municipal Science and Technology Project (No.
+2023A03J0003). We extend our gratitude to Madelyn Cain and Patrick Wijnings for
+their insightful discussions on the intersection of tensor networks and
+probabilistic graphical models.
 
 # References
