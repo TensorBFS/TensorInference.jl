@@ -49,7 +49,7 @@ function most_probable_config(tn::TensorNetworkModel; usecuda = false)::Tuple{Re
     tensors = map(t -> Tropical.(log.(t)), adapt_tensors(tn; usecuda, rescale = false))
     logp, grads = cost_and_gradient(tn.code, tensors)
     # use Array to convert CuArray to CPU arrays
-    return content(Array(logp)[]), map(k -> haskey(tn.fixedvertices, vars[k]) ? tn.fixedvertices[vars[k]] : argmax(grads[k]) - 1, 1:length(vars))
+    return content(Array(logp)[]), map(k -> haskey(tn.evidence, vars[k]) ? tn.evidence[vars[k]] : argmax(grads[k]) - 1, 1:length(vars))
 end
 
 """

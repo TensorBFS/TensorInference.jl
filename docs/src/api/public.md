@@ -41,7 +41,8 @@ TreeSA
 MMAPModel
 RescaledArray
 TensorNetworkModel
-UAIInstance
+ArtifactProblemSpec
+UAIModel
 ```
 
 ## Functions
@@ -55,13 +56,14 @@ marginals
 maximum_logp
 most_probable_config
 probability
-read_evidence_file
-read_instance
-read_instance_from_artifact
+dataset_from_artifact
+problem_from_artifact
+read_model
+read_evidence
+read_solution
+read_queryvars
 read_model_file
-read_solution_file
+read_evidence_file
 read_td_file
 sample
-set_evidence!
-set_query!
 ```

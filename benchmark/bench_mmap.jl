@@ -6,8 +6,8 @@ using Artifacts
 
 const SUITE = BenchmarkGroup()
 
-model_filepath, evidence_filepath, _, solution_filepath = get_instance_filepaths("Promedus_14", "MAR")
-problem = read_instance(model_filepath; evidence_filepath, solution_filepath)
+model_filepath, evidence_filepath, _, solution_filepath = get_model_filepaths("Promedus_14", "MAR")
+problem = read_model(model_filepath; evidence_filepath, solution_filepath)
 optimizer = TreeSA(ntrials = 1, niters = 2, βs = 1:0.1:40)
 
 # Does not marginalize any var
