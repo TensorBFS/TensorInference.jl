@@ -57,22 +57,22 @@ bibliography: paper.bib
 `TensorInference.jl` is a Julia [@bezanson2017julia] library designed for
 performing probabilistic inference in discrete graphical models. It leverages
 the recent explosion of advances in the field of tensor networks
-[@orus2019tensor] to provide high-performance solutions for common inference
+[@orus2014practical; @orus2019tensor; @robeva2019duality] to provide high-performance solutions for common inference
 tasks. These tasks include calculating: 1) the partition function or probability
 of evidence, 2) the marginal probability distribution over each variable given
 evidence, 3) the most likely assignment to all variables given evidence, 4)
 the most likely assignment to the query variables after marginalizing out the
-remaining variables, and 5) samples generated from the variable probability distribution given evidence.
-The infrastructure based on tensor networks [@robeva2019duality,@liu2022computing] allows users to
-define the contraction ordering method, which is known to have a significant
-impact on the computational performance [@markov2008simulating,@pan2021simulating] of these algorithms
-[@orus2014practical]. A predefined set of state-of-the-art contraction ordering
-methods is made available to users. These methods include the *recursive
-multi-tensor contraction method* (`TreeSA`) [@kalachev2022multitensor],
-the *hyper-optimized tensor network contraction method* (`KaHyParBipartite`) [@gray2021hyper]
-and its simulated annealing variant (`SABipartite`), and a *greedy-based memory minimization
-method* (`GreedyMethod`). Finally, `TensorInference.jl`
-harnesses the latest developments in computational technology, including a
+remaining variables, and 5) samples generated from the variable probability distribution given evidence [@Han2018; @Cheng2019].
+The infrastructure based on tensor networks allows users to
+
+- differentiate a tensor network program [@Liao2019] with little effort.
+- use generic element types in a tensor network without sacrifice too much performance [@Liu2021; @liu2022computing].
+- define a hyper-optimized contraction order, which is known to have a significant impact on the computational performance [@markov2008simulating; @pan2021simulating; @Gao2021] of these algorithms.
+
+In `TensorInference.jl`, a predefined set of state-of-the-art contraction ordering
+methods is made available to users. These methods include a *local search based method* (`TreeSA`) [@kalachev2022multitensor],
+two *min-cut based methods* (`KaHyParBipartite`) [@gray2021hyper] and (`SABipartite`), and a *greedy method* (`GreedyMethod`).
+Finally, `TensorInference.jl` harnesses the latest developments in computational technology, including a
 highly optimized set of BLAS [@blackford2002updated] routines and GPU
 technology.
 

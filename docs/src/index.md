@@ -24,6 +24,8 @@ Solutions to the most common probabilistic inference tasks, including:
 - **Marginal Maximum a Posteriori (MMAP)**: Finds the most probable state of a
   subset of variables, averaging out the uncertainty over the remaining ones.
 
+- **Sampling from distribution**: Generates samples from the probabilistic model.
+
 ## Outline
 ```@contents
 Pages = [
