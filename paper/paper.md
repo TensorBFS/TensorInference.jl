@@ -55,11 +55,11 @@ bibliography: paper.bib
 # Summary
 
 `TensorInference.jl` is a Julia [@bezanson2017julia] package designed for
-performing probabilistic inference in discrete graphical models. It leverages
-the recent explosion of advances in the field of tensor networks
-[@orus2014practical; @orus2019tensor; @robeva2019duality] to provide
-high-performance solutions for common inference problems. Specifically,
-`TensorInference.jl` offers mechanisms to: 
+performing probabilistic inference in discrete graphical models. Capitalizing on
+the recent advances in the field of tensor networks [@orus2014practical;
+@orus2019tensor; @robeva2019duality], `TensorInference.jl` offers
+high-performance solutions for prevalent inference problems. Specifically, it
+provides methods to: 
 
 1. calculate the partition function (also known as the probability of evidence).
 2. compute the marginal probability distribution over each variable given
@@ -70,26 +70,27 @@ high-performance solutions for common inference problems. Specifically,
 5. draw samples from the posterior distribution given evidence
    [@han2018unsupervised; @cheng2019tree].
 
-The infrastructure based on tensor networks introduces several benefits in
-handling complex computational tasks. First, it provides a convenient approach
-to differentiate a tensor network program [@liao2019differentiable], a crucial
-operation in the computation of the inference tasks listed above. Second, it
-supports generic element types without sacrificing significant performance. The
-advantage of this generic element type support is that solutions to diverse
-problems can be obtained using the same tensor network contraction algorithm but
-with different element types. This introduces a level of flexibility and
-adaptability that can handle a broad spectrum of problem domains efficiently
-[@liu2021tropical; @liu2022computing]. Third, it allows users to define a
-hyper-optimized contraction order, which is known to have a significant impact
-on the computational performance of contracting tensor networks
-[@markov2008simulating; @pan2021simulating; @gao2021limitations].
-`TensorInference.jl` makes a predefined set of state-of-the-art contraction
-ordering methods available to the users. These methods include a *local search
-based method* (`TreeSA`) [@kalachev2022multitensor], two *min-cut based methods*
-(`KaHyParBipartite`) [@gray2021hyper] and (`SABipartite`), and a *greedy method*
-(`GreedyMethod`). Finally, `TensorInference.jl` harnesses the latest
-developments in computational technology, including a highly optimized set of
-BLAS [@blackford2002updated] routines and GPU technology.
+The use of a tensor network-based infrastructure offers several advantages when
+dealing with complex computational tasks. Firstly, it simplifies the process of
+computing gradients by employing differentiable programming
+[@liao2019differentiable], a critical operation for the aforementioned inference
+tasks. Secondly, it supports generic element types without a significant
+compromise on performance. The advantage of supporting generic element types
+lies in the ability to solve a variety of problems using the same tensor network
+contraction algorithm, simply by varying the element types used. This
+flexibility has allowed us to seamlessly implement solutions for several of the
+inference tasks mentioned earlier [@liu2021tropical; @liu2022computing].
+Thirdly, it allows users to define a hyper-optimized contraction order, which is
+known to have a significant impact on the computational performance of
+contracting tensor networks [@markov2008simulating; @pan2021simulating;
+@gao2021limitations]. `TensorInference.jl` provides a predefined set of
+state-of-the-art contraction ordering methods. These methods include a *local
+search based method* (`TreeSA`) [@kalachev2022multitensor], two *min-cut based
+methods* (`KaHyParBipartite`) [@gray2021hyper] and (`SABipartite`), and a
+*greedy method* (`GreedyMethod`). Finally, tensor networks -- and by extension,
+`TensorInference.jl` -- harness the latest developments in computational
+technology, including a highly optimized set of BLAS routines
+[@blackford2002updated] and GPU technology.
 
 # Statement of need
 
@@ -104,9 +105,9 @@ thought of as drawing global insights from local observations, is known as
 
 *Probabilistic graphical models* (PGMs) provide a unified framework to perform
 probabilistic inference. These models use graphs to represent the joint
-probability distribution of complex systems concisely by exploiting the
-conditional independence between variables in the model. Additionally, they form
-the foundation for various algorithms that enable efficient probabilistic
+probability distribution of complex systems in a concise manner by exploiting
+the conditional independence between variables in the model. Additionally, they
+form the foundation for various algorithms that enable efficient probabilistic
 inference.
 
 However, even with the representational aid of PGMs, performing probabilistic
@@ -124,12 +125,12 @@ tractability spectrum of exact inference for more complex, real-world models.
 
 `TensorInference.jl` succeeds `JunctionTrees.jl` [@roa2022partial;
 @roa2023scaling], a Julia package implementing the Junction Tree Algorithm (JTA)
-[@lauritzen1988local; @jensen1990bayesian]. While the latter optimizes
-computation of individual sum-product messages within the JTA context by
-employing tensor-based technology at the backend level, `TensorInference.jl`
-takes a different route. It adopts a holistic tensor network approach, fully
-integrating the JTA, significantly reducing the algorithm's complexity, and
-thereby opening new doors for optimization opportunities.
+[@lauritzen1988local; @jensen1990bayesian]. While the latter employs
+tensor-based technology to optimize the computation of individual sum-product
+messages within the JTA context, `TensorInference.jl` takes a different route.
+It adopts a holistic tensor network approach, which opens new doors for
+optimization opportunities, and significantly reduces the algorithm's complexity
+compared to the JTA.
 
 # Usage example
 
@@ -145,14 +146,14 @@ of medical diagnosis [@lauritzen1988local].
 
 In the example, a patient has recently visited Asia and is now experiencing
 dyspnea. These conditions serve as the evidence for the observed variables ($A$
-and $D$). The doctor's task is to assess the likelihood of various diseases —
-tuberculosis, lung cancer, and bronchitis - which constitute the query variables
-in this scenario ($T$, $L$, and $B$).
+and $D$). The doctor's task is to assess the likelihood of various diseases —-
+tuberculosis, lung cancer, and bronchitis -- which constitute the query
+variables in this scenario ($T$, $L$, and $B$).
 
 We now demonstrate how to use `TensorInference.jl` for conducting a variety of
 inference tasks on this toy example. Please note that as the API may evolve, we
 recommend checking the
-[examples](https://github.com/TensorBFS/TensorInference.jl/tree/main/examples/asia)
+[examples](https://github.com/TensorBFS/TensorInference.jl/tree/main/examples)
 directory of the official `TensorInference.jl` repository for the most
 up-to-date version of this example.
 
