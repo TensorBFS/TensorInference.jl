@@ -3,7 +3,7 @@ using TensorInference: OMEinsum
 using TensorInference.OMEinsum: OMEinsumContractionOrders
 using Documenter, Literate
 
-# Literate
+# Literate Examples
 const EXAMPLE_DIR = pkgdir(TensorInference, "examples")
 const LITERATE_GENERATED_DIR = pkgdir(TensorInference, "docs", "src", "generated")
 mkpath(LITERATE_GENERATED_DIR)
@@ -13,6 +13,15 @@ for each in readdir(EXAMPLE_DIR)
     input_file = joinpath(workdir, "main.jl")
     @info "building" input_file
     Literate.markdown(input_file, workdir; execute=true)
+end
+
+const EXTRA_JL = ["performance.jl"]
+const SRC_DIR = pkgdir(TensorInference, "docs", "src")
+for each in EXTRA_JL
+    cp(joinpath(SRC_DIR, each), joinpath(LITERATE_GENERATED_DIR, each); force=true)
+    input_file = joinpath(LITERATE_GENERATED_DIR, each)
+    @info "building" input_file
+    Literate.markdown(input_file, LITERATE_GENERATED_DIR; execute=true)
 end
 
 DocMeta.setdocmeta!(TensorInference, :DocTestSetup, :(using TensorInference); recursive=true)
@@ -36,7 +45,7 @@ makedocs(;
             "Asia network" => "generated/asia/main.md",
            ],
         "UAI file formats" => "uai-file-formats.md",
-        "Performance tips" => "performance.md",
+        "Performance tips" => "generated/performance.md",
         "API" => [
             "Public" => "api/public.md",
             "Internal" => "api/internal.md"
