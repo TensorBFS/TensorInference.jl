@@ -22,62 +22,23 @@ $(TYPEDEF)
 * `nclique` is the number of cliques,
 * `cards` is a vector of cardinalities for variables,
 * `factors` is a vector of factors,
-
-* `obsvars` is a vector of observed variables,
-* `obsvals` is a vector of observed values,
-* `queryvars` is a vector of query variables,
-* `reference_solution` is a vector with the reference solution.
 """
-struct UAIInstance{ET, FT <: Factor{ET}}
+struct UAIModel{ET, FT <: Factor{ET}}
     nvars::Int
     nclique::Int
     cards::Vector{Int}
     factors::Vector{FT}
-
-    obsvars::Vector{Int}
-    obsvals::Vector{Int}
-    queryvars::Vector{Int}
-    reference_solution
 end
 
-Base.show(io::IO, ::MIME"text/plain", uai::UAIInstance) = Base.show(io, uai)
-function Base.show(io::IO, uai::UAIInstance)
-    println(io, "UAIInstance(nvars = $(uai.nvars), nclique = $(uai.nclique))")
+Base.show(io::IO, ::MIME"text/plain", uai::UAIModel) = Base.show(io, uai)
+function Base.show(io::IO, uai::UAIModel)
+    println(io, "UAIModel(nvars = $(uai.nvars), nclique = $(uai.nclique))")
     println(io, " variables :")
-    for (var, card) in zip(1:uai.nvars, uai.cards)
-        println(io, string_var("  $var of size $card", var ∈ uai.queryvars, Dict(zip(uai.obsvars, uai.obsvals))))
-    end
     println(io, " factors : ")
-    for f in uai.factors
-        println(io, "  $(summary(f))")
+    for (k, f) in enumerate(uai.factors)
+        print(io, "  $(summary(f))")
+        k == length(uai.factors) || println(io)
     end
-    print(io, " reference_solution : $(uai.reference_solution)")
-end
-
-"""
-$TYPEDSIGNATURES
-
-Set the evidence of an UAI instance.
-"""
-function set_evidence!(uai::UAIInstance, pairs::Pair{Int}...)
-    empty!(uai.obsvars)
-    empty!(uai.obsvals)
-    for (var, val) in pairs
-        push!(uai.obsvars, var)
-        push!(uai.obsvals, val)
-    end
-    return uai
-end
-
-"""
-$TYPEDSIGNATURES
-
-Set the query variables of an UAI instance.
-"""
-function set_query!(uai::UAIInstance, vars::AbstractVector{Int})
-    empty!(uai.queryvars)
-    append!(uai.queryvars, vars)
-    return uai
 end
 
 """
@@ -86,21 +47,21 @@ $(TYPEDEF)
 Probabilistic modeling with a tensor network.
 
 ### Fields
-* `vars` is the degree of freedoms in the tensor network.
+* `vars` are the degrees of freedom in the tensor network.
 * `code` is the tensor network contraction pattern.
-* `tensors` is the tensors fed into the tensor network.
-* `fixedvertices` is a dictionary to specifiy degree of freedoms fixed to certain values.
+* `tensors` are the tensors fed into the tensor network.
+* `evidence` is a dictionary used to specify degrees of freedom that are fixed to certain values.
 """
 struct TensorNetworkModel{LT, ET, MT <: AbstractArray}
     vars::Vector{LT}
     code::ET
     tensors::Vector{MT}
-    fixedvertices::Dict{LT, Int}
+    evidence::Dict{LT, Int}
 end
 
 function Base.show(io::IO, tn::TensorNetworkModel)
     open = getiyv(tn.code)
-    variables = join([string_var(var, open, tn.fixedvertices) for var in tn.vars], ", ")
+    variables = join([string_var(var, open, tn.evidence) for var in tn.vars], ", ")
     tc, sc, rw = contraction_complexity(tn)
     println(io, "$(typeof(tn))")
     println(io, "variables: $variables")
@@ -108,13 +69,13 @@ function Base.show(io::IO, tn::TensorNetworkModel)
 end
 Base.show(io::IO, ::MIME"text/plain", tn::TensorNetworkModel) = Base.show(io, tn)
 
-function string_var(var, open, fixedvertices)
-    if var ∈ open && haskey(fixedvertices, var)
-        "$var (open, fixed to $(fixedvertices[var]))"
+function string_var(var, open, evidence)
+    if var ∈ open && haskey(evidence, var)
+        "$var (open, fixed to $(evidence[var]))"
     elseif var ∈ open
         "$var (open)"
-    elseif haskey(fixedvertices, var)
-        "$var (evidence → $(fixedvertices[var]))"
+    elseif haskey(evidence, var)
+        "$var (evidence → $(evidence[var]))"
     else
         "$var"
     end
@@ -128,20 +89,18 @@ end
 $(TYPEDSIGNATURES)
 """
 function TensorNetworkModel(
-    instance::UAIInstance;
-    openvertices = (),
+    model::UAIModel;
+    openvars = (),
+    evidence = Dict{Int,Int}(),
     optimizer = GreedyMethod(),
     simplifier = nothing
 )::TensorNetworkModel
-    if !isempty(instance.queryvars)
-        @warn "The `queryvars` field of the input `UAIInstance` instance is designed for the `MMAPModel`, which is not respected by `TensorNetworkModel`. Got non-empty value: $(uai.queryvars)"
-    end
     return TensorNetworkModel(
-        1:(instance.nvars),
-        instance.cards,
-        instance.factors;
-        openvertices,
-        fixedvertices = Dict(zip(instance.obsvars, instance.obsvals)),
+        1:(model.nvars),
+        model.cards,
+        model.factors;
+        openvars,
+        evidence,
         optimizer,
         simplifier
     )
@@ -154,8 +113,8 @@ function TensorNetworkModel(
     vars::AbstractVector{LT},
     cards::AbstractVector{Int},
     factors::Vector{<:Factor{T}};
-    openvertices = (),
-    fixedvertices = Dict{LT, Int}(),
+    openvars = (),
+    evidence = Dict{LT, Int}(),
     optimizer = GreedyMethod(),
     simplifier = nothing
 )::TensorNetworkModel where {T, LT}
@@ -163,9 +122,9 @@ function TensorNetworkModel(
     # The 2nd argument of `EinCode` is a vector of labels for specifying the output tensor,
     # e.g.
     # `EinCode([[1, 2], [2, 3]], [1, 3])` is the EinCode for matrix multiplication.
-    rawcode = EinCode([[[var] for var in vars]..., [[factor.vars...] for factor in factors]...], collect(LT, openvertices))  # labels for vertex tensors (unity tensors) and edge tensors
+    rawcode = EinCode([[[var] for var in vars]..., [[factor.vars...] for factor in factors]...], collect(LT, openvars))  # labels for vertex tensors (unity tensors) and edge tensors
     tensors = Array{T}[[ones(T, cards[i]) for i in 1:length(vars)]..., [t.vals for t in factors]...]
-    return TensorNetworkModel(collect(LT, vars), rawcode, tensors; fixedvertices, optimizer, simplifier)
+    return TensorNetworkModel(collect(LT, vars), rawcode, tensors; evidence, optimizer, simplifier)
 end
 
 """
@@ -175,7 +134,7 @@ function TensorNetworkModel(
     vars::AbstractVector{LT},
     rawcode::EinCode,
     tensors::Vector{<:AbstractArray};
-    fixedvertices = Dict{LT, Int}(),
+    evidence = Dict{LT, Int}(),
     optimizer = GreedyMethod(),
     simplifier = nothing
 )::TensorNetworkModel where {LT}
@@ -185,7 +144,7 @@ function TensorNetworkModel(
     # The 3rd and 4th arguments are the optimizer and simplifier that configures which algorithm to use and simplify.
     size_dict = OMEinsum.get_size_dict(getixsv(rawcode), tensors)
     code = optimize_code(rawcode, size_dict, optimizer, simplifier)
-    TensorNetworkModel(collect(LT, vars), code, tensors, fixedvertices)
+    TensorNetworkModel(collect(LT, vars), code, tensors, evidence)
 end
 
 """
@@ -202,10 +161,10 @@ Get the cardinalities of variables in this tensor network.
 """
 function get_cards(tn::TensorNetworkModel; fixedisone = false)::Vector
     vars = get_vars(tn)
-    [fixedisone && haskey(tn.fixedvertices, vars[k]) ? 1 : length(tn.tensors[k]) for k in 1:length(vars)]
+    [fixedisone && haskey(tn.evidence, vars[k]) ? 1 : length(tn.tensors[k]) for k in 1:length(vars)]
 end
 
-chfixedvertices(tn::TensorNetworkModel, fixedvertices) = TensorNetworkModel(tn.vars, tn.code, tn.tensors, fixedvertices)
+chevidence(tn::TensorNetworkModel, evidence) = TensorNetworkModel(tn.vars, tn.code, tn.tensors, evidence)
 
 """
 $(TYPEDSIGNATURES)
@@ -221,7 +180,7 @@ end
 $(TYPEDSIGNATURES)
 
 Contract the tensor network and return a probability array with its rank specified in the contraction code `tn.code`.
-The returned array may not be l1-normalized even if the total probability is l1-normalized, because the evidence `tn.fixedvertices` may not be empty.
+The returned array may not be l1-normalized even if the total probability is l1-normalized, because the evidence `tn.evidence` may not be empty.
 """
 function probability(tn::TensorNetworkModel; usecuda = false, rescale = true)::AbstractArray
     return tn.code(adapt_tensors(tn; usecuda, rescale)...)

@@ -7,15 +7,15 @@ format. If the provided file path is empty, return `nothing`.
 The UAI file formats are defined in:
 https://uaicompetition.github.io/uci-2022/file-formats/
 """
-function read_model_file(model_filepath::AbstractString; factor_eltype = Float64)
+function read_model_file(model_filepath::AbstractString; factor_eltype = Float64)::UAIModel
     # Read the uai file into an array of lines
     str = open(model_filepath) do file
         read(file, String)
     end
-    return read_model_string(str; factor_eltype)
+    return read_model_from_string(str; factor_eltype)
 end
 
-function read_model_string(str; factor_eltype = Float64)
+function read_model_from_string(str::AbstractString; factor_eltype = Float64)::UAIModel
     rawlines = split(str, "\n")
     # Filter out empty lines
     lines = filter(!isempty, rawlines)
@@ -59,7 +59,7 @@ function read_model_string(str; factor_eltype = Float64)
     # Wrap the tables with their corresponding scopes in an array of Factor type
     factors = [Factor{factor_eltype, length(scope)}(Tuple(scope), table) for (scope, table) in zip(scopes_sorted, tables_sorted)]
 
-    return nvars, cards, ntables, factors
+    return UAIModel(nvars, ntables, cards, factors)
 end
 
 """
@@ -124,38 +124,6 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Return the solution in `solution_filepath`. Returns an empty vector if the
-extension is not supported.
-
-The UAI file formats are defined in:
-https://uaicompetition.github.io/uci-2022/file-formats/
-"""
-function read_solution_file(solution_filepath::AbstractString; factor_eltype = Float64)
-
-    result = Vector{factor_eltype}[]
-    extension = splitext(solution_filepath)[2]
-
-    # Read the solution file into an array of lines
-    rawlines = open(solution_filepath) do file
-        readlines(file)
-    end
-
-    if extension == ".MAR"
-        result = parse_mar_solution_file(rawlines; factor_eltype)
-    elseif extension == ".MAP" || extension == ".MMAP"
-        # Return all elements except the first in the last line as a vector of integers
-        result = last(rawlines) |> split |> x -> x[2:end] |> x -> parse.(Int, x)
-    elseif extension == ".PR"
-        # Parse the number in the last line as a floating point
-        result = last(rawlines) |> x -> parse(Float64, x)
-    end
-
-    return result
-end
-
-"""
-$(TYPEDSIGNATURES)
-
 Parse the solution marginals of all variables from the UAI MAR solution file.
 The order of the variables is the same as in the model definition.
 
@@ -200,9 +168,6 @@ function read_td_file(td_filepath::AbstractString)
     # Extract number of bags, treewidth+1 and number of vertices from solution line
     nbags, treewidth, nvertices = split(lines[1]) |> x -> x[3:5] |> x -> parse.(Int, x)
 
-    # # DEBUG:
-    # @show nbags, treewidth, nvertices
-
     # Parse bags and store then in a vector of vectors
     bags = lines[2:(2 + nbags - 1)] |>
            x -> map(split, x) |>
@@ -211,112 +176,132 @@ function read_td_file(td_filepath::AbstractString)
 
     @assert length(bags) == nbags
 
-    # # DEBUG:
-    # @show bags
-
     # Parse edges and store then in a vector of vectors
     edges = lines[(2 + nbags):end] |> x -> map(split, x) |> x -> map(y -> parse.(Int, y), x)
 
     @assert length(edges) == nbags - 1
 
-    # # DEBUG:
-    # @show edges
-
     return nbags, treewidth, nvertices, bags, edges
-end
-
-"""
-$(TYPEDSIGNATURES)
-
-Read a UAI problem instance from a file.
-"""
-function read_instance(
-    model_filepath::AbstractString;
-    evidence_filepath::AbstractString = "",
-    query_filepath::AbstractString = "",
-    solution_filepath::AbstractString = "",
-    eltype = Float64
-)::UAIInstance
-    nvars, cards, ncliques, factors = read_model_file(model_filepath; factor_eltype = eltype)
-    obsvars, obsvals = read_evidence_file(evidence_filepath)
-    queryvars = read_query_file(query_filepath)
-    reference_solution = isempty(solution_filepath) ? Vector{eltype}[] : read_solution_file(solution_filepath)
-    return UAIInstance(nvars, ncliques, cards, factors, obsvars, obsvals, queryvars, reference_solution)
-end
-
-function read_instance_from_string(model::AbstractString; eltype = Float64)::UAIInstance
-    nvars, cards, ncliques, factors = read_model_string(model; factor_eltype = eltype)
-    return UAIInstance(nvars, ncliques, cards, factors, Int[], Int[], Int[], nothing)
 end
 
 # patch to get content by broadcasting into array, while keep array size unchanged.
 broadcasted_content(x) = asarray(content.(x), x)
 
 """
+$TYPEDEF
+
+Specify the UAI models from the artifacts.
+It can be used as the input of [`read_model`](@ref).
+
+### Fields
+$TYPEDFIELDS
+"""
+struct ArtifactProblemSpec
+    artifact_path::String
+    task::String
+    problem_set::String
+    problem_id::Int
+end
+
+"""
+$TYPEDSIGNATURES
+
+Get artifact from artifact name, task name, problem set name and problem id.
+"""
+function problem_from_artifact(artifact_name::String, task::String, problem_set::String, problem_id::Int)
+    path = get_artifact_path(artifact_name)
+    return ArtifactProblemSpec(path, task, problem_set, problem_id)
+end
+
+
+"""
+$TYPEDSIGNATURES
+
+Read an UAI model from an artifact.
+"""
+function read_model(problem::ArtifactProblemSpec; eltype=Float64)
+    problem_name = "$(problem.problem_set)_$(problem.problem_id).uai"
+    return read_model_file(joinpath(problem.artifact_path, problem.task, problem_name); factor_eltype = eltype)
+end
+
+"""
 $(TYPEDSIGNATURES)
 
-Load a specific instance, identified by `task/name`, from the provided
-artifact.
+Return the solution in the artifact.
+
+The UAI file formats are defined in:
+https://uaicompetition.github.io/uci-2022/file-formats/
 """
-function read_instance_from_artifact(
-    artifact_name::AbstractString,
-    problem_name::AbstractString,
-    task::AbstractString;
-    eltype = Float64
-)
-    model_filepath, evidence_filepath, query_filepath, solution_filepath = get_instance_filepaths(
-        artifact_name,
-        problem_name,
-        task
-    )
-    read_instance(model_filepath; evidence_filepath, query_filepath, solution_filepath, eltype)
+function read_solution(problem::ArtifactProblemSpec; factor_eltype=Float64)
+    problem_name = "$(problem.problem_set)_$(problem.problem_id).uai.$(problem.task)"
+    solution_filepath = joinpath(problem.artifact_path, problem.task, problem_name)
+
+    # Read the solution file into an array of lines
+    rawlines = open(solution_filepath) do file
+        readlines(file)
+    end
+
+    if problem.task == "MAR" || problem.task == "MAR2"
+        return parse_mar_solution_file(rawlines; factor_eltype)
+    elseif problem.task == "MAP" || problem.task == "MMAP"
+        # Return all elements except the first in the last line as a vector of integers
+        return last(rawlines) |> split |> x -> x[2:end] |> x -> parse.(Int, x)
+    elseif problem.task == "PR"
+        # Parse the number in the last line as a floating point
+        return last(rawlines) |> x -> parse(Float64, x)
+    end
 end
 
 """
-Helper function to obtain the filepaths for an instance's model, evidence, and
-solution files within the provided artifact, corresponding to the provided
-task. If a given file path does not exist in the instance's directory, an
-empty file path is returned.
+$TYPEDSIGNATURES
 """
-function get_instance_filepaths(
-    artifact_name::AbstractString,
-    problem_name::AbstractString,
-    task::AbstractString
-)
-    artifact_toml = pkgdir(TensorInference, "Artifacts.toml")
-    Pkg.ensure_artifact_installed(artifact_name, artifact_toml)
-    artifact_hash = Pkg.Artifacts.artifact_hash(artifact_name, artifact_toml)
-    artifact_path = Pkg.Artifacts.artifact_path(artifact_hash)
-    model_filepath = joinpath(artifact_path, task, problem_name * ".uai") |> topath
-    evidence_filepath = joinpath(artifact_path, task, problem_name * ".uai.evid") |> topath
-    query_filepath = joinpath(artifact_path, task, problem_name * ".uai.query") |> topath
-    solution_filepath = joinpath(artifact_path, task, problem_name * ".uai." * task) |> topath
-    return model_filepath, evidence_filepath, query_filepath, solution_filepath
+function read_evidence(problem::ArtifactProblemSpec)
+    problem_name = "$(problem.problem_set)_$(problem.problem_id).uai.evid"
+    evidence_filepath = joinpath(problem.artifact_path, problem.task, problem_name)
+    obsvars, obsvals = read_evidence_file(evidence_filepath)
+    return Dict(zip(obsvars, obsvals))
 end
 
 """
-This function returns the provided file path if it exists on disk, otherwise it
-  returns an empty string.
+$TYPEDSIGNATURES
 """
-topath(filepath::AbstractString) = isfile(filepath) ? filepath : ""
+function read_queryvars(problem::ArtifactProblemSpec)
+    problem_name = "$(problem.problem_set)_$(problem.problem_id).uai.query"
+    query_filepath = joinpath(problem.artifact_path, problem.task, problem_name)
+    return read_query_file(query_filepath)
+end
 
 """
+$TYPEDSIGNATURES
+
 Helper function that captures the problem names that belong to `problem_set`
 for the given task.
 """
-function get_problem_names(
-    artifact_name::AbstractString,
-    problem_set::AbstractString,
-    task::AbstractString
-)
+function dataset_from_artifact(artifact_name::AbstractString)
+    artifact_path = get_artifact_path(artifact_name)
+    tasks = ["PR", "MAR", "MAR2", "MAP", "MMAP"]
+    problems = Dict{String, Dict{String, Dict{Int, ArtifactProblemSpec}}}()
+
+    regex = r"^([a-zA-Z_{1}][a-zA-Z0-9_]+)_(\d+)\.uai$"
+    for task in tasks
+        problems_task = Dict{String, Dict{Int, ArtifactProblemSpec}}()
+        problems[task] = problems_task
+        readdir(joinpath(artifact_path, task); sort = false) |>
+           x -> map(y -> match(regex, y), x) |> # apply regex
+                x -> filter(!isnothing, x) |> # filter out `nothing` values
+                     x -> map(x) do m   # matched the `problem_set` and `problem_id`
+                        problem_set, problem_id = m[1], parse(Int, m[2])
+                        haskey(problems_task, problem_set) || (problems_task[problem_set] = Dict{Int, ArtifactProblemSpec}())
+                        set = problems_task[problem_set]
+                        haskey(set, problem_id) || (set[problem_id] = ArtifactProblemSpec(artifact_path, task, problem_set, problem_id))
+                     end
+    end
+    return problems
+end
+
+function get_artifact_path(artifact_name::String)
     artifact_toml = pkgdir(TensorInference, "Artifacts.toml")
     Pkg.ensure_artifact_installed(artifact_name, artifact_toml)
     artifact_hash = Pkg.Artifacts.artifact_hash(artifact_name, artifact_toml)
-    artifact_path = Pkg.Artifacts.artifact_path(artifact_hash)
-
-    regex = Regex("($(problem_set)_\\d*)(\\.uai)\$")
-    return readdir(joinpath(artifact_path, task); sort = false) |>
-           x -> map(y -> match(regex, y), x) |> # apply regex
-                x -> filter(!isnothing, x) |> # filter out `nothing` values
-                     x -> map(first, x) # get the first capture of each element
+    return Pkg.Artifacts.artifact_path(artifact_hash)
 end
