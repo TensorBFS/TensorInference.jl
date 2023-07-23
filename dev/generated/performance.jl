@@ -39,7 +39,10 @@ tn = TensorNetworkModel(model; optimizer, evidence);
 contraction_complexity(tn)
 
 # ## Faster Tropical tensor contraction to speed up MAP and MMAP
-# No extra effort is required to enjoy the BLAS level speed provided by [`TropicalGEMM`](https://github.com/TensorBFS/TropicalGEMM.jl).
+# One can enjoy the BLAS level speed provided by [`TropicalGEMM`](https://github.com/TensorBFS/TropicalGEMM.jl) by importing the package with
+# ```julia
+# using TropicalGEMM
+# ```
 # The benchmark in the `TropicalGEMM` repo shows this performance is close to the theoretical optimal value.
 # Its implementation on GPU is under development in Github repo [`CuTropicalGEMM.jl`](https://github.com/ArrogantGao/CuTropicalGEMM.jl) as a part of [Open Source Promotion Plan summer program](https://summer-ospp.ac.cn/).
 
