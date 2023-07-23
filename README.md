@@ -6,6 +6,7 @@
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://TensorBFS.github.io/TensorInference.jl/dev/)
 [![Build Status](https://github.com/TensorBFS/TensorInference.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/TensorBFS/TensorInference.jl/actions/workflows/CI.yml?query=branch%3Amain)
 [![Coverage](https://codecov.io/gh/TensorBFS/TensorInference.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/TensorBFS/TensorInference.jl)
+[![status](https://joss.theoj.org/papers/a6792845b2522b07898cd35e246ec4d2/status.svg)](https://joss.theoj.org/papers/a6792845b2522b07898cd35e246ec4d2)
 
 <p>
 TensorInference is an open source &nbsp;
