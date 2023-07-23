@@ -70,7 +70,7 @@ provides methods to:
 5. draw samples from the posterior distribution given evidence
    [@han2018unsupervised; @cheng2019tree].
 
-The use of a tensor network-based infrastructure offers several advantages when
+The use of a tensor network-based infrastructure [@fishman2022itensor;Jutho2023] offers several advantages when
 dealing with complex computational tasks. Firstly, it simplifies the process of
 computing gradients by employing differentiable programming
 [@liao2019differentiable], a critical operation for the aforementioned inference
@@ -79,11 +79,11 @@ compromise on performance. The advantage of supporting generic element types
 lies in the ability to solve a variety of problems using the same tensor network
 contraction algorithm, simply by varying the element types used. This
 flexibility has allowed us to seamlessly implement solutions for several of the
-inference tasks mentioned earlier [@liu2021tropical; @liu2022computing].
+inference tasks mentioned earlier [@liu2021tropical;@liu2022computing].
 Thirdly, it allows users to define a hyper-optimized contraction order, which is
 known to have a significant impact on the computational performance of
-contracting tensor networks [@markov2008simulating; @pan2021simulating;
-@gao2021limitations]. `TensorInference.jl` provides a predefined set of
+contracting tensor networks [@markov2008simulating;@Pan2022;@gao2021limitations].
+`TensorInference.jl` provides a predefined set of
 state-of-the-art contraction ordering methods. These methods include a *local
 search based method* (`TreeSA`) [@kalachev2022multitensor], two *min-cut based
 methods* (`KaHyParBipartite`) [@gray2021hyper] and (`SABipartite`), and a
