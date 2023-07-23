@@ -19,21 +19,19 @@ $(TYPEDEF)
 
 ### Fields
 * `nvars` is the number of variables,
-* `nclique` is the number of cliques,
 * `cards` is a vector of cardinalities for variables,
 * `factors` is a vector of factors,
 """
 struct UAIModel{ET, FT <: Factor{ET}}
     nvars::Int
-    nclique::Int
     cards::Vector{Int}
     factors::Vector{FT}
 end
 
 Base.show(io::IO, ::MIME"text/plain", uai::UAIModel) = Base.show(io, uai)
 function Base.show(io::IO, uai::UAIModel)
-    println(io, "UAIModel(nvars = $(uai.nvars), nclique = $(uai.nclique))")
-    println(io, " variables :")
+    println(io, "UAIModel(nvars = $(uai.nvars), nfactors = $(length(uai.factors))")
+    println(io, " cards : $(uai.cards)")
     println(io, " factors : ")
     for (k, f) in enumerate(uai.factors)
         print(io, "  $(summary(f))")

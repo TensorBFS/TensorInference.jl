@@ -59,7 +59,7 @@ function read_model_from_string(str::AbstractString; factor_eltype = Float64)::U
     # Wrap the tables with their corresponding scopes in an array of Factor type
     factors = [Factor{factor_eltype, length(scope)}(Tuple(scope), table) for (scope, table) in zip(scopes_sorted, tables_sorted)]
 
-    return UAIModel(nvars, ntables, cards, factors)
+    return UAIModel(nvars, cards, factors)
 end
 
 """
