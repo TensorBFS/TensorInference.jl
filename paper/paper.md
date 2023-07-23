@@ -70,7 +70,7 @@ provides methods to:
 5. draw samples from the posterior distribution given evidence
    [@han2018unsupervised; @cheng2019tree].
 
-The use of a tensor network-based infrastructure [@fishman2022itensor;Jutho2023] offers several advantages when
+The use of a tensor network-based infrastructure [@fishman2022itensor;@Jutho2023] offers several advantages when
 dealing with complex computational tasks. Firstly, it simplifies the process of
 computing gradients by employing differentiable programming
 [@liao2019differentiable], a critical operation for the aforementioned inference
