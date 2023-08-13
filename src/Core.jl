@@ -47,14 +47,16 @@ Probabilistic modeling with a tensor network.
 ### Fields
 * `vars` are the degrees of freedom in the tensor network.
 * `code` is the tensor network contraction pattern.
-* `tensors` are the tensors fed into the tensor network.
+* `tensors` are the tensors fed into the tensor network, the leading tensors are unity tensors associated with `mars`.
 * `evidence` is a dictionary used to specify degrees of freedom that are fixed to certain values.
+* `mars` is a vector, each element is a vector of variables to compute marginal probabilities.
 """
 struct TensorNetworkModel{LT, ET, MT <: AbstractArray}
     vars::Vector{LT}
     code::ET
     tensors::Vector{MT}
     evidence::Dict{LT, Int}
+    mars::Vector{Vector{LT}}
 end
 
 function Base.show(io::IO, tn::TensorNetworkModel)
@@ -85,13 +87,21 @@ end
 
 """
 $(TYPEDSIGNATURES)
+
+### Keyword Arguments
+* `openvars` is the list of variables that remains in the output. If it is not empty, the return value will be a nonzero ranked tensor.
+* `evidence` is a dictionary of evidences, the values are integers start counting from 0.
+* `optimizer` is the tensor network contraction order optimizer, please check the package [`OMEinsumContractionOrders.jl`](https://github.com/TensorBFS/OMEinsumContractionOrders.jl) for available algorithms.
+* `simplifier` is some strategies for speeding up the `optimizer`, please refer the same link above.
+* `mars` is a list of marginal probabilities. It is all single variables by default, i.e. `[[1], [2], ..., [n]]`. One can also specify multi-variables, which may increase the computational complexity.
 """
 function TensorNetworkModel(
     model::UAIModel;
     openvars = (),
     evidence = Dict{Int,Int}(),
     optimizer = GreedyMethod(),
-    simplifier = nothing
+    simplifier = nothing,
+    mars = [[i] for i=1:model.nvars]
 )::TensorNetworkModel
     return TensorNetworkModel(
         1:(model.nvars),
@@ -100,7 +110,8 @@ function TensorNetworkModel(
         openvars,
         evidence,
         optimizer,
-        simplifier
+        simplifier,
+        mars
     )
 end
 
@@ -114,15 +125,16 @@ function TensorNetworkModel(
     openvars = (),
     evidence = Dict{LT, Int}(),
     optimizer = GreedyMethod(),
-    simplifier = nothing
+    simplifier = nothing,
+    mars = [[v] for v in vars]
 )::TensorNetworkModel where {T, LT}
     # The 1st argument of `EinCode` is a vector of vector of labels for specifying the input tensors, 
     # The 2nd argument of `EinCode` is a vector of labels for specifying the output tensor,
     # e.g.
     # `EinCode([[1, 2], [2, 3]], [1, 3])` is the EinCode for matrix multiplication.
-    rawcode = EinCode([[[var] for var in vars]..., [[factor.vars...] for factor in factors]...], collect(LT, openvars))  # labels for vertex tensors (unity tensors) and edge tensors
-    tensors = Array{T}[[ones(T, cards[i]) for i in 1:length(vars)]..., [t.vals for t in factors]...]
-    return TensorNetworkModel(collect(LT, vars), rawcode, tensors; evidence, optimizer, simplifier)
+    rawcode = EinCode([mars..., [[factor.vars...] for factor in factors]...], collect(LT, openvars))  # labels for vertex tensors (unity tensors) and edge tensors
+    tensors = Array{T}[[ones(T, [cards[i] for i in mar]...) for mar in mars]..., [t.vals for t in factors]...]
+    return TensorNetworkModel(collect(LT, vars), rawcode, tensors; evidence, optimizer, simplifier, mars)
 end
 
 """
@@ -134,7 +146,8 @@ function TensorNetworkModel(
     tensors::Vector{<:AbstractArray};
     evidence = Dict{LT, Int}(),
     optimizer = GreedyMethod(),
-    simplifier = nothing
+    simplifier = nothing,
+    mars = [[v] for v in vars]
 )::TensorNetworkModel where {LT}
     # `optimize_code` optimizes the contraction order of a raw tensor network without a contraction order specified.
     # The 1st argument is the contraction pattern to be optimized (without contraction order).
@@ -142,7 +155,7 @@ function TensorNetworkModel(
     # The 3rd and 4th arguments are the optimizer and simplifier that configures which algorithm to use and simplify.
     size_dict = OMEinsum.get_size_dict(getixsv(rawcode), tensors)
     code = optimize_code(rawcode, size_dict, optimizer, simplifier)
-    TensorNetworkModel(collect(LT, vars), code, tensors, evidence)
+    TensorNetworkModel(collect(LT, vars), code, tensors, evidence, mars)
 end
 
 """
@@ -159,7 +172,7 @@ Get the cardinalities of variables in this tensor network.
 """
 function get_cards(tn::TensorNetworkModel; fixedisone = false)::Vector
     vars = get_vars(tn)
-    [fixedisone && haskey(tn.evidence, vars[k]) ? 1 : length(tn.tensors[k]) for k in 1:length(vars)]
+    [fixedisone && haskey(tn.evidence, vars[k]) ? 1 : length(tn.tensors[k]) for k in eachindex(vars)]
 end
 
 chevidence(tn::TensorNetworkModel, evidence) = TensorNetworkModel(tn.vars, tn.code, tn.tensors, evidence)

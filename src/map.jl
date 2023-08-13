@@ -45,6 +45,8 @@ $(TYPEDSIGNATURES)
 Returns the largest log-probability and the most probable configuration.
 """
 function most_probable_config(tn::TensorNetworkModel; usecuda = false)::Tuple{Real, Vector}
+    expected_mars = [[l] for l in get_vars(tn)]
+    @assert tn.mars[1:length(expected_mars)] == expected_mars "To get the the most probable configuration, the leading elements of `tn.vars` must be `$expected_mars`"
     vars = get_vars(tn)
     tensors = map(t -> Tropical.(log.(t)), adapt_tensors(tn; usecuda, rescale = false))
     logp, grads = cost_and_gradient(tn.code, tensors)
