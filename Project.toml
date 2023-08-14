@@ -1,12 +1,13 @@
 name = "TensorInference"
 uuid = "c2297e78-99bd-40ad-871d-f50e56b81012"
 authors = ["Jin-Guo Liu", "Martin Roa Villescas"]
-version = "0.2.0"
+version = "0.2.1"
 
 [deps]
 Artifacts = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
 CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
 DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
+GenericTensorNetworks = "3521c873-ad32-4bb4-b63d-f4f178f42b49"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 OMEinsum = "ebe7aa44-baf0-506c-a96f-8464559b3922"
 Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
@@ -18,6 +19,7 @@ TropicalNumbers = "b3a74e9c-7526-4576-a4eb-79c0d4c32334"
 [compat]
 CUDA = "4"
 DocStringExtensions = "0.8.6, 0.9"
+GenericTensorNetworks = "1"
 OMEinsum = "0.7"
 PrecompileTools = "1"
 Requires = "1"

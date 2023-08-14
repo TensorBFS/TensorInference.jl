@@ -20,6 +20,10 @@ end
     include("sampling.jl")
 end
 
+@testset "generic tensor networks" begin
+    include("generictensornetworks.jl")
+end
+
 using CUDA
 if CUDA.functional()
     include("cuda.jl")

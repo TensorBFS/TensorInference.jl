@@ -68,3 +68,58 @@ end
         end
     end
 end
+
+@testset "joint marginal" begin
+    model = TensorInference.read_model_from_string("""MARKOV
+8
+ 2 2 2 2 2 2 2 2
+8
+ 1 0
+ 2 1 0
+ 1 2
+ 2 3 2
+ 2 4 2
+ 3 5 3 1
+ 2 6 5
+ 3 7 5 4
+
+2
+ 0.01
+ 0.99
+
+4
+ 0.05 0.01
+ 0.95 0.99
+
+2
+ 0.5
+ 0.5
+
+4
+ 0.1 0.01
+ 0.9 0.99
+
+4
+ 0.6 0.3
+ 0.4 0.7 
+
+8
+ 1 1 1 0
+ 0 0 0 1
+
+4
+ 0.98 0.05
+ 0.02 0.95
+
+8
+ 0.9 0.7 0.8 0.1
+ 0.1 0.3 0.2 0.9
+""")
+    n = 10000
+    tnet = TensorNetworkModel(model; mars=[[2, 3], [3, 4]])
+    mars = marginals(tnet)
+    tnet23 = TensorNetworkModel(model; openvars=[2,3])
+    tnet34 = TensorNetworkModel(model; openvars=[3,4])
+    @test mars[1] ≈ probability(tnet23)
+    @test mars[2] ≈ probability(tnet34)
+end

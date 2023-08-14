@@ -128,13 +128,12 @@ Returns the marginal probability distribution of variables.
 One can use `get_vars(tn)` to get the full list of variables in this tensor network.
 """
 function marginals(tn::TensorNetworkModel; usecuda = false, rescale = true)::Vector
-    vars = get_vars(tn)
     # sometimes, the cost can overflow, then we need to rescale the tensors during contraction.
     cost, grads = cost_and_gradient(tn.code, adapt_tensors(tn; usecuda, rescale))
     @debug "cost = $cost"
     if rescale
-        return LinearAlgebra.normalize!.(getfield.(grads[1:length(vars)], :normalized_value), 1)
+        return LinearAlgebra.normalize!.(getfield.(grads[1:length(tn.mars)], :normalized_value), 1)
     else
-        return LinearAlgebra.normalize!.(grads[1:length(vars)], 1)
+        return LinearAlgebra.normalize!.(grads[1:length(tn.mars)], 1)
     end
 end

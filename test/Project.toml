@@ -1,6 +1,7 @@
 [deps]
 CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+GenericTensorNetworks = "3521c873-ad32-4bb4-b63d-f4f178f42b49"
 KaHyPar = "2a6221f6-aa48-11e9-3542-2d9e0ef01880"
 OMEinsum = "ebe7aa44-baf0-506c-a96f-8464559b3922"
 Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
