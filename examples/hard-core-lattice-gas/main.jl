@@ -58,7 +58,7 @@ show_graph(graph; locs=sites, vertex_colors=[(1-b, 1-b, 1-b) for b in getindex.(
 # The can see the sites at the corner is more likely to be occupied.
 # To obtain two-site correlations, one can set the variables to query marginal probabilities manually.
 pmodel2 = TensorNetworkModel(problem, β; mars=[[e.src, e.dst] for e in edges(graph)])
-mars = marginals(pmodel2)
+mars = marginals(pmodel2);
 
 # We show the probability that both sites on an edge are not occupied
 show_graph(graph; locs=sites, edge_colors=[(b=mar[1, 1]; (1-b, 1-b, 1-b)) for mar in mars], texts=fill("", nv(graph)), edge_line_width=5)
