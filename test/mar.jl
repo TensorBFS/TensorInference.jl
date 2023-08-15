@@ -122,4 +122,13 @@ end
     tnet34 = TensorNetworkModel(model; openvars=[3,4])
     @test mars[1] ≈ probability(tnet23)
     @test mars[2] ≈ probability(tnet34)
+
+    tnet1 = TensorNetworkModel(model; mars=[[2, 3], [3, 4]], evidence=Dict(3=>1))
+    tnet2 = TensorNetworkModel(model; mars=[[2, 3], [3, 4]], evidence=Dict(3=>0))
+    mars1 = marginals(tnet1)
+    mars2 = marginals(tnet2)
+    update_evidence!(tnet1, Dict(3=>0))
+    mars1b = marginals(tnet1)
+    @test !(mars1 ≈ mars2)
+    @test mars1b ≈ mars2
 end

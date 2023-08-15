@@ -59,6 +59,23 @@ struct TensorNetworkModel{LT, ET, MT <: AbstractArray}
     mars::Vector{Vector{LT}}
 end
 
+"""
+$TYPEDSIGNATURES
+
+Update the evidence of a tensor network model, without changing the set of observed variables!
+
+### Arguments
+- `tnet` is the [`TensorNetworkModel`](@ref) instance.
+- `evidence` is the new evidence, the keys must be a subset of existing evidence.
+"""
+function update_evidence!(tnet::TensorNetworkModel, evidence::Dict)
+    for (k, v) in evidence
+        haskey(tnet.evidence, k) || error("`update_evidence!` can only update observed variables!")
+        tnet.evidence[k] = v
+    end
+    return tnet
+end
+
 function Base.show(io::IO, tn::TensorNetworkModel)
     open = getiyv(tn.code)
     variables = join([string_var(var, open, tn.evidence) for var in tn.vars], ", ")
