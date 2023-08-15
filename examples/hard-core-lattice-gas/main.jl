@@ -1,4 +1,5 @@
 # # The hard core lattice gas
+# ## Hard-core lattice gas problem
 # Hard-core lattice gas refers to a model used in statistical physics to study the behavior of particles on a lattice, where the particles are subject to an exclusion principle known as the "hard-core" interaction that characterized by a blockade radius. Distances between two particles can not be smaller than this radius.
 # 
 # * Nath T, Rajesh R. Multiple phase transitions in extended hard-core lattice gas models in two dimensions[J]. Physical Review E, 2014, 90(1): 012120.
@@ -36,23 +37,23 @@ show_graph(graph; locs=sites, texts=fill("", length(sites)))
 using GenericTensorNetworks
 problem = IndependentSet(graph; optimizer=GreedyMethod());
 
-
 # There has been a lot of discussions related to solution space properties in the `GenericTensorNetworks` [documentaion page](https://queracomputing.github.io/GenericTensorNetworks.jl/dev/generated/IndependentSet/).
 # In this example, we show how to use `TensorInference` to use probabilistic inference for understand the finite temperature properties of this statistic physics model.
 # We use [`TensorNetworkModel`](@ref) to convert a combinatorial optimization problem to a probabilistic model.
 # Here, we let the inverse temperature be $\beta = 3$.
 
+# ## Probabilistic modeling correlation functions
 using TensorInference
 β = 3.0
 pmodel = TensorNetworkModel(problem, β)
 
-# The probability corresponds to the partition function in statistic physics.
+# The partition function of this statistical model can be computed with the [`probability`](@ref) function.
 partition_func = probability(pmodel)
 
 # The default return value is a log-rescaled tensor. Use indexing to get the real value.
 partition_func[]
 
-# The marginal probabilities measure how likely a site is occupied.
+# The marginal probabilities can be computed with the [`marginals`](@ref) function, which measures how likely a site is occupied.
 mars = marginals(pmodel)
 show_graph(graph; locs=sites, vertex_colors=[(1-b, 1-b, 1-b) for b in getindex.(mars, 2)], texts=fill("", nv(graph)))
 # The can see the sites at the corner is more likely to be occupied.
@@ -63,7 +64,9 @@ mars = marginals(pmodel2);
 # We show the probability that both sites on an edge are not occupied
 show_graph(graph; locs=sites, edge_colors=[(b=mar[1, 1]; (1-b, 1-b, 1-b)) for mar in mars], texts=fill("", nv(graph)), edge_line_width=5)
 
+# ## The most likely configuration
 # The MAP and MMAP can be used to get the most likely configuration given an evidence.
+# The relavant function is [`most_probable_config`](@ref).
 # If we fix the vertex configuration at one corner to be one, we get the most probably configuration as bellow.
 pmodel3 = TensorNetworkModel(problem, β; evidence=Dict(1=>1))
 mars = marginals(pmodel3)
@@ -75,10 +78,17 @@ show_graph(graph; locs=sites, vertex_colors=[(1-b, 1-b, 1-b) for b in config], t
 sum(config)
 
 # Otherwise, we will get a suboptimal configuration.
-pmodel3.evidence[1] = 0
+pmodel3 = TensorNetworkModel(problem, β; evidence=Dict(1=>0))
 logp2, config2 = most_probable_config(pmodel)
 
 # The log probability is 99, which is much smaller.
 show_graph(graph; locs=sites, vertex_colors=[(1-b, 1-b, 1-b) for b in config2], texts=fill("", nv(graph)))
 # The number of particles is
 sum(config2)
+
+## Sampling configurations
+# One can ue [`sample`](@ref) to generate samples from hard-core lattice gas at finite temperature.
+# The return value is a matrix, with the columns correspond to different samples.
+configs = sample(pmodel3, 1000)
+sizes = sum(configs; dims=1)
+[count(==(i), sizes) for i=0:34]  # counting sizes
