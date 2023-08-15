@@ -9,7 +9,7 @@ The sampled configurations are stored in `samples`, which is a vector of vector.
 `labels` is a vector of variable names for labeling configurations.
 The `setmask` is an boolean indicator to denote whether the sampling process of a variable is complete.
 """
-struct Samples{L}
+struct Samples{L} <: AbstractVector{SubArray{Float64, 1, Matrix{Float64}, Tuple{Base.Slice{Base.OneTo{Int64}}, Int64}, true}}
     samples::Matrix{Int}  # size is nvars × nsample
     labels::Vector{L}
     setmask::BitVector
@@ -22,7 +22,9 @@ function setmask!(samples::Samples, eliminated_variables)
     end
     return samples
 end
-
+Base.getindex(s::Samples, i::Int) = view(s.samples, :, i)
+Base.length(s::Samples) = size(s.samples, 2)
+Base.size(s::Samples) = (size(s.samples, 2),)
 idx4labels(totalset, labels)::Vector{Int} = map(v->findfirst(==(v), totalset), labels)
 
 """
@@ -99,7 +101,7 @@ Returns a vector of vector, each element being a configurations defined on `get_
 * `tn` is the tensor network model.
 * `n` is the number of samples to be returned.
 """
-function sample(tn::TensorNetworkModel, n::Int; usecuda = false)::AbstractMatrix{Int}
+function sample(tn::TensorNetworkModel, n::Int; usecuda = false)::Samples
     # generate tropical tensors with its elements being log(p).
     xs = adapt_tensors(tn; usecuda, rescale = false)
     # infer size from the contraction code and the input tensors `xs`, returns a label-size dictionary.
@@ -125,7 +127,7 @@ function sample(tn::TensorNetworkModel, n::Int; usecuda = false)::AbstractMatrix
         idx = findfirst(==(k), labels)
         samples.samples[idx, :] .= v
     end
-    return samples.samples
+    return samples
 end
 
 function generate_samples(se::SlicedEinsum, cache::CacheTree{T}, samples, size_dict::Dict) where {T}
