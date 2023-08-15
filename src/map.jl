@@ -3,7 +3,7 @@
 ########### Backward tropical tensor contraction ##############
 # This part is copied from [`GenericTensorNetworks`](https://github.com/QuEraComputing/GenericTensorNetworks.jl).
 function einsum_backward_rule(eins, xs::NTuple{M, AbstractArray{<:Tropical}} where {M}, y, size_dict, dy)
-    return backward_tropical(OMEinsum.getixs(eins), xs, OMEinsum.getiy(eins), y, dy, size_dict)
+    return backward_tropical!(OMEinsum.getixs(eins), xs, OMEinsum.getiy(eins), y, dy, size_dict)
 end
 
 """
@@ -16,7 +16,7 @@ The backward rule for tropical einsum.
 * `ymask` is the boolean mask for gradients,
 * `size_dict` is a key-value map from tensor label to dimension size.
 """
-function backward_tropical(ixs, @nospecialize(xs::Tuple), iy, @nospecialize(y), @nospecialize(ymask), size_dict)
+function backward_tropical!(ixs, @nospecialize(xs::Tuple), iy, @nospecialize(y), @nospecialize(ymask), size_dict)
     y .= masked_inv.(y, ymask)
     masks = []
     for i in eachindex(ixs)
@@ -28,9 +28,17 @@ function backward_tropical(ixs, @nospecialize(xs::Tuple), iy, @nospecialize(y), 
         # compute the mask, one of its entry in `A^{-1}` that equal to the corresponding entry in `X` is masked to true.
         j = argmax(xs[i] ./ inv.(A))
         mask = onehot_like(A, j)
+        # zero-out irrelavant indices, otherwise, the result may be unreliable.
+        keep_only!(xs[i], j)
         push!(masks, mask)
     end
     return masks
+end
+function keep_only!(x::AbstractArray{T}, j) where T
+    hotvalue = x[j]
+    fill!(x, zero(T))
+    x[j] = hotvalue
+    return x
 end
 masked_inv(x, y) = iszero(y) ? zero(x) : inv(x)
 function onehot_like(A::AbstractArray, j)

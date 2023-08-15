@@ -1,7 +1,5 @@
 using .GenericTensorNetworks: generate_tensors, GraphProblem, flavors, labels
 
-export probabilistic_model
-
 """
 $TYPEDSIGNATURES
 
