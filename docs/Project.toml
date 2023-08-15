@@ -1,5 +1,6 @@
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+GenericTensorNetworks = "3521c873-ad32-4bb4-b63d-f4f178f42b49"
 Literate = "98b081ad-f1c9-55d3-8b20-4c87d4299306"
 LiveServer = "16fef848-5104-11e9-1b77-fb7a48bbb589"
 TensorInference = "c2297e78-99bd-40ad-871d-f50e56b81012"

@@ -2,17 +2,26 @@ using TensorInference
 using TensorInference: OMEinsum
 using TensorInference.OMEinsum: OMEinsumContractionOrders
 using Documenter, Literate
+using Pkg
 
 # Literate Examples
 const EXAMPLE_DIR = pkgdir(TensorInference, "examples")
 const LITERATE_GENERATED_DIR = pkgdir(TensorInference, "docs", "src", "generated")
 mkpath(LITERATE_GENERATED_DIR)
 for each in readdir(EXAMPLE_DIR)
+    # setup directory
     workdir = joinpath(LITERATE_GENERATED_DIR, each)
     cp(joinpath(EXAMPLE_DIR, each), workdir; force=true)
+    # NOTE: for convenience, we use the `docs` environment
+    # enter env
+    # Pkg.activate(workdir)
+    # Pkg.instantiate()
+    # build
     input_file = joinpath(workdir, "main.jl")
     @info "building" input_file
     Literate.markdown(input_file, workdir; execute=true)
+    # restore environment
+    # Pkg.activate(Pkg.PREV_ENV_PATH[])
 end
 
 const EXTRA_JL = ["performance.jl"]
@@ -42,7 +51,8 @@ makedocs(;
         "Background" => "background.md",
         "Examples" => [
             "Overview" => "examples-overview.md",
-            "Asia network" => "generated/asia/main.md",
+            "Asia Network" => "generated/asia/main.md",
+            "Hard-core Lattice Gas" => "generated/hard-core-lattice-gas/main.md",
            ],
         "UAI file formats" => "uai-file-formats.md",
         "Performance tips" => "generated/performance.md",
