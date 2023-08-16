@@ -30,7 +30,7 @@ end
 
 Base.show(io::IO, ::MIME"text/plain", uai::UAIModel) = Base.show(io, uai)
 function Base.show(io::IO, uai::UAIModel)
-    println(io, "UAIModel(nvars = $(uai.nvars), nfactors = $(length(uai.factors))")
+    println(io, "UAIModel(nvars = $(uai.nvars), nfactors = $(length(uai.factors)))")
     println(io, " cards : $(uai.cards)")
     println(io, " factors : ")
     for (k, f) in enumerate(uai.factors)
@@ -180,7 +180,7 @@ chevidence(tn::TensorNetworkModel, evidence) = TensorNetworkModel(tn.vars, tn.co
 """
 $(TYPEDSIGNATURES)
 
-Evaluate the log probability of `config`.
+Evaluate the log probability (or partition function) of `config`.
 """
 function log_probability(tn::TensorNetworkModel, config::Union{Dict, AbstractVector})::Real
     assign = config isa AbstractVector ? Dict(zip(get_vars(tn), config)) : config
@@ -190,8 +190,11 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Contract the tensor network and return a probability array with its rank specified in the contraction code `tn.code`.
-The returned array may not be l1-normalized even if the total probability is l1-normalized, because the evidence `tn.evidence` may not be empty.
+Contract the tensor network and return an array of probability of evidence.
+Precisely speaking, the return value is the partition function, which may not be l1-normalized.
+
+If the `openvars` of the input tensor networks is zero, the array rank is zero.
+Otherwise, the return values corresponds to marginal probabilities.
 """
 function probability(tn::TensorNetworkModel; usecuda = false, rescale = true)::AbstractArray
     return tn.code(adapt_tensors(tn; usecuda, rescale)...)
