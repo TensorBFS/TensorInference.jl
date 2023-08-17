@@ -1,5 +1,8 @@
 using .GenericTensorNetworks: generate_tensors, GraphProblem, flavors, labels
 
+# update models
+export update_temperature
+
 """
 $TYPEDSIGNATURES
 
@@ -20,6 +23,24 @@ function TensorInference.TensorNetworkModel(problem::GraphProblem, β::Real; evi
     factors = [Factor((ix...,), t) for (ix, t) in zip(ixs, tensors)]
 	return TensorNetworkModel(lbs, fill(nflavors, length(lbs)), factors; openvars=iy, evidence, optimizer, simplifier, mars)
 end
+
+"""
+$TYPEDSIGNATURES
+
+Update the temperature of a tensor network model.
+The program will regenerate tensors from the problem, without repeated optimizing the contraction order.
+
+### Arguments
+- `tnet` is the [`TensorNetworkModel`](@ref) instance.
+- `problem` is the target constraint satisfiability problem.
+- `β` is the inverse temperature.
+"""
+function update_temperature(tnet::TensorNetworkModel, problem::GraphProblem, β::Real)
+	tensors = generate_tensors(exp(β), problem)
+    alltensors = [tnet.tensors[1:end-length(tensors)]..., tensors...]
+    return TensorNetworkModel(tnet.vars, tnet.code, alltensors, tnet.evidence, tnet.mars)
+end
+
 function TensorInference.MMAPModel(problem::GraphProblem, β::Real;
             queryvars,
             evidence = Dict{labeltype(problem.code), Int}(),
@@ -36,6 +57,10 @@ function TensorInference.MMAPModel(problem::GraphProblem, β::Real;
     return MMAPModel(lbs, fill(nflavors, length(lbs)), factors; queryvars, openvars=iy, evidence,
         optimizer, simplifier,
         marginalize_optimizer, marginalize_simplifier)
+end
+function update_temperature(tnet::MMAPModel, problem::GraphProblem, β::Real)
+    error("We haven't got time to implement setting temperatures for `MMAPModel`.
+It is about one or two hours of works. If you need it, please file an issue to let us know: https://github.com/TensorBFS/TensorInference.jl/issues")
 end
  
 @info "`TensorInference` loaded `GenericTensorNetworks` extension successfully,

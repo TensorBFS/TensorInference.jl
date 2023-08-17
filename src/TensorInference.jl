@@ -23,7 +23,7 @@ export problem_from_artifact, ArtifactProblemSpec
 export read_model, UAIModel, read_evidence, read_solution, read_queryvars, dataset_from_artifact
 
 # marginals
-export TensorNetworkModel, get_vars, get_cards, log_probability, probability, marginals
+export TensorNetworkModel, get_vars, get_cards, log_probability, probability, marginals, update_evidence!
 
 # MAP
 export most_probable_config, maximum_logp
