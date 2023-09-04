@@ -157,101 +157,106 @@ recommend checking the
 directory of the official `TensorInference.jl` repository for the most
 up-to-date version of this example.
 
+```julia
+```
+
 ```{=latex}
 \DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\},fontsize=\small}
 \newcommand{\InTok}[1]{\textcolor[rgb]{0.0, 0.0, 0.5}{#1}} % mrv
 \newcommand{\OutTok}[1]{\textcolor[rgb]{0.545, 0.0, 0.0}{#1}} % mrv
-```
 
-```julia
-# Import the TensorInference package, which provides the functionality needed
-# for working with tensor networks and probabilistic graphical models.
-using TensorInference
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Import the TensorInference package, which provides the functionality needed}
+\CommentTok{\# for working with tensor networks and probabilistic graphical models.}
+\InTok{In [1]: }\ImportTok{using} \BuiltInTok{TensorInference}
 
-# Load the ASIA network model from the `asia.uai` file located in the examples
-# directory. Refer to the documentation of this package for a description of the
-# format of this file.
-instance = read_instance(pkgdir(TensorInference, "examples", "asia", "asia.uai"))
+\CommentTok{\# Load the ASIA network model from the \textasciigrave{}asia.uai\textasciigrave{} file located in the examples}
+\CommentTok{\# directory. Refer to the documentation of this package for a description of the}
+\CommentTok{\# format of this file.}
+\NormalTok{instance }\OperatorTok{=} \FunctionTok{read\_instance}\NormalTok{(}\FunctionTok{pkgdir}\NormalTok{(TensorInference, }\StringTok{"examples"}\NormalTok{, }\StringTok{"asia"}\NormalTok{, }\StringTok{"asia.uai"}\NormalTok{))}
 
-# Create a tensor network representation of the loaded model.
-tn = TensorNetworkModel(instance)
+\CommentTok{\# Create a tensor network representation of the loaded model.}
+\NormalTok{tn }\OperatorTok{=} \FunctionTok{TensorNetworkModel}\NormalTok{(instance)}
 
-TensorNetworkModel{Int64, OMEinsum.DynamicNestedEinsum{Int64}, Array{Float64}}
-variables: 1, 2, 3, 4, 5, 6, 7, 8
-contraction time = 2^6.044, space = 2^2.0, read-write = 2^7.098
+\OutTok{Out [1]: }\NormalTok{TensorNetworkModel\{}\DataTypeTok{Int64}\NormalTok{, OMEinsum.DynamicNestedEinsum\{}\DataTypeTok{Int64}\NormalTok{\}, }\DataTypeTok{Array}\NormalTok{\{}\DataTypeTok{Float64}\NormalTok{\}\}}
+         \NormalTok{variables}\OperatorTok{:} \FloatTok{1}\NormalTok{, }\FloatTok{2}\NormalTok{, }\FloatTok{3}\NormalTok{, }\FloatTok{4}\NormalTok{, }\FloatTok{5}\NormalTok{, }\FloatTok{6}\NormalTok{, }\FloatTok{7}\NormalTok{, }\FloatTok{8}
+         \NormalTok{contraction time }\OperatorTok{=} \FloatTok{2}\OperatorTok{\^{}}\FloatTok{6.044}\NormalTok{, space }\OperatorTok{=} \FloatTok{2}\OperatorTok{\^{}}\FloatTok{2.0}\NormalTok{, read}\OperatorTok{{-}}\NormalTok{write }\OperatorTok{=} \FloatTok{2}\OperatorTok{\^{}}\FloatTok{7.098}
 
-# Calculate the log_10 partition function.
-probability(tn) |> first |> log10
+\CommentTok{\# Calculate the log\_10 partition function.}
+\InTok{In [2]: }\FunctionTok{probability}\NormalTok{(tn) }\OperatorTok{|\textgreater{}}\NormalTok{ first }\OperatorTok{|\textgreater{}}\NormalTok{ log10}
 
-0.0
+\OutTok{Out [2]: }\FloatTok{0.0}
 
-# Calculate the marginal probabilities of each random variable in the model.
-marginals(tn)
+\CommentTok{\# Calculate the marginal probabilities of each random variable in the model.}
+\InTok{In [3]: }\FunctionTok{marginals}\NormalTok{(tn)}
 
-8-element Vector{Vector{Float64}}:
- [0.01, 0.99]
- [0.0104, 0.9895999999999999]
- [0.5, 0.49999999999999994]
- [0.055000000000000014, 0.9450000000000001]
- [0.44999999999999996, 0.5499999999999999]
- [0.06482800000000002, 0.9351720000000001]
- [0.11029004000000002, 0.88970996]
- [0.43597060000000004, 0.5640294]
+\OutTok{Out [3]: }\FloatTok{8}\OperatorTok{{-}}\NormalTok{element }\DataTypeTok{Vector}\NormalTok{\{}\DataTypeTok{Vector}\NormalTok{\{}\DataTypeTok{Float64}\NormalTok{\}\}}\OperatorTok{:}
+        \NormalTok{ [}\FloatTok{0.01}\NormalTok{, }\FloatTok{0.99}\NormalTok{]}
+        \NormalTok{ [}\FloatTok{0.0104}\NormalTok{, }\FloatTok{0.9895999999999999}\NormalTok{]}
+        \NormalTok{ [}\FloatTok{0.5}\NormalTok{, }\FloatTok{0.49999999999999994}\NormalTok{]}
+        \NormalTok{ [}\FloatTok{0.055000000000000014}\NormalTok{, }\FloatTok{0.9450000000000001}\NormalTok{]}
+        \NormalTok{ [}\FloatTok{0.44999999999999996}\NormalTok{, }\FloatTok{0.5499999999999999}\NormalTok{]}
+        \NormalTok{ [}\FloatTok{0.06482800000000002}\NormalTok{, }\FloatTok{0.9351720000000001}\NormalTok{]}
+        \NormalTok{ [}\FloatTok{0.11029004000000002}\NormalTok{, }\FloatTok{0.88970996}\NormalTok{]}
+        \NormalTok{ [}\FloatTok{0.43597060000000004}\NormalTok{, }\FloatTok{0.5640294}\NormalTok{]}
 
-# Set the evidence: We assume that the "X-ray" result (variable 7) is positive.
-set_evidence!(instance, 7 => 0)
+\CommentTok{\# Set the evidence: We assume that the "X{-}ray" result (variable 7) is positive.}
+\InTok{In [4]: }\FunctionTok{set\_evidence!}\NormalTok{(instance, }\FloatTok{7} \OperatorTok{=\textgreater{}} \FloatTok{0}\NormalTok{)}
 
-# Since setting the evidence may affect the contraction order of the tensor
-# network, we need to recompute it.
-tn = TensorNetworkModel(instance)
+\CommentTok{\# Since setting the evidence may affect the contraction order of the tensor}
+\CommentTok{\# network, we need to recompute it.}
+\NormalTok{tn }\OperatorTok{=} \FunctionTok{TensorNetworkModel}\NormalTok{(instance)}
 
-# Calculate the maximum log-probability among all configurations.
-maximum_logp(tn)
+\CommentTok{\# Calculate the maximum log{-}probability among all configurations.}
+\FunctionTok{maximum\_logp}\NormalTok{(tn)}
 
-0-dimensional Array{Float64, 0}:
--3.6522217920023303
+\OutTok{Out [4]: }\FloatTok{0}\OperatorTok{{-}}\NormalTok{dimensional }\DataTypeTok{Array}\NormalTok{\{}\DataTypeTok{Float64}\NormalTok{, }\FloatTok{0}\NormalTok{\}}\OperatorTok{:}
+         \OperatorTok{{-}}\FloatTok{3.6522217920023303}
 
-# Generate 10 samples from the probability distribution represented by the model.
-sample(tn, 10)
+\CommentTok{\# Generate 10 samples from the probability distribution represented by the model.}
+\InTok{In [5]: }\FunctionTok{sample}\NormalTok{(tn, }\FloatTok{10}\NormalTok{)}
 
-8×10 Matrix{Int64}:
- 1  1  1  1  1  1  1  1  1  1
- 1  1  1  1  1  1  1  1  1  0
- 1  0  0  0  1  0  0  0  0  0
- 1  1  0  0  1  1  0  0  0  1
- 1  0  1  0  0  1  1  0  0  0
- 1  1  0  0  1  1  0  0  0  0
- 0  0  0  0  0  0  0  0  0  0
- 1  0  1  1  0  0  1  0  0  0
+\OutTok{Out [5]: }\FloatTok{8}\OperatorTok{×}\FloatTok{10} \DataTypeTok{Matrix}\NormalTok{\{}\DataTypeTok{Int64}\NormalTok{\}}\OperatorTok{:}
+        \FloatTok{1}  \FloatTok{1}  \FloatTok{1}  \FloatTok{1}  \FloatTok{1}  \FloatTok{1}  \FloatTok{1}  \FloatTok{1}  \FloatTok{1}  \FloatTok{1}
+        \FloatTok{1}  \FloatTok{1}  \FloatTok{1}  \FloatTok{1}  \FloatTok{1}  \FloatTok{1}  \FloatTok{1}  \FloatTok{1}  \FloatTok{1}  \FloatTok{0}
+        \FloatTok{1}  \FloatTok{0}  \FloatTok{0}  \FloatTok{0}  \FloatTok{1}  \FloatTok{0}  \FloatTok{0}  \FloatTok{0}  \FloatTok{0}  \FloatTok{0}
+        \FloatTok{1}  \FloatTok{1}  \FloatTok{0}  \FloatTok{0}  \FloatTok{1}  \FloatTok{1}  \FloatTok{0}  \FloatTok{0}  \FloatTok{0}  \FloatTok{1}
+        \FloatTok{1}  \FloatTok{0}  \FloatTok{1}  \FloatTok{0}  \FloatTok{0}  \FloatTok{1}  \FloatTok{1}  \FloatTok{0}  \FloatTok{0}  \FloatTok{0}
+        \FloatTok{1}  \FloatTok{1}  \FloatTok{0}  \FloatTok{0}  \FloatTok{1}  \FloatTok{1}  \FloatTok{0}  \FloatTok{0}  \FloatTok{0}  \FloatTok{0}
+        \FloatTok{0}  \FloatTok{0}  \FloatTok{0}  \FloatTok{0}  \FloatTok{0}  \FloatTok{0}  \FloatTok{0}  \FloatTok{0}  \FloatTok{0}  \FloatTok{0}
+        \FloatTok{1}  \FloatTok{0}  \FloatTok{1}  \FloatTok{1}  \FloatTok{0}  \FloatTok{0}  \FloatTok{1}  \FloatTok{0}  \FloatTok{0}  \FloatTok{0}
 
-# Retrieve both the maximum log-probability and the most probable configuration.
-# In this configuration, the most likely outcomes are that the
-# patient smokes (variable 3) and has lung cancer (variable 4).
-logp, cfg = most_probable_config(tn)
+\CommentTok{\# Retrieve both the maximum log{-}probability and the most probable configuration.}
+\CommentTok{\# In this configuration, the most likely outcomes are that the}
+\CommentTok{\# patient smokes (variable 3) and has lung cancer (variable 4).}
+\InTok{In [6]: }\NormalTok{logp, cfg }\OperatorTok{=} \FunctionTok{most\_probable\_config}\NormalTok{(tn)}
 
-(-3.6522217920023303, [1, 1, 0, 0, 0, 0, 0, 0])
+\OutTok{Out [6]: }\NormalTok{(}\OperatorTok{{-}}\FloatTok{3.6522217920023303}\NormalTok{, [}\FloatTok{1}\NormalTok{, }\FloatTok{1}\NormalTok{, }\FloatTok{0}\NormalTok{, }\FloatTok{0}\NormalTok{, }\FloatTok{0}\NormalTok{, }\FloatTok{0}\NormalTok{, }\FloatTok{0}\NormalTok{, }\FloatTok{0}\NormalTok{])}
 
-# Compute the most probable values of certain variables (e.g., 4 and 7) while
-# marginalizing over others. This is known as Maximum a Posteriori (MAP)
-# estimation.
-set_query!(instance, [4, 7])
-mmap = MMAPModel(instance)
+\CommentTok{\# Compute the most probable values of certain variables (e.g., 4 and 7) while}
+\CommentTok{\# marginalizing over others. This is known as Maximum a Posteriori (MAP)}
+\CommentTok{\# estimation.}
+\InTok{In [7]: }\FunctionTok{set\_query!}\NormalTok{(instance, [}\FloatTok{4}\NormalTok{, }\FloatTok{7}\NormalTok{])}
+\NormalTok{mmap }\OperatorTok{=} \FunctionTok{MMAPModel}\NormalTok{(instance)}
 
-MMAPModel{Int64, Array{Float64}}
-variables: 4, 7 (evidence → 0)
-query variables: [[1, 2, 6, 5, 3, 8]]
-contraction time = 2^6.022, space = 2^2.0, read-write = 2^7.033
+\OutTok{Out [7]: }\NormalTok{MMAPModel\{}\DataTypeTok{Int64}\NormalTok{, }\DataTypeTok{Array}\NormalTok{\{}\DataTypeTok{Float64}\NormalTok{\}\}}
+         \NormalTok{variables}\OperatorTok{:} \FloatTok{4}\NormalTok{, }\FloatTok{7}\NormalTok{ (evidence }\OperatorTok{→} \FloatTok{0}\NormalTok{)}
+         \NormalTok{query variables}\OperatorTok{:}\NormalTok{ [[}\FloatTok{1}\NormalTok{, }\FloatTok{2}\NormalTok{, }\FloatTok{6}\NormalTok{, }\FloatTok{5}\NormalTok{, }\FloatTok{3}\NormalTok{, }\FloatTok{8}\NormalTok{]]}
+         \NormalTok{contraction time }\OperatorTok{=} \FloatTok{2}\OperatorTok{\^{}}\FloatTok{6.022}\NormalTok{, space }\OperatorTok{=} \FloatTok{2}\OperatorTok{\^{}}\FloatTok{2.0}\NormalTok{, read}\OperatorTok{{-}}\NormalTok{write }\OperatorTok{=} \FloatTok{2}\OperatorTok{\^{}}\FloatTok{7.033}
 
-# Get the most probable configurations for variables 4 and 7.
-most_probable_config(mmap)
+\CommentTok{\# Get the most probable configurations for variables 4 and 7.}
+\InTok{In [8]: }\FunctionTok{most\_probable\_config}\NormalTok{(mmap)}
 
-(-2.8754627318176693, [1, 0])
+\OutTok{Out [8]: }\NormalTok{(}\OperatorTok{{-}}\FloatTok{2.8754627318176693}\NormalTok{, [}\FloatTok{1}\NormalTok{, }\FloatTok{0}\NormalTok{])}
 
-# Compute the total log-probability of having lung cancer. The results suggest
-# that the probability is roughly half.
-log_probability(mmap, [1, 0]), log_probability(mmap, [0, 0])
+\CommentTok{\# Compute the total log{-}probability of having lung cancer. The results suggest}
+\CommentTok{\# that the probability is roughly half.}
+\InTok{In [9]: }\FunctionTok{log\_probability}\NormalTok{(mmap, [}\FloatTok{1}\NormalTok{, }\FloatTok{0}\NormalTok{]), }\FunctionTok{log\_probability}\NormalTok{(mmap, [}\FloatTok{0}\NormalTok{, }\FloatTok{0}\NormalTok{])}
 
-(-2.8754627318176693, -2.9206248010671856)
+\OutTok{Out [9]: }\NormalTok{(}\OperatorTok{{-}}\FloatTok{2.8754627318176693}\NormalTok{, }\OperatorTok{{-}}\FloatTok{2.9206248010671856}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
 ```
 
 # Acknowledgments
