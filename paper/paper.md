@@ -157,8 +157,13 @@ recommend checking the
 directory of the official `TensorInference.jl` repository for the most
 up-to-date version of this example.
 
-```julia
+```{=latex}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\},fontsize=\small}
+\newcommand{\InTok}[1]{\textcolor[rgb]{0.0, 0.0, 0.5}{#1}} % mrv
+\newcommand{\OutTok}[1]{\textcolor[rgb]{0.545, 0.0, 0.0}{#1}} % mrv
+```
 
+```julia
 # Import the TensorInference package, which provides the functionality needed
 # for working with tensor networks and probabilistic graphical models.
 using TensorInference
@@ -169,46 +174,84 @@ using TensorInference
 instance = read_instance(pkgdir(TensorInference, "examples", "asia", "asia.uai"))
 
 # Create a tensor network representation of the loaded model.
-# The variable 7 is the variable of interest, which will be retained in the output.
-tn = TensorNetworkModel(instance; openvars=[7])
+tn = TensorNetworkModel(instance)
 
-# Calculate the partition function for each assignment of variable 7.
-probability(tn)
+TensorNetworkModel{Int64, OMEinsum.DynamicNestedEinsum{Int64}, Array{Float64}}
+variables: 1, 2, 3, 4, 5, 6, 7, 8
+contraction time = 2^6.044, space = 2^2.0, read-write = 2^7.098
+
+# Calculate the log_10 partition function.
+probability(tn) |> first |> log10
+
+0.0
 
 # Calculate the marginal probabilities of each random variable in the model.
 marginals(tn)
 
-# Retrieve the variables associated with the tensor network model.
-get_vars(tn)
+8-element Vector{Vector{Float64}}:
+ [0.01, 0.99]
+ [0.0104, 0.9895999999999999]
+ [0.5, 0.49999999999999994]
+ [0.055000000000000014, 0.9450000000000001]
+ [0.44999999999999996, 0.5499999999999999]
+ [0.06482800000000002, 0.9351720000000001]
+ [0.11029004000000002, 0.88970996]
+ [0.43597060000000004, 0.5640294]
 
-# Assume that the "X-ray" result (variable 7) is positive.
-# Since setting an evidence may affect the contraction order of the tensor
-# network, recompute it.
-tn = TensorNetworkModel(instance; evidence=Dict(7 => 0))
+# Set the evidence: We assume that the "X-ray" result (variable 7) is positive.
+set_evidence!(instance, 7 => 0)
+
+# Since setting the evidence may affect the contraction order of the tensor
+# network, we need to recompute it.
+tn = TensorNetworkModel(instance)
 
 # Calculate the maximum log-probability among all configurations.
 maximum_logp(tn)
 
-# Generate 10 samples from the probability distribution represented by the
-# model.
+0-dimensional Array{Float64, 0}:
+-3.6522217920023303
+
+# Generate 10 samples from the probability distribution represented by the model.
 sample(tn, 10)
 
-# Retrieve both the maximum log-probability and the most probable
-# configuration. In this configuration, the most likely outcomes are that the
+8×10 Matrix{Int64}:
+ 1  1  1  1  1  1  1  1  1  1
+ 1  1  1  1  1  1  1  1  1  0
+ 1  0  0  0  1  0  0  0  0  0
+ 1  1  0  0  1  1  0  0  0  1
+ 1  0  1  0  0  1  1  0  0  0
+ 1  1  0  0  1  1  0  0  0  0
+ 0  0  0  0  0  0  0  0  0  0
+ 1  0  1  1  0  0  1  0  0  0
+
+# Retrieve both the maximum log-probability and the most probable configuration.
+# In this configuration, the most likely outcomes are that the
 # patient smokes (variable 3) and has lung cancer (variable 4).
 logp, cfg = most_probable_config(tn)
+
+(-3.6522217920023303, [1, 1, 0, 0, 0, 0, 0, 0])
 
 # Compute the most probable values of certain variables (e.g., 4 and 7) while
 # marginalizing over others. This is known as Maximum a Posteriori (MAP)
 # estimation.
-mmap = MMAPModel(instance, queryvars=[4, 7])
+set_query!(instance, [4, 7])
+mmap = MMAPModel(instance)
+
+MMAPModel{Int64, Array{Float64}}
+variables: 4, 7 (evidence → 0)
+query variables: [[1, 2, 6, 5, 3, 8]]
+contraction time = 2^6.022, space = 2^2.0, read-write = 2^7.033
 
 # Get the most probable configurations for variables 4 and 7.
 most_probable_config(mmap)
 
+(-2.8754627318176693, [1, 0])
+
 # Compute the total log-probability of having lung cancer. The results suggest
 # that the probability is roughly half.
 log_probability(mmap, [1, 0]), log_probability(mmap, [0, 0])
+
+(-2.8754627318176693, -2.9206248010671856)
 ```
 
 # Acknowledgments
