@@ -60,6 +60,7 @@ makedocs(;
             "Public" => "api/public.md",
             "Internal" => "api/internal.md"
         ],
+        "Contributing" => "contributing.md",
     ],
     doctest = false,
 )
