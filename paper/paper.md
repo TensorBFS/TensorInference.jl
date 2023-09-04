@@ -92,6 +92,15 @@ methods* (`KaHyParBipartite`) [@gray2021hyper] and (`SABipartite`), and a
 technology, including a highly optimized set of BLAS routines
 [@blackford2002updated] and GPU technology.
 
+`TensorInference.jl` succeeds `JunctionTrees.jl` [@roa2022partial;
+@roa2023scaling], a Julia package implementing the Junction Tree Algorithm (JTA)
+[@lauritzen1988local; @jensen1990bayesian]. While the latter employs
+tensor-based technology to optimize the computation of individual sum-product
+messages within the JTA context, `TensorInference.jl` takes a different route.
+It adopts a holistic tensor network approach, which opens new doors for
+optimization opportunities, and significantly reduces the algorithm's complexity
+compared to the JTA.
+
 # Statement of need
 
 A major challenge in developing intelligent systems is the ability to reason
@@ -122,15 +131,6 @@ the representational capabilities of PGMs with the computational power of tensor
 networks. By harnessing the best of both worlds, `TensorInference.jl` aims to
 enhance the performance of probabilistic inference, thereby expanding the
 tractability spectrum of exact inference for more complex, real-world models.
-
-`TensorInference.jl` succeeds `JunctionTrees.jl` [@roa2022partial;
-@roa2023scaling], a Julia package implementing the Junction Tree Algorithm (JTA)
-[@lauritzen1988local; @jensen1990bayesian]. While the latter employs
-tensor-based technology to optimize the computation of individual sum-product
-messages within the JTA context, `TensorInference.jl` takes a different route.
-It adopts a holistic tensor network approach, which opens new doors for
-optimization opportunities, and significantly reduces the algorithm's complexity
-compared to the JTA.
 
 # Usage example
 
