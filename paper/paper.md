@@ -87,8 +87,8 @@ contracting tensor networks [@markov2008simulating;@Pan2022;@gao2021limitations]
 state-of-the-art contraction ordering methods. These methods include a *local
 search based method* (`TreeSA`) [@kalachev2022multitensor], two *min-cut based
 methods* (`KaHyParBipartite`) [@gray2021hyper] and (`SABipartite`), and a
-*greedy method* (`GreedyMethod`). Finally, tensor networks -- and by extension,
-`TensorInference.jl` -- harness the latest developments in computational
+*greedy method* (`GreedyMethod`). Finally, tensor networks --- and by extension,
+`TensorInference.jl` --- harness the latest developments in computational
 technology, including a highly optimized set of BLAS routines
 [@blackford2002updated] and GPU technology.
 
@@ -145,10 +145,10 @@ of medical diagnosis [@lauritzen1988local].
 ](./figures/asia-network/out/asia-network.pdf)
 
 In the example, a patient has recently visited Asia and is now experiencing
-dyspnea. These conditions serve as the evidence for the observed variables ($A$
-and $D$). The doctor's task is to assess the likelihood of various diseases —-
-tuberculosis, lung cancer, and bronchitis -- which constitute the query
-variables in this scenario ($T$, $L$, and $B$).
+dyspnea. These conditions serve as the evidence for the observed variables
+($A$ and $D$). The doctor's task is to assess the likelihood of various
+diseases --- tuberculosis, lung cancer, and bronchitis --- which constitute
+the query variables in this scenario ($T$, $L$, and $B$).
 
 We now demonstrate how to use `TensorInference.jl` for conducting a variety of
 inference tasks on this toy example. Please note that as the API may evolve, we
