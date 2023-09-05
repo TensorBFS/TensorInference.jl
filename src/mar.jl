@@ -124,16 +124,77 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Returns the marginal probability distribution of variables.
-One can use `get_vars(tn)` to get the full list of variables in this tensor network.
+Queries the marginals of the variables in a [`TensorNetworkModel`](@ref). The
+function returns a dictionary, where the keys are the variables and the values
+are their respective marginals. A marginal is a probability distribution over
+a subset of variables, obtained by integrating or summing over the remaining
+variables in the model. By default, the function returns the marginals of all
+individual variables. To specify which marginal variables to query, set the
+`mars` field when constructing a [`TensorNetworkModel`](@ref). Note that
+the choice of marginal variables will affect the contraction order of the
+tensor network.
+
+### Arguments
+- `tn`: The [`TensorNetworkModel`](@ref) to query.
+- `usecuda`: Specifies whether to use CUDA for tensor contraction.
+- `rescale`: Specifies whether to rescale the tensors during contraction.
+
+### Example
+The following example is taken from [`examples/asia/main.jl`](@ref).
+
+```jldoctest; setup = :(using TensorInference, Random; Random.seed!(0))
+julia> model = read_model_file(pkgdir(TensorInference, "examples", "asia", "asia.uai"));
+
+julia> tn = TensorNetworkModel(model; evidence=Dict(1=>0))
+TensorNetworkModel{Int64, DynamicNestedEinsum{Int64}, Array{Float64}}
+variables: 1 (evidence → 0), 2, 3, 4, 5, 6, 7, 8
+contraction time = 2^6.022, space = 2^2.0, read-write = 2^7.077
+
+julia> marginals(tn)
+Dict{Vector{Int64}, Vector{Float64}} with 8 entries:
+  [8] => [0.450138, 0.549863]
+  [3] => [0.5, 0.5]
+  [1] => [1.0]
+  [5] => [0.45, 0.55]
+  [4] => [0.055, 0.945]
+  [6] => [0.10225, 0.89775]
+  [7] => [0.145092, 0.854908]
+  [2] => [0.05, 0.95]
+
+julia> tn2 = TensorNetworkModel(model; evidence=Dict(1=>0), mars=[[2, 3], [3, 4]])
+TensorNetworkModel{Int64, DynamicNestedEinsum{Int64}, Array{Float64}}
+variables: 1 (evidence → 0), 2, 3, 4, 5, 6, 7, 8
+contraction time = 2^7.781, space = 2^5.0, read-write = 2^8.443
+
+julia> marginals(tn2)
+Dict{Vector{Int64}, Matrix{Float64}} with 2 entries:
+  [2, 3] => [0.025 0.025; 0.475 0.475]
+  [3, 4] => [0.05 0.45; 0.005 0.495]
+```
+
+In this example, we first set the evidence for variable 1 to 0 and then query
+the marginals of all individual variables. The returned dictionary has keys
+that correspond to the queried variables and values that represent their
+marginals. These marginals are vectors, with each entry corresponding to the
+probability of the variable taking a specific value. In this example, the
+possible values are 0 or 1. For the evidence variable 1, the marginal is
+always [1.0] since its value is fixed at 0.
+
+Next, we specify the marginal variables to query as variables 2 and 3, and
+variables 3 and 4, respectively. The joint marginals may or may not affect the
+contraction time and space. In this example, the contraction space complexity
+increases from 2^{2.0} to 2^{5.0}, and the contraction time complexity
+increases from 2^{5.977} to 2^{7.781}. The output marginals are the joint
+probabilities of the queried variables, represented by tensors.
+
 """
-function marginals(tn::TensorNetworkModel; usecuda = false, rescale = true)::Vector
+function marginals(tn::TensorNetworkModel; usecuda = false, rescale = true)::Dict{Vector{Int}}
     # sometimes, the cost can overflow, then we need to rescale the tensors during contraction.
     cost, grads = cost_and_gradient(tn.code, adapt_tensors(tn; usecuda, rescale))
     @debug "cost = $cost"
     if rescale
-        return LinearAlgebra.normalize!.(getfield.(grads[1:length(tn.mars)], :normalized_value), 1)
+        return Dict(zip(tn.mars, LinearAlgebra.normalize!.(getfield.(grads[1:length(tn.mars)], :normalized_value), 1)))
     else
-        return LinearAlgebra.normalize!.(grads[1:length(tn.mars)], 1)
+        return Dict(zip(tn.mars, LinearAlgebra.normalize!.(grads[1:length(tn.mars)], 1)))
     end
 end

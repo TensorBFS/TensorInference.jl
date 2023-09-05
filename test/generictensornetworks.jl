@@ -7,7 +7,7 @@ using GenericTensorNetworks, TensorInference
     g = GenericTensorNetworks.Graphs.smallgraph(:petersen)
     problem = IndependentSet(g)
     model = TensorNetworkModel(problem, β; mars=[[2, 3]])
-    mars = marginals(model)[1]
+    mars = marginals(model)[[2, 3]]
     problem2 = IndependentSet(g; openvertices=[2,3])
     mars2 = TensorInference.normalize!(GenericTensorNetworks.solve(problem2, PartitionFunction(β)), 1)
     @test mars ≈ mars2
