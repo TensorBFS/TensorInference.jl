@@ -124,19 +124,23 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Query the marginals of the variables in a [`TensorNetworkModel`](@ref).
-The returned value is a dictionary of variables and their marginals, where a marginal is a joint probability distribution over the associated variables.
-By default, the marginals of all individual variables are returned.
-The marginal variables to query can be specified when constructing [`TensorNetworkModel`](@ref) as its field `mars`.
-It will affect the contraction order of the tensor network.
+Queries the marginals of the variables in a [`TensorNetworkModel`](@ref). The
+function returns a dictionary, where the keys are the variables and the values
+are their respective marginals. A marginal is a probability distribution over
+a subset of variables, obtained by integrating or summing over the remaining
+variables in the model. By default, the function returns the marginals of all
+individual variables. To specify which marginal variables to query, set the
+`mars` field when constructing a [`TensorNetworkModel`](@ref). Note that
+the choice of marginal variables will affect the contraction order of the
+tensor network.
 
 ### Arguments
-- `tn`: the [`TensorNetworkModel`](@ref) to query.
-- `usecuda`: whether to use CUDA for tensor contraction.
-- `rescale`: whether to rescale the tensors during contraction.
+- `tn`: The [`TensorNetworkModel`](@ref) to query.
+- `usecuda`: Specifies whether to use CUDA for tensor contraction.
+- `rescale`: Specifies whether to rescale the tensors during contraction.
 
 ### Example
-The following example is from [`examples/asia/main.jl`](@ref).
+The following example is taken from [`examples/asia/main.jl`](@ref).
 
 ```jldoctest; setup = :(using TensorInference, Random; Random.seed!(0))
 julia> model = read_model_file(pkgdir(TensorInference, "examples", "asia", "asia.uai"));
@@ -168,15 +172,21 @@ Dict{Vector{Int64}, Matrix{Float64}} with 2 entries:
   [3, 4] => [0.05 0.45; 0.005 0.495]
 ```
 
-In this example, we first set the evidence of variable 1 to 0, then we query the marginals of all individual variables.
-The returned values is a dictionary, the key are query variables, and the value are the corresponding marginals.
-The marginals are vectors, with its entries corresponding to the probability of the variable taking the value 0 and 1, respectively.
-For evidence variable 1, the marginal is always `[1.0]`, since it is fixed to 0.
+In this example, we first set the evidence for variable 1 to 0 and then query
+the marginals of all individual variables. The returned dictionary has keys
+that correspond to the queried variables and values that represent their
+marginals. These marginals are vectors, with each entry corresponding to the
+probability of the variable taking a specific value. In this example, the
+possible values are 0 or 1. For the evidence variable 1, the marginal is
+always [1.0] since its value is fixed at 0.
 
-Then we set the marginal variables to query to be variable 2 and 3, and variable 3 and 4, respectively.
-The joint marginals may or may not increase the contraction time and space.
-Here, the contraction space complexity is increased from 2^2.0 to 2^5.0, and the contraction time complexity is increased from 2^5.977 to 2^7.781.
-The output marginals are joint probabilities of the query variables represented by tensors.
+Next, we specify the marginal variables to query as variables 2 and 3, and
+variables 3 and 4, respectively. The joint marginals may or may not affect the
+contraction time and space. In this example, the contraction space complexity
+increases from 2^{2.0} to 2^{5.0}, and the contraction time complexity
+increases from 2^{5.977} to 2^{7.781}. The output marginals are the joint
+probabilities of the queried variables, represented by tensors.
+
 """
 function marginals(tn::TensorNetworkModel; usecuda = false, rescale = true)::Dict{Vector{Int}}
     # sometimes, the cost can overflow, then we need to rescale the tensors during contraction.
