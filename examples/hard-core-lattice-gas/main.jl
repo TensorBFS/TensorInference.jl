@@ -55,7 +55,7 @@ partition_func[]
 
 # The marginal probabilities can be computed with the [`marginals`](@ref) function, which measures how likely a site is occupied.
 mars = marginals(pmodel)
-show_graph(graph; locs=sites, vertex_colors=[(b = mars[[i]][2]; (1-b, 1-b, 1-b)) for i in vertices(graph)], texts=fill("", nv(graph)))
+show_graph(graph; locs=sites, vertex_colors=[(b = mars[[i]][2]; (1-b, 1-b, 1-b)) for i in 1:nv(graph)], texts=fill("", nv(graph)))
 # The can see the sites at the corner is more likely to be occupied.
 # To obtain two-site correlations, one can set the variables to query marginal probabilities manually.
 pmodel2 = TensorNetworkModel(problem, β; mars=[[e.src, e.dst] for e in edges(graph)])
