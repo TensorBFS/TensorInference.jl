@@ -55,14 +55,14 @@ partition_func[]
 
 # The marginal probabilities can be computed with the [`marginals`](@ref) function, which measures how likely a site is occupied.
 mars = marginals(pmodel)
-show_graph(graph; locs=sites, vertex_colors=[(1-b, 1-b, 1-b) for b in getindex.(mars, 2)], texts=fill("", nv(graph)))
+show_graph(graph; locs=sites, vertex_colors=[(b = mars[[i]][2]; (1-b, 1-b, 1-b)) for i in vertices(graph)], texts=fill("", nv(graph)))
 # The can see the sites at the corner is more likely to be occupied.
 # To obtain two-site correlations, one can set the variables to query marginal probabilities manually.
 pmodel2 = TensorNetworkModel(problem, β; mars=[[e.src, e.dst] for e in edges(graph)])
 mars = marginals(pmodel2);
 
 # We show the probability that both sites on an edge are not occupied
-show_graph(graph; locs=sites, edge_colors=[(b=mar[1, 1]; (1-b, 1-b, 1-b)) for mar in mars], texts=fill("", nv(graph)), edge_line_width=5)
+show_graph(graph; locs=sites, edge_colors=[(b = mars[[e.src, e.dst]][1, 1]; (1-b, 1-b, 1-b)) for e in edges(graph)], texts=fill("", nv(graph)), edge_line_width=5)
 
 # ## The most likely configuration
 # The MAP and MMAP can be used to get the most likely configuration given an evidence.

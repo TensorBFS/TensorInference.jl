@@ -11,11 +11,11 @@ CUDA.allowscalar(false)
     tn = TensorNetworkModel(model; optimizer = TreeSA(ntrials = 1, niters = 2, βs = 1:0.1:40), evidence)
     @debug contraction_complexity(tn)
     @time marginals2 = marginals(tn; usecuda = true)
-    @test all(x -> x isa CuArray, marginals2)
+    @test all(x -> x.second isa CuArray, marginals2)
     # for dangling vertices, the output size is 1.
     npass = 0
     for i in 1:(model.nvars)
-        npass += (length(marginals2[i]) == 1 && reference_solution[i] == [0.0, 1]) || isapprox(Array(marginals2[i]), reference_solution[i]; atol = 1e-6)
+        npass += (length(marginals2[[i]]) == 1 && reference_solution[i] == [0.0, 1]) || isapprox(Array(marginals2[[i]]), reference_solution[i]; atol = 1e-6)
     end
     @test npass == model.nvars
 end

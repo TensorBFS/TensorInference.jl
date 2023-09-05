@@ -49,14 +49,14 @@ using TensorInference, Test
     n = 10000
     tnet = TensorNetworkModel(model)
     samples = sample(tnet, n)
-    mars = getindex.(marginals(tnet), 2)
+    mars = marginals(tnet)
     mars_sample = [count(s->s[k]==(1), samples) for k=1:8] ./ n
-    @test isapprox(mars, mars_sample, atol=0.05)
+    @test isapprox([mars[[i]][2] for i=1:8], mars_sample, atol=0.05)
 
     # fix the evidence
     tnet = TensorNetworkModel(model, optimizer=TreeSA(), evidence=Dict(7=>1))
     samples = sample(tnet, n)
-    mars = getindex.(marginals(tnet), 1)
+    mars = marginals(tnet)
     mars_sample = [count(s->s[k]==(0), samples) for k=1:8] ./ n
-    @test isapprox([mars[1:6]..., mars[8]], [mars_sample[1:6]..., mars_sample[8]], atol=0.05)
+    @test isapprox([[mars[[i]][1] for i=1:6]..., mars[[8]][1]], [mars_sample[1:6]..., mars_sample[8]], atol=0.05)
 end
