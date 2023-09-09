@@ -59,9 +59,10 @@ more complex, real-world models.
 ## Outline
 ```@contents
 Pages = [
-  "background.md",
-  "examples-overview.md",
+  "probabilisticinference.md",
+  "tensornetwork.md",
   "uai-file-formats.md",
+  "examples-overview.md",
   "performance.md",
   "api/public.md",
   "api/internal.md",

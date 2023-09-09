@@ -1,4 +1,4 @@
-# Background
+# Probabilistic inference
 
 *TensorInference* implements efficient methods to perform Bayesian inference in
 *probabilistic graphical models*, such as Bayesian Networks or Markov random
