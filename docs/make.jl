@@ -53,11 +53,11 @@ makedocs(;
             "Tensor Networks" => "tensornetwork.md",
             "UAI file formats" => "uai-file-formats.md"
         ],
-        #"Examples" => [
-        #    "Overview" => "examples-overview.md",
-        #    "Asia Network" => "generated/asia/main.md",
-        #    "Hard-core Lattice Gas" => "generated/hard-core-lattice-gas/main.md",
-        #   ],
+        "Examples" => [
+            "Overview" => "examples-overview.md",
+            "Asia Network" => "generated/asia/main.md",
+            "Hard-core Lattice Gas" => "generated/hard-core-lattice-gas/main.md",
+           ],
         "Performance tips" => "generated/performance.md",
         "API" => [
             "Public" => "api/public.md",
