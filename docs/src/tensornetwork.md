@@ -105,9 +105,10 @@ tp = TikzPicture(
     \draw [myedge, color=c01] (1) edge node[below] {$i$} (a);
     \draw [myedge, color=c02] (a) edge node[below] {$j$} (b);
     \draw [myedge, color=c03] (b) edge node[below] {$k$} (2);
-""", options="scale=3.8",
-    preamble="\\input{" * joinpath(@__DIR__, "assets", "preambles", "the-tensor-network") * "}",
-    )
+  """,
+  options="every node/.style={scale=2.0}",
+  preamble="\\input{" * joinpath(@__DIR__, "assets", "preambles", "the-tensor-network") * "}",
+)
 save(SVG("the-tensor-network1"), tp)
 ```
 
@@ -159,9 +160,10 @@ tp = TikzPicture(
     \draw [myedge, color=c02] (a) edge (l);
     \draw [myedge, color=c02] (l) edge (c);
     \draw [myedge, color=c04] (c) edge (k);
-""", options="",
-    preamble="\\input{" * joinpath(@__DIR__, "assets", "preambles", "the-tensor-network") * "}",
-    )
+  """,
+  options="every node/.style={scale=2.0}",
+  preamble="\\input{" * joinpath(@__DIR__, "assets", "preambles", "the-tensor-network") * "}",
+)
 save(SVG("the-tensor-network2"), tp)
 ```
 
