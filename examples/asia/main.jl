@@ -60,8 +60,9 @@ tn = TensorNetworkModel(model)
 
 # ---
 
-# Calculate the ``\log_{10}`` partition function 
-probability(tn) |> first |> log10
+# Calculate the partition function.
+# Since the factors in this model is normalized, the partition function is the same as total probability, $1$.
+probability(tn) |> first
 
 # ---
 
