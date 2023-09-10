@@ -1,12 +1,14 @@
 # Tensor networks
 
 We now introduce the core ideas of tensor networks, highlighting their
-connections with the probabilistic graphical models (PGM) domain to align the terminology between them.
+connections with probabilistic graphical models (PGM) to align the terminology
+between them.
 
-For our purposes, a **tensor** is equivalent with the concept of a factor
-presented above, which we detail more formally below.
+For our purposes, a tensor is equivalent to the concept of a factor as defined
+in the PGM domain, which we detail more formally below.
 
 ## What is a tensor?
+
 *Definition*: A tensor $T$ is defined as:
 ```math
 T: \prod_{V \in \bm{V}} \mathcal{D}_{V} \rightarrow \texttt{number}.
@@ -39,17 +41,25 @@ of. Thus, in this context, the terms **label**, **index**, and
 **variable** are synonymous and hence used interchangeably.
 
 ## What is a tensor network?
-We now turn our attention to defining a **tensor network**.
-Tensor network a mathematical object that can be used to represent a multilinear map between tensors. It is widely used in condensed matter physics [^Orus2014][^Pfeifer2014] and quantum simulation [^Markov2008][^Pan2022]. It is also a powerful tool for solving combinatorial optimization problems [^Liu2023].
-It is important to note that we use a generalized version of the conventional
-notation, which is also knwon as the [eisnum](https://numpy.org/doc/stable/reference/generated/numpy.einsum.html) function that widely used in high performance computing.
-Packages that implement the conventional notation include
+
+We now turn our attention to defining a **tensor network**, a mathematical
+object used to represent a multilinear map between tensors. This concept is
+widely employed in fields like condensed matter physics
+[^Orus2014][^Pfeifer2014], quantum simulation [^Markov2008][^Pan2022], and
+even in solving combinatorial optimization problems [^Liu2023]. It's worth
+noting that we use a generalized version of the conventional notation, most
+commonly known through the
+[eisnum](https://numpy.org/doc/stable/reference/generated/numpy.einsum.html)
+function, which is commonly used in high-performance computing. Packages that
+implement this conventional notation include
 - [numpy](https://numpy.org/doc/stable/reference/generated/numpy.einsum.html)
 - [OMEinsum.jl](https://github.com/under-Peter/OMEinsum.jl)
 - [PyTorch](https://pytorch.org/docs/stable/generated/torch.einsum.html)
 - [TensorFlow](https://www.tensorflow.org/api_docs/python/tf/einsum)
 
-This approach allows us to represent a more extensive set of sum-product multilinear operations between tensors, meeting the requirements of the PGM field.
+This approach allows us to represent a broader range of sum-product
+multilinear operations between tensors, thus meeting the requirements of the
+PGM field.
 
 *Definition*[^Liu2023]: A tensor network is a multilinear map represented by the triple
 $\mathcal{N} = (\Lambda, \mathcal{T}, \bm{\sigma}_0)$, where:
@@ -62,8 +72,8 @@ $\mathcal{N} = (\Lambda, \mathcal{T}, \bm{\sigma}_0)$, where:
 
 More specifically, each tensor $T^{(k)}_{\bm{\sigma}_k} \in \mathcal{T}$ is
 labeled by a string $\bm{\sigma}_k \in \Lambda^{r \left(T^{(k)} \right)}$, where
-$r \left(T^{(k)} \right)$ is the rank of $T^{(k)}$. The multilinear map, or
-the `contraction`, applied to this triple is defined as
+$r \left(T^{(k)} \right)$ is the rank of $T^{(k)}$. The multilinear map, also
+known as the `contraction`, applied to this triple is defined as
 ```math
 \texttt{contract}(\Lambda, \mathcal{T}, \bm{\sigma}_0) = \sum_{\bm{\sigma}_{\Lambda
 \setminus [\bm{\sigma}_0]}} \prod_{k=1}^{M} T^{(k)}_{\bm{\sigma}_k},
@@ -71,25 +81,26 @@ the `contraction`, applied to this triple is defined as
 Notably, the summation extends over all instantiations of the variables that
 are not part of the output tensor.
 
-As an example, the matrix multiplication can be specified as a tensor network
-contraction
+As an example, consider matrix multiplication, which can be specified as a
+tensor network contraction:
 ```math
   (AB)_{ik} = \texttt{contract}\left(\{i,j,k\}, \{A_{ij}, B_{jk}\}, ik\right),
 ```
-where matrices $A$ and $B$ are input tensors labeled by strings $ij, jk \in
-\{i, j, k\}^2$. The output tensor is labeled by string $ik$. The
-summation runs over indices $\Lambda \setminus [ik] = \{j\}$. The contraction
-corresponds to
+Here, matrices $A$ and $B$ are input tensors labeled by strings $ij, jk \in
+\{i, j, k\}^2$. The output tensor is labeled by string $ik$. Summations run
+over indices $\Lambda \setminus [ik] = \{j\}$. The contraction corresponds to
 ```math
   \texttt{contract}\left(\{i,j,k\}, \{A_{ij}, B_{jk}\}, ik\right) = \sum_j
   A_{ij}B_{jk},
 ```
-In programming languages, this is equivalent to einsum notation `ij, jk -> ik`.
+In the einsum notation commonly used in various programming languages, this is
+equivalent to `ij, jk -> ik`.
 
-Diagrammatically, a tensor network can be represented as an *open hypergraph*. In the tensor network diagram, a tensor is mapped to a vertex,
-and a variable is mapped to a hyperedge. If and only if tensors share the same variable, we connect
-them with the same hyperedge for that variable. The diagrammatic
-representation of matrix multiplication is as bellow.
+Diagrammatically, a tensor network can be represented as an *open hypergraph*.
+In this diagram, a tensor maps to a vertex, and a variable maps to a
+hyperedge. Tensors sharing the same variable are connected by the same
+hyperedge for that variable. The diagrammatic representation of matrix
+multiplication is:
 ```@eval
 using TikzPictures
 
@@ -116,19 +127,20 @@ save(SVG("the-tensor-network1"), tp)
 <img src="the-tensor-network1.svg"  style="margin-left: auto; margin-right: auto; display:block; width=50%">
 ```
 
-Here, we use different colors to denote different hyperedges. Hyperedges for
+In this diagram, we use different colors to denote different hyperedges. Hyperedges for
 $i$ and $j$ are left open to denote variables in the output string
-$\bm{\sigma}_0$. The reason why we should use hyperedges rather than regular edge
-will be made clear by the followng star contraction example.
+$\bm{\sigma}_0$. The reason we use hyperedges rather than regular edges will
+become clear in the following star contraction example.
 ```math
   \texttt{contract}(\{i,j,k,l\}, \{A_{il}, B_{jl}, C_{kl}\}, ijk) = \sum_{l}A_{il}
   B_{jl} C_{kl}
 ```
-In programming languages, this is equivalent to einsum notation `il, jl, kl -> ijk`.
+The equivalent einsum notation employed by many programming languages is `il,
+jl, kl -> ijk`.
 
-Among the variables, $l$ is shared by all three tensors, hence the diagram can
-not be represented as a simple graph. The hypergraph representation is as
-below.
+Since the variable $l$ is shared across all three tensors, a simple graph
+can't capture the diagram's complexity. The more appropriate hypergraph
+representation is shown below.
 ```@eval
 using TikzPictures
 
@@ -171,23 +183,27 @@ save(SVG("the-tensor-network2"), tp)
 <img src="the-tensor-network2.svg"  style="margin-left: auto; margin-right: auto; display:block; width=50%">
 ```
 
-As a final comment, repeated indices in the same tensor is not forbidden in
-the definition of a tensor network, hence self-loops are also allowed in a tensor
-network diagram.
+As a final note, our definition of a tensor network allows for repeated
+indices within the same tensor, which translates to self-loops in their
+corresponding diagrams.
 
 ## Tensor network contraction orders
+
 The performance of a tensor network contraction depends on the order in which
 the tensors are contracted. The order of contraction is usually specified by
 binary trees, where the leaves are the input tensors and the internal nodes
 represent the order of contraction. The root of the tree is the output tensor.
 
-Plenty of algorithms have been proposed to find the optimal contraction order, which includes
+Numerous approaches have been proposed to determine efficient contraction
+orderings, which include:
 - Greedy algorithms
 - Breadth-first search and Dynamic programming [^Pfeifer2014]
 - Graph bipartitioning [^Gray2021]
 - Local search [^Kalachev2021]
 
-Some of them have already been included in the [OMEinsum](https://github.com/under-Peter/OMEinsum.jl) package. Please check [Performance Tips](@ref) for more details.
+Some of these have been implemented in the
+[OMEinsum](https://github.com/under-Peter/OMEinsum.jl) package. Please check
+[Performance Tips](@ref) for more details.
 
 ## References
 
