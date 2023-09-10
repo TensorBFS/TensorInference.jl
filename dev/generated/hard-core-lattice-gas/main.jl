@@ -26,19 +26,23 @@ using GenericTensorNetworks.Graphs: edges, nv
 graph = unit_disk_graph(vec(sites), blockade_radius)
 show_graph(graph; locs=sites, texts=fill("", length(sites)))
 
-# These constraints defines a independent set problem that characterized by the following energy based model.
-# Let $G = (V, E)$ be a graph, where $V$ is the set of vertices and $E$ be the set of edges. The energy model for the hard-core lattice gas problem is
+# These constraints defines an independent set problem that characterized by the following energy based model.
+# Let $G = (V, E)$ be a graph, where $V$ is the set of vertices and $E$ is the set of edges.
+# The energy model for the hard-core lattice gas problem is
 # ```math
-# E(\mathbf{n}) = -\sum_{i \in V}w_i n_i + \infty \sum_{(i, j) \in E} n_i n_j
+# E(\mathbf{n}) = -\sum_{i \in V}w_i n_i + U \sum_{(i, j) \in E} n_i n_j
 # ```
 # where $n_i \in \{0, 1\}$ is the number of particles at site $i$, and $w_i$ is the weight associated with it. For unweighted graphs, the weights are uniform.
-# The solution space hard-core lattice gas is equivalent to that of an independent set problem. The independent set problem involves finding a set of vertices in a graph such that no two vertices in the set are adjacent (i.e., there is no edge connecting them).
+# $U$ is the repulsive interaction strength between two particles.
+# To represent the independence constraint, we let $U = \infty$, i.e. coexitence of two particles at two sites connected by an edge is completely forbidden.
+# The solution space hard-core lattice gas is equivalent to that of an independent set problem.
+# The independent set problem involves finding a set of vertices in a graph such that no two vertices in the set are adjacent (i.e., there is no edge connecting them).
 # One can create a tensor network based modeling of an independent set problem with package [`GenericTensorNetworks.jl`](https://github.com/QuEraComputing/GenericTensorNetworks.jl).
 using GenericTensorNetworks
 problem = IndependentSet(graph; optimizer=GreedyMethod());
 
-# There has been a lot of discussions related to solution space properties in the `GenericTensorNetworks` [documentaion page](https://queracomputing.github.io/GenericTensorNetworks.jl/dev/generated/IndependentSet/).
-# In this example, we show how to use `TensorInference` to use probabilistic inference for understand the finite temperature properties of this statistic physics model.
+# There are plenty of discussions related to solution space properties in the `GenericTensorNetworks` [documentaion page](https://queracomputing.github.io/GenericTensorNetworks.jl/dev/generated/IndependentSet/).
+# In this example, we show how to use `TensorInference` to use probabilistic inference for understand the finite temperature properties of this statistical model.
 # We use [`TensorNetworkModel`](@ref) to convert a combinatorial optimization problem to a probabilistic model.
 # Here, we let the inverse temperature be $\beta = 3$.
 
@@ -62,7 +66,8 @@ pmodel2 = TensorNetworkModel(problem, β; mars=[[e.src, e.dst] for e in edges(gr
 mars = marginals(pmodel2);
 
 # We show the probability that both sites on an edge are not occupied
-show_graph(graph; locs=sites, edge_colors=[(b = mars[[e.src, e.dst]][1, 1]; (1-b, 1-b, 1-b)) for e in edges(graph)], texts=fill("", nv(graph)), edge_line_width=5)
+show_graph(graph; locs=sites, edge_colors=[(b = mars[[e.src, e.dst]][1, 1]; (1-b, 1-b, 1-b)) for e in edges(graph)], texts=fill("", nv(graph)),
+    edge_line_widths=edge_colors=[8*mars[[e.src, e.dst]][1, 1] for e in edges(graph)])
 
 # ## The most likely configuration
 # The MAP and MMAP can be used to get the most likely configuration given an evidence.
@@ -90,5 +95,5 @@ sum(config2)
 # One can ue [`sample`](@ref) to generate samples from hard-core lattice gas at finite temperature.
 # The return value is a matrix, with the columns correspond to different samples.
 configs = sample(pmodel3, 1000)
-sizes = sum(configs; dims=1)
+sizes = sum.(configs)
 [count(==(i), sizes) for i=0:34]  # counting sizes
