@@ -129,6 +129,40 @@ networks. By harnessing the best of both worlds, `TensorInference.jl` aims to
 enhance the performance of probabilistic inference, thereby expanding the
 tractability spectrum of exact inference for more complex, real-world models.
 
+# Performance evaluation
+
+\autoref{fig:performance-evaluation} illustrates a comparison of the runtime
+performance of `TensorInference.jl` against `Merlin` [@marinescu2022merlin],
+`libDAI` [@mooij2010libdai], and `JunctionTrees.jl`
+[@roa2022partial;@roa2023scaling] libraries. We selected `Merlin` and `libDAI`
+based on the following criteria: open-source availability, extensive
+documentation, and representation of standard practices in the field. Both of
+these libraries have previously participated in UAI inference competitions
+[@gal2010summary;@gogate2014uai], achieving favorable results. Additionally,
+we included two versions of `JunctionTrees.jl`, the predecessor of
+`TensorInference.jl`. The first version does not employ tensor technology,
+while the second version optimizes individual sum-product computations using
+tensors-based technology.
+
+The benchmark problems are arranged along the x-axis in ascending order of
+complexity, measured by the induced tree width. On average,
+`TensorInference.jl` achieves a speedup of 11 times across all problems.
+Notably, for the 10 most complex problems, the average speedup increases to 63
+times, highlighting its superior scalability. It's worth noting that the
+`TensorInference.jl` method incurs a computational overhead that may result in
+a slowdown in probabilistic inference when the problem's complexity is
+relatively low compared to the other libraries. However, as the problem
+complexity increases, this overhead becomes negligible. In such cases, our
+method can often deliver performance improvements that are several orders of
+magnitude greater.
+
+![Speedup achieved by `TensorInference.jl`, relative to `Merlin`
+[@marinescu2022merlin], `libDAI` [@mooij2010libdai], and `JunctionTrees.jl`
+[@roa2022partial;@roa2023scaling] for the UAI 2014 inference competition
+benchmark problems. The experiments were conducted on an Intel Core i9--9900K
+CPU \@3.60GHz with 64 GB of RAM. \label{fig:performance-evaluation}
+](scripts/performance-evaluation/out/co23/2023-09-10--20-20-45/performance-evaluation.svg){width=80%}
+
 # Usage example
 
 The graph below corresponds to the *ASIA network* [@lauritzen1988local], a
