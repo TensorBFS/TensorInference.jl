@@ -7,10 +7,10 @@
 # 
 # Let define a $10 \times 10$ triangular lattice, with unit vectors
 # ```math
-# \begin{align}
+# \begin{align*}
 # \vec a &= \left(\begin{matrix}1 \\ 0\end{matrix}\right)\\
 # \vec b &= \left(\begin{matrix}\frac{1}{2} \\ \frac{\sqrt{3}}{2}\end{matrix}\right)
-# \end{align}
+# \end{align*}
 # ```
 
 a, b = (1, 0), (0.5, 0.5*sqrt(3))
