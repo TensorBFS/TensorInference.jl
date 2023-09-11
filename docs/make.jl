@@ -55,7 +55,7 @@ makedocs(;
         ],
         "Examples" => [
             "Overview" => "examples-overview.md",
-            "Asia Network" => "generated/asia/main.md",
+            "Asia Network" => "generated/asia-network/main.md",
             "Hard-core Lattice Gas" => "generated/hard-core-lattice-gas/main.md",
            ],
         "Performance tips" => "generated/performance.md",

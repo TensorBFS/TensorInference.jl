@@ -51,7 +51,7 @@ using TensorInference
 # Load the ASIA network model from the `asia.uai` file located in the examples
 # directory. See [Model file format (.uai)](@ref) for a description of the
 # format of this file.
-model = read_model_file(pkgdir(TensorInference, "examples", "asia", "asia.uai"))
+model = read_model_file(pkgdir(TensorInference, "examples", "asia-network", "model.uai"))
 
 # ---
 
@@ -60,8 +60,8 @@ tn = TensorNetworkModel(model)
 
 # ---
 
-# Calculate the partition function.
-# Since the factors in this model is normalized, the partition function is the same as total probability, $1$.
+# Calculate the partition function. Since the factors in this model are
+# normalized, the partition function is the same as the total probability, $1$.
 probability(tn) |> first
 
 # ---
@@ -71,13 +71,13 @@ marginals(tn)
 
 # ---
 
-# Retrieve the variables associated with the tensor network model.
+# Retrieve all the variables in the model.
 get_vars(tn)
 
 # ---
 
-# Set an evidence: Assume that the "X-ray" result (variable 7) is positive.
-# Since setting an evidence may affect the contraction order of the tensor
+# Set the evidence: Assume that the "X-ray" result (variable 7) is positive.
+# Since setting the evidence may affect the contraction order of the tensor
 # network, recompute it.
 tn = TensorNetworkModel(model, evidence = Dict(7 => 0))
 
@@ -88,8 +88,7 @@ maximum_logp(tn)
 
 # ---
 
-# Generate 10 samples from the probability distribution represented by the
-# model.
+# Generate 10 samples from the posterior distribution.
 sample(tn, 10)
 
 # ---
