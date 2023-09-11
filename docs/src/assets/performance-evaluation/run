@@ -1,0 +1,23 @@
+#!/bin/bash
+
+if [ $# -gt 0 ]; then
+  echo "Error: This script does not accept any arguments."
+  exit 1
+fi
+
+# Create output directory and define filenames for output, log, and system specs files
+output_dir="./out/$(uname -n)/$(date +%Y-%m-%d--%H-%M-%S)" && mkdir -p "$output_dir"
+output_file="$output_dir/out.csv"
+log_file="$output_dir/log.txt"
+system_specs_file="$output_dir/system_specs.txt"
+
+# Log system properties
+{
+  lscpu
+  lsmem
+  free -h
+  lsb_release -a
+} >> "$system_specs_file"
+
+# Call 'run2.sh' and redirect stdout and stderr to the log file
+bash ./run2.sh "$output_file" 2>&1 | tee "$log_file"

@@ -58,6 +58,7 @@ makedocs(;
             "Asia Network" => "generated/asia-network/main.md",
             "Hard-core Lattice Gas" => "generated/hard-core-lattice-gas/main.md",
            ],
+        "Performance evaluation" => "performance-evaluation.md",
         "Performance tips" => "generated/performance.md",
         "API" => [
             "Public" => "api/public.md",

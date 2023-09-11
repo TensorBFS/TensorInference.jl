@@ -1,0 +1,281 @@
+Starting benchmark...
+Problem: Promedus_26
+Problem: Promedus_24
+Problem: Promedus_29
+Problem: ObjectDetection_12
+Problem: ObjectDetection_14
+┌ Warning: target space complexity not found, got: 21.961587113893803, with time complexity 29.225090266741745, read-write complexity 25.564680253029376.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: ObjectDetection_15
+Problem: ObjectDetection_17
+┌ Warning: target space complexity not found, got: 21.961587113893803, with time complexity 29.225516996639417, read-write complexity 25.57543304014467.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: ObjectDetection_18
+Problem: ObjectDetection_20
+┌ Warning: target space complexity not found, got: 21.961587113893803, with time complexity 29.225091232336467, read-write complexity 25.564704671280957.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: ObjectDetection_21
+Problem: ObjectDetection_24
+┌ Warning: target space complexity not found, got: 21.961587113893803, with time complexity 29.22508930114637, read-write complexity 25.56465583436449.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: ObjectDetection_25
+Problem: ObjectDetection_27
+┌ Warning: target space complexity not found, got: 21.961587113893803, with time complexity 29.22509026674174, read-write complexity 25.564680253029376.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: ObjectDetection_32
+Problem: ObjectDetection_33
+┌ Warning: target space complexity not found, got: 21.961587113893803, with time complexity 28.21066184160402, read-write complexity 24.971726405828246.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: ObjectDetection_37
+┌ Warning: target space complexity not found, got: 21.961587113893803, with time complexity 28.21066379220359, read-write complexity 24.971763236495743.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: ObjectDetection_40
+Problem: ObjectDetection_41
+┌ Warning: target space complexity not found, got: 21.961587113893803, with time complexity 28.211521800243336, read-write complexity 24.987878185052757.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: ObjectDetection_44
+Problem: ObjectDetection_45
+┌ Warning: target space complexity not found, got: 21.961587113893803, with time complexity 28.210661841604022, read-write complexity 24.971726405828253.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: ObjectDetection_49
+Problem: ObjectDetection_50
+┌ Warning: target space complexity not found, got: 21.961587113893803, with time complexity 28.21066184160402, read-write complexity 24.971726405828246.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: ObjectDetection_56
+Problem: ObjectDetection_57
+┌ Warning: target space complexity not found, got: 21.961587113893803, with time complexity 28.21066184160402, read-write complexity 24.971726405828235.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: ObjectDetection_60
+┌ Warning: target space complexity not found, got: 21.961587113893803, with time complexity 28.210663792203583, read-write complexity 24.971763236495743.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: ObjectDetection_64
+Problem: ObjectDetection_65
+┌ Warning: target space complexity not found, got: 21.961587113893803, with time complexity 28.21066184160402, read-write complexity 24.97172640582825.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: ObjectDetection_68
+Problem: ObjectDetection_69
+┌ Warning: target space complexity not found, got: 21.961587113893803, with time complexity 28.211521800243336, read-write complexity 24.987878185052757.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: ObjectDetection_73
+┌ Warning: target space complexity not found, got: 21.961587113893803, with time complexity 28.21152180024334, read-write complexity 24.987878185052747.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: Promedus_33
+Problem: ObjectDetection_11
+┌ Warning: target space complexity not found, got: 20.756589711823782, with time complexity 26.435314563426537, read-write complexity 23.756626764898108.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: ObjectDetection_13
+┌ Warning: target space complexity not found, got: 24.0, with time complexity 30.14480188920311, read-write complexity 26.85269371642339.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: ObjectDetection_16
+┌ Warning: target space complexity not found, got: 24.0, with time complexity 30.143681138074786, read-write complexity 26.83057711260298.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: ObjectDetection_19
+┌ Warning: target space complexity not found, got: 24.0, with time complexity 30.14383058295644, read-write complexity 26.83354488406768.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: ObjectDetection_22
+┌ Warning: target space complexity not found, got: 20.756589711823782, with time complexity 26.435104690010974, read-write complexity 23.753936927597543.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: ObjectDetection_23
+┌ Warning: target space complexity not found, got: 24.0, with time complexity 30.144806555963243, read-write complexity 26.85278513947749.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: ObjectDetection_26
+┌ Warning: target space complexity not found, got: 24.0, with time complexity 30.14368142997441, read-write complexity 26.83058291498597.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: ObjectDetection_31
+┌ Warning: target space complexity not found, got: 24.0, with time complexity 29.768402350746452, read-write complexity 26.341558472952606.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: ObjectDetection_34
+┌ Warning: target space complexity not found, got: 20.756589711823782, with time complexity 26.070450785811072, read-write complexity 23.237755988818748.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: ObjectDetection_36
+┌ Warning: target space complexity not found, got: 24.0, with time complexity 29.768402729366567, read-write complexity 26.341566616531676.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: ObjectDetection_43
+┌ Warning: target space complexity not found, got: 24.0, with time complexity 29.769952346040615, read-write complexity 26.37453489937233.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: ObjectDetection_46
+┌ Warning: target space complexity not found, got: 20.756589711823782, with time complexity 26.069905684851715, read-write complexity 23.229969845284163.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: ObjectDetection_48
+┌ Warning: target space complexity not found, got: 24.0, with time complexity 29.768402350746456, read-write complexity 26.341558472952606.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: ObjectDetection_51
+┌ Warning: target space complexity not found, got: 20.756589711823782, with time complexity 26.07045303786714, read-write complexity 23.237788075943715.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: ObjectDetection_53
+┌ Warning: target space complexity not found, got: 24.0, with time complexity 29.766851067412645, read-write complexity 26.30781895636001.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: ObjectDetection_55
+┌ Warning: target space complexity not found, got: 24.0, with time complexity 29.76995234604062, read-write complexity 26.37453489937233.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: ObjectDetection_59
+┌ Warning: target space complexity not found, got: 24.0, with time complexity 29.768500031444287, read-write complexity 26.34365799384993.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: ObjectDetection_61
+┌ Warning: target space complexity not found, got: 20.756589711823782, with time complexity 26.067454692072065, read-write complexity 23.194468768220894.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: ObjectDetection_63
+┌ Warning: target space complexity not found, got: 24.0, with time complexity 29.770049543664587, read-write complexity 26.37657906019267.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: ObjectDetection_67
+┌ Warning: target space complexity not found, got: 24.0, with time complexity 29.769855520106827, read-write complexity 26.37249580891225.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: ObjectDetection_70
+┌ Warning: target space complexity not found, got: 20.756589711823782, with time complexity 26.073445165137038, read-write complexity 23.279844478420266.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: ObjectDetection_72
+┌ Warning: target space complexity not found, got: 24.0, with time complexity 29.768305799371475, read-write complexity 26.339480358447464.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: ObjectDetection_74
+┌ Warning: target space complexity not found, got: 20.756589711823782, with time complexity 26.07317095769246, read-write complexity 23.276037341700675.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: ObjectDetection_29
+┌ Warning: target space complexity not found, got: 24.0, with time complexity 30.014609548623277, read-write complexity 26.725964900671332.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: Promedus_30
+Problem: ObjectDetection_30
+┌ Warning: target space complexity not found, got: 20.756589711823782, with time complexity 28.27333383164488, read-write complexity 24.380503341495068.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: ObjectDetection_35
+┌ Warning: target space complexity not found, got: 20.756589711823782, with time complexity 28.266927363043905, read-write complexity 24.17687802667275.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: ObjectDetection_38
+┌ Warning: target space complexity not found, got: 20.756589711823782, with time complexity 28.274161243003018, read-write complexity 24.40488480769511.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: ObjectDetection_42
+┌ Warning: target space complexity not found, got: 20.756589711823782, with time complexity 28.266331746889165, read-write complexity 24.15645099326194.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: ObjectDetection_47
+┌ Warning: target space complexity not found, got: 20.756589711823782, with time complexity 28.2669253977184, read-write complexity 24.176811084192458.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: ObjectDetection_52
+┌ Warning: target space complexity not found, got: 20.756589711823782, with time complexity 28.274042441826232, read-write complexity 24.401408451536977.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: ObjectDetection_54
+┌ Warning: target space complexity not found, got: 20.756589711823782, with time complexity 28.273511383642916, read-write complexity 24.385768945995437.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: ObjectDetection_58
+┌ Warning: target space complexity not found, got: 20.756589711823782, with time complexity 28.26763961720556, read-write complexity 24.200942295276175.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: ObjectDetection_62
+┌ Warning: target space complexity not found, got: 20.756589711823782, with time complexity 28.273393018072174, read-write complexity 24.3822606792613.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: ObjectDetection_66
+┌ Warning: target space complexity not found, got: 20.756589711823782, with time complexity 28.272088886718134, read-write complexity 24.34305122006989.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: ObjectDetection_71
+┌ Warning: target space complexity not found, got: 20.756589711823782, with time complexity 28.272088886718134, read-write complexity 24.343051220069892.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: ObjectDetection_75
+┌ Warning: target space complexity not found, got: 20.756589711823782, with time complexity 28.2669253977184, read-write complexity 24.176811084192465.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: ObjectDetection_28
+┌ Warning: target space complexity not found, got: 24.21602133046108, with time complexity 28.15729739868982, read-write complexity 25.73097731080446.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: Promedus_32
+Problem: Promedus_22
+Problem: Promedus_31
+Problem: Promedus_35
+Problem: Promedus_36
+Problem: Promedus_21
+Problem: Promedus_13
+Problem: Grids_12
+Problem: Promedus_15
+Problem: CSP_12
+Problem: Promedus_16
+Problem: Segmentation_14
+Problem: Segmentation_11
+Problem: Segmentation_12
+Problem: Segmentation_16
+Problem: Segmentation_15
+Problem: Promedus_11
+Problem: CSP_11
+┌ Warning: target space complexity not found, got: 25.0, with time complexity 29.41345993708087, read-write complexity 27.953997379319226.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: Segmentation_13
+Problem: Promedus_34
+Problem: Promedus_28
+Problem: Promedus_27
+Problem: Pedigree_13
+Problem: Pedigree_11
+Problem: Pedigree_12
+Problem: Promedus_20
+Problem: Promedus_12
+Problem: Promedus_38
+Problem: Promedus_23
+Problem: linkage_24
+Internal error: stack overflow in type inference of run_algo(Array{Int64, 1}, Array{Int64, 1}).
+This might be caused by recursion over very long tuples or argument lists.
+Internal error: stack overflow in type inference of ##sample#322(Tuple{Array{Int64, 1}, Array{Int64, 1}}, BenchmarkTools.Parameters).
+This might be caused by recursion over very long tuples or argument lists.
+Internal error: stack overflow in type inference of ##sample#322(Tuple{Array{Int64, 1}, Array{Int64, 1}}, BenchmarkTools.Parameters).
+This might be caused by recursion over very long tuples or argument lists.
+Internal error: stack overflow in type inference of ##sample#322(Tuple{Array{Int64, 1}, Array{Int64, 1}}, BenchmarkTools.Parameters).
+This might be caused by recursion over very long tuples or argument lists.
+Internal error: stack overflow in type inference of ##sample#322(Tuple{Array{Int64, 1}, Array{Int64, 1}}, BenchmarkTools.Parameters).
+This might be caused by recursion over very long tuples or argument lists.
+Internal error: stack overflow in type inference of run_algo(Array{Int64, 1}, Array{Int64, 1}).
+This might be caused by recursion over very long tuples or argument lists.
+Internal error: stack overflow in type inference of ##sample#333(Tuple{Array{Int64, 1}, Array{Int64, 1}}, BenchmarkTools.Parameters).
+This might be caused by recursion over very long tuples or argument lists.
+Internal error: stack overflow in type inference of ##sample#333(Tuple{Array{Int64, 1}, Array{Int64, 1}}, BenchmarkTools.Parameters).
+This might be caused by recursion over very long tuples or argument lists.
+Internal error: stack overflow in type inference of ##sample#333(Tuple{Array{Int64, 1}, Array{Int64, 1}}, BenchmarkTools.Parameters).
+This might be caused by recursion over very long tuples or argument lists.
+Internal error: stack overflow in type inference of ##sample#333(Tuple{Array{Int64, 1}, Array{Int64, 1}}, BenchmarkTools.Parameters).
+This might be caused by recursion over very long tuples or argument lists.
+Problem: CSP_13
+┌ Warning: target space complexity not found, got: 24.0, with time complexity 27.8070189393984, read-write complexity 26.226663124373992.
+└ @ OMEinsumContractionOrders ~/.julia/packages/OMEinsumContractionOrders/od9Kf/src/treesa.jl:229
+Problem: Grids_11
+Problem: Grids_13
+Problem: Grids_14
+Problem: Alchemy_11
+Problem: Promedus_17
+Problem: Promedus_37
+Problem: Grids_15
+Problem: Grids_16
+Problem: Grids_17
+Problem: Grids_18
+Problem: Promedus_19
+Problem: Promedus_25
+Problem: Promedus_14
+Benchmark finished
+Benchmark execution time: 07:31:47
+Generating plot...
+ERROR: LoadError: SystemError: opening file "/home/20180043/.julia/artifacts/199ed43697fe22447c6c64a939b222fd4073f2d0/Promedus_26.tamaki.td": No such file or directory
+Stacktrace:
+  [1] systemerror(p::String, errno::Int32; extrainfo::Nothing)
+    @ Base ./error.jl:176
+  [2] #systemerror#80
+    @ ./error.jl:175 [inlined]
+  [3] systemerror
+    @ ./error.jl:175 [inlined]
+  [4] open(fname::String; lock::Bool, read::Nothing, write::Nothing, create::Nothing, truncate::Nothing, append::Nothing)
+    @ Base ./iostream.jl:293
+  [5] open
+    @ ./iostream.jl:275 [inlined]
+  [6] open(f::JunctionTrees.var"#111#114", args::String; kwargs::Base.Pairs{Symbol, Union{}, Tuple{}, NamedTuple{(), Tuple{}}})
+    @ Base ./io.jl:382
+  [7] open
+    @ ./io.jl:381 [inlined]
+  [8] get_td_soln
+    @ ~/.julia/packages/JunctionTrees/XupyV/src/utils.jl:227 [inlined]
+  [9] _broadcast_getindex_evalf
+    @ ./broadcast.jl:670 [inlined]
+ [10] _broadcast_getindex
+    @ ./broadcast.jl:643 [inlined]
+ [11] getindex
+    @ ./broadcast.jl:597 [inlined]
+ [12] copy(bc::Base.Broadcast.Broadcasted{Base.Broadcast.DefaultArrayStyle{1}, Tuple{Base.OneTo{Int64}}, typeof(get_td_soln), Tuple{PooledArrays.PooledVector{String, UInt32, Vector{UInt32}}}})
+    @ Base.Broadcast ./broadcast.jl:899
+ [13] materialize
+    @ ./broadcast.jl:860 [inlined]
+ [14] (::var"#8#13")(x::PooledArrays.PooledVector{String, UInt32, Vector{UInt32}})
+    @ Main ~/repos/Probabilistic-Inference-in-the-Era-of-Tensor-Networks-and-Differential-Programming/scripts/benchmarks/mar/ti-vs-jtv1-jtv2-vs-merlin-vs-libdai/generate-graph.jl:46
+ [15] |>(x::PooledArrays.PooledVector{String, UInt32, Vector{UInt32}}, f::var"#8#13")
+    @ Base ./operators.jl:911
+ [16] top-level scope
+    @ ~/repos/Probabilistic-Inference-in-the-Era-of-Tensor-Networks-and-Differential-Programming/scripts/benchmarks/mar/ti-vs-jtv1-jtv2-vs-merlin-vs-libdai/generate-graph.jl:44
+in expression starting at /home/20180043/repos/Probabilistic-Inference-in-the-Era-of-Tensor-Networks-and-Differential-Programming/scripts/benchmarks/mar/ti-vs-jtv1-jtv2-vs-merlin-vs-libdai/generate-graph.jl:44
+Plot generated
