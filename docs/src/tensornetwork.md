@@ -34,7 +34,7 @@ a \odot (b\oplus c) = a\odot b \oplus a\odot c  &  \hspace{5em}\text{$\triangler
 a \odot \mymathbb{0} = \mymathbb{0} \odot a = \mymathbb{0}
 \end{align*}
 ```
-Tensors are represented using multidimensional arrays of nonnegative numbers
+Tensors are represented using multidimensional arrays of numbers
 with labeled dimensions. These labels correspond to the array's indices, which
 in turn represent the set of random variables that the tensor is a function
 of. Thus, in this context, the terms **label**, **index**, and
@@ -124,7 +124,7 @@ save(SVG("the-tensor-network1"), tp)
 ```
 
 ```@raw html
-<img src="the-tensor-network1.svg"  style="margin-left: auto; margin-right: auto; display:block; width=50%">
+<img src="../the-tensor-network1.svg"  style="margin-left: auto; margin-right: auto; display:block; width=50%">
 ```
 
 In this diagram, we use different colors to denote different hyperedges. Hyperedges for
@@ -180,7 +180,7 @@ save(SVG("the-tensor-network2"), tp)
 ```
 
 ```@raw html
-<img src="the-tensor-network2.svg"  style="margin-left: auto; margin-right: auto; display:block; width=50%">
+<img src="../the-tensor-network2.svg"  style="margin-left: auto; margin-right: auto; display:block; width=50%">
 ```
 
 As a final note, our definition of a tensor network allows for repeated
