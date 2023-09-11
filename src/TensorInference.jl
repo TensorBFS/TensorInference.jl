@@ -53,7 +53,7 @@ end
 #     # Putting some things in `@setup_workload` instead of `@compile_workload` can reduce the size of the
 #     # precompile file and potentially make loading faster.
 #     PrecompileTools.@compile_workload begin
-#         include("../example/asia/main.jl")
+#         include("../example/asia-network/main.jl")
 #     end
 # end
 

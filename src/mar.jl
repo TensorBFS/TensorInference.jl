@@ -140,10 +140,10 @@ tensor network.
 - `rescale`: Specifies whether to rescale the tensors during contraction.
 
 ### Example
-The following example is taken from [`examples/asia/main.jl`](@ref).
+The following example is taken from [`examples/asia-network/main.jl`](@ref).
 
 ```jldoctest; setup = :(using TensorInference, Random; Random.seed!(0))
-julia> model = read_model_file(pkgdir(TensorInference, "examples", "asia", "asia.uai"));
+julia> model = read_model_file(pkgdir(TensorInference, "examples", "asia-network", "model.uai"));
 
 julia> tn = TensorNetworkModel(model; evidence=Dict(1=>0))
 TensorNetworkModel{Int64, DynamicNestedEinsum{Int64}, Array{Float64}}
