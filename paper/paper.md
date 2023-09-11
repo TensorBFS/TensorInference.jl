@@ -183,10 +183,11 @@ up-to-date version of this example.
          \NormalTok{variables}\OperatorTok{:} \FloatTok{1}\NormalTok{, }\FloatTok{2}\NormalTok{, }\FloatTok{3}\NormalTok{, }\FloatTok{4}\NormalTok{, }\FloatTok{5}\NormalTok{, }\FloatTok{6}\NormalTok{, }\FloatTok{7}\NormalTok{, }\FloatTok{8}
          \NormalTok{contraction time }\OperatorTok{=} \FloatTok{2}\OperatorTok{\^{}}\FloatTok{6.044}\NormalTok{, space }\OperatorTok{=} \FloatTok{2}\OperatorTok{\^{}}\FloatTok{2.0}\NormalTok{, read}\OperatorTok{{-}}\NormalTok{write }\OperatorTok{=} \FloatTok{2}\OperatorTok{\^{}}\FloatTok{7.098}
 
-\CommentTok{\# Calculate the log\_10 partition function.}
-\InTok{In [2]: }\FunctionTok{probability}\NormalTok{(tn) }\OperatorTok{|\textgreater{}}\NormalTok{ first }\OperatorTok{|\textgreater{}}\NormalTok{ log10}
+\CommentTok{\# Calculate the partition function. Since the factors in this model are}
+\CommentTok{\# normalized, the partition function is the same as the total probability, 1.}
+\InTok{In [2]: }\FunctionTok{probability}\NormalTok{(tn) }\OperatorTok{|\textgreater{}}\NormalTok{ first }
 
-\OutTok{Out [2]: }\FloatTok{0.0}
+\OutTok{Out [2]: }\FloatTok{1.0000000000000002}
 
 \CommentTok{\# Calculate the marginal probabilities of each random variable in the model.}
 \InTok{In [3]: }\FunctionTok{marginals}\NormalTok{(tn)}
