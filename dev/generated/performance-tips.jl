@@ -62,4 +62,4 @@ contraction_complexity(tn)
 # * [`most_probable_config`](@ref)
 
 # ## Benchmarks
-# Please check our [paper (link to be added)]().
+# For performance metrics, see the [Performance evaluation](@ref) section.
