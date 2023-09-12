@@ -1,0 +1,32 @@
+% Default preamble
+\usepackage{pgfplots}
+\pgfplotsset{compat=newest}
+\usepgfplotslibrary{groupplots}
+\usepgfplotslibrary{polar}
+\usepgfplotslibrary{smithchart}
+\usepgfplotslibrary{statistics}
+\usepgfplotslibrary{dateplot}
+\usepgfplotslibrary{ternary}
+% Custom preamble from global variable:
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepackage{amsmath,amssymb}
+% Bright qualitative colour scheme that is colour-blind safe
+% https://personal.sron.nl/~pault/#tab:blindvision
+\definecolor{c01}{HTML}{4477AA}
+\definecolor{c02}{HTML}{EE6677}
+\definecolor{c03}{HTML}{228833}
+\definecolor{c04}{HTML}{CCBB44}
+\definecolor{c05}{HTML}{66CCEE}
+\definecolor{c06}{HTML}{AA3377}
+\definecolor{c07}{HTML}{BBBBBB}
+\definecolor{c08}{HTML}{BBBBBB}
+
+% How to set a background for the entire plot
+% https://tex.stackexchange.com/a/424023/23046
+\usetikzlibrary{shadows.blur}
+\pgfdeclarelayer{background}
+\pgfsetlayers{background,main}
+\pgfplotsset{compat=1.15}

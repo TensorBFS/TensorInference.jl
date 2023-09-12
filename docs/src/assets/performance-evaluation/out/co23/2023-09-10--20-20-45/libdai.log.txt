@@ -1,2 +1,0 @@
-┌ Info: SubString{String}["Solving inference problem...", "Total process time: 8856.916000 ms.", "Used time: 9.85718 seconds.", ""]
-└ @ Main /home/20180043/repos/Probabilistic-Inference-in-the-Era-of-Tensor-Networks-and-Differential-Programming/scripts/benchmarks/mar/ti-vs-jtv1-jtv2-vs-merlin-vs-libdai/run-libdai.jl:40
