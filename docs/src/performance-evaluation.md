@@ -12,7 +12,7 @@ i9--9900K CPU @3.60GHz with 64 GB of RAM. Performance comparisons for other
 tasks will be added in the near future.
 
 ```@raw html
-<img src="./assets/performance-evaluation.svg" width="700" style="margin-left: auto; margin-right: auto; display:block;">
+<img src="../assets/performance-evaluation.svg" width="700" style="margin-left: auto; margin-right: auto; display:block;">
 ```
 
 The benchmark problems are arranged along the x-axis in ascending order of
