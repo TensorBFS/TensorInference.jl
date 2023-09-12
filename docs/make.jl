@@ -24,7 +24,7 @@ for each in readdir(EXAMPLE_DIR)
     # Pkg.activate(Pkg.PREV_ENV_PATH[])
 end
 
-const EXTRA_JL = ["performance.jl"]
+const EXTRA_JL = ["performance-tips.jl"]
 const SRC_DIR = pkgdir(TensorInference, "docs", "src")
 for each in EXTRA_JL
     cp(joinpath(SRC_DIR, each), joinpath(LITERATE_GENERATED_DIR, each); force=true)
@@ -49,8 +49,8 @@ makedocs(;
     pages=[
         "Home" => "index.md",
         "Background" => [
-            "Probabilistic Inference" => "probabilisticinference.md",
-            "Tensor Networks" => "tensornetwork.md",
+            "Probabilistic Inference" => "probabilistic-inference.md",
+            "Tensor Networks" => "tensor-networks.md",
             "UAI file formats" => "uai-file-formats.md"
         ],
         "Examples" => [
@@ -58,7 +58,8 @@ makedocs(;
             "Asia Network" => "generated/asia-network/main.md",
             "Hard-core Lattice Gas" => "generated/hard-core-lattice-gas/main.md",
            ],
-        "Performance tips" => "generated/performance.md",
+        "Performance evaluation" => "performance-evaluation.md",
+        "Performance tips" => "generated/performance-tips.md",
         "API" => [
             "Public" => "api/public.md",
             "Internal" => "api/internal.md"
