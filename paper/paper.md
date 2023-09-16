@@ -50,8 +50,23 @@ bibliography: paper.bib
 
 # Summary
 
+Probabilistic inference entails the process of drawing conclusions from
+observed data through the axioms of probability theory. Inference algorithms
+fall into two broad categories: *exact* and *approximate* methods. The main
+challenge in applying exact inference to real-world problems is its NP-hard
+computational complexity tied to the model's *treewidth*, a metric of network
+connectivity. This has prompted a research shift to approximate methods like
+*Markov chain Monte Carlo* and *variational* inference. Prominent examples of
+packages that implement such algorithms include `Stan` [@carpenter2017stan],
+`PyMC3` [@oriol2023pymc], `Turing.jl` [@ge2018turing], and `RxInfer.jl`
+[@bagaev2023rxinfer]. However, while these methods offer superior scalability,
+they do not provide formal guarantees of accuracy --- a challenge that is, in
+itself, NP-hard to address. Consequently, exact inference methods are gaining
+renewed interest for their promise of higher accuracy.
+
 `TensorInference.jl` is a Julia [@bezanson2017julia] package designed for
-performing probabilistic inference in discrete graphical models. Capitalizing on
+performing exact probabilistic inference in discrete graphical models. 
+Capitalizing on
 the recent advances in the field of tensor networks [@orus2014practical;
 @orus2019tensor; @robeva2019duality], `TensorInference.jl` offers
 high-performance solutions for prevalent inference problems. Specifically, it
@@ -66,8 +81,24 @@ provides methods to:
 5. draw samples from the posterior distribution given evidence
    [@han2018unsupervised; @cheng2019tree].
 
+A *tensor* is a mathematical object that generalizes scalars, vectors, and
+matrices to higher dimensions. In essence, it is a multi-dimensional array of
+numbers, often used for representing complex data structures in physics,
+engineering, computer science, and data analytics. A *tensor network* consists
+of a set of tensors in which some or all indices are contracted according to a
+specific pattern [@Jutho2023]. The term *contraction* refers to the summation
+over all the possible values along one or more dimensions of a set of tensors.
+These networks excel at capturing the correlations of different states in
+complex systems.
+
+The order in which tensor indices are contracted plays a pivotal role in
+computational efficiency. Different contraction sequences can produce the same
+mathematical outcome, but the computational costs can vary by orders of
+magnitude. Since tensor network methods frequently involve multiple
+contractions, optimizing the contraction order becomes crucial.
+
 The use of a tensor network-based infrastructure
-[@fishman2022itensor;@Jutho2023] offers several advantages when dealing with
+[@Jutho2023] offers several advantages when dealing with
 complex computational tasks. Firstly, it simplifies the process of computing
 gradients by employing differentiable programming [@liao2019differentiable], a
 critical operation for the aforementioned inference tasks. Secondly, it
@@ -90,13 +121,19 @@ found in tensor network libraries, including a highly optimized set of BLAS
 routines [@blackford2002updated] and GPU technology.
 
 `TensorInference.jl` succeeds `JunctionTrees.jl` [@roa2022partial;
-@roa2023scaling], a Julia package implementing the Junction Tree Algorithm (JTA)
-[@lauritzen1988local; @jensen1990bayesian]. While the latter employs
+@roa2023scaling], a Julia package implementing the Junction Tree Algorithm
+(JTA) [@lauritzen1988local; @jensen1990bayesian]. While the latter employs
 tensor-based technology to optimize the computation of individual sum-product
 messages within the JTA context, `TensorInference.jl` takes a different route.
 It adopts a holistic tensor network approach, which opens new doors for
-optimization opportunities, and significantly reduces the algorithm's complexity
-compared to the JTA.
+optimization opportunities and significantly reduces the algorithm's
+complexity compared to the JTA. Other prominent examples of exact inference
+packages for probabilistic inference include `libDAI` [@mooij2010libdai],
+`Merlin` [@marinescu2022merlin], and `toulbar2` [@hurley2016multi]. For a
+performance comparison of `TensorInference.jl` against these alternatives,
+please see the [Performance
+evaluation](https://tensorbfs.github.io/TensorInference.jl/dev/performance-evaluation/)
+section in the documentation of `TensorInference.jl`.
 
 # Statement of need
 
