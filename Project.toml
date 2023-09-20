@@ -17,7 +17,7 @@ StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 TropicalNumbers = "b3a74e9c-7526-4576-a4eb-79c0d4c32334"
 
 [compat]
-CUDA = "4"
+CUDA = "4, 5"
 DocStringExtensions = "0.8.6, 0.9"
 GenericTensorNetworks = "1"
 OMEinsum = "0.7"
