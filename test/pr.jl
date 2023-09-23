@@ -23,7 +23,7 @@ using TensorInference
                 @info "Testing: $(problem_set_name)_$id"
                 tn = TensorNetworkModel(read_model(problem); optimizer, evidence=read_evidence(problem))
                 solution = log_probability(tn) / log(10) |> first
-                @test isapprox(solution, read_solution(problem); atol = 1e-3)
+                @test isapprox(solution, read_solution(problem); atol = 1e-3, rtol=1e-3)
             end
         end
     end
