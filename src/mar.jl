@@ -140,7 +140,7 @@ tensor network.
 - `rescale`: Specifies whether to rescale the tensors during contraction.
 
 ### Example
-The following example is taken from [`examples/asia-network/main.jl`](@ref).
+The following example is taken from [`examples/asia-network/main.jl`](https://tensorbfs.github.io/TensorInference.jl/dev/generated/asia-network/main/).
 
 ```jldoctest; setup = :(using TensorInference, Random; Random.seed!(0))
 julia> model = read_model_file(pkgdir(TensorInference, "examples", "asia-network", "model.uai"));
