@@ -22,9 +22,19 @@ using TensorInference
             for (id, problem) in problems[problem_set_name]
                 @info "Testing: $(problem_set_name)_$id"
                 tn = TensorNetworkModel(read_model(problem); optimizer, evidence=read_evidence(problem))
-                solution = probability(tn) |> first |> log10
+                solution = log_probability(tn) / log(10) |> first
                 @test isapprox(solution, read_solution(problem); atol = 1e-3)
             end
         end
     end
+end
+
+@testset "issue 77" begin
+    problems = dataset_from_artifact("uai2014")["PR"]
+    problem_set_name = "Alchemy"
+    optimizer = TreeSA(ntrials = 1, niters = 5, βs = 0.1:0.1:100)
+    id, problem = problems[problem_set_name] |> first
+    tn = TensorNetworkModel(read_model(problem); optimizer, evidence=read_evidence(problem))
+    solution = log_probability(tn) / log(10) |> first
+    @test isapprox(solution, read_solution(problem); atol=1e-3)
 end

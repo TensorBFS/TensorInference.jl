@@ -203,6 +203,16 @@ function log_probability(tn::TensorNetworkModel, config::Union{Dict, AbstractVec
     assign = config isa AbstractVector ? Dict(zip(get_vars(tn), config)) : config
     return sum(x -> log(x[2][(getindex.(Ref(assign), x[1]) .+ 1)...]), zip(getixsv(tn.code), tn.tensors))
 end
+"""
+$(TYPEDSIGNATURES)
+
+Evaluate the log probability (or partition function).
+It is the logged version of [`probability`](@ref), which is less likely to overflow.
+"""
+function log_probability(tn::TensorNetworkModel; usecuda = false)::AbstractArray
+    res = probability(tn; usecuda, rescale=true)
+    return asarray(res.log_factor .+ log.(res.normalized_value), res.normalized_value)
+end
 
 """
 $(TYPEDSIGNATURES)
