@@ -235,7 +235,7 @@ up-to-date version of this example.
        \NormalTok{  [}\FloatTok{7}\NormalTok{] }\OperatorTok{=\textgreater{}}\NormalTok{ [}\FloatTok{0.11029}\NormalTok{, }\FloatTok{0.88971}\NormalTok{]}
        \NormalTok{  [}\FloatTok{2}\NormalTok{] }\OperatorTok{=\textgreater{}}\NormalTok{ [}\FloatTok{0.0104}\NormalTok{, }\FloatTok{0.9896}\NormalTok{]}
 
-\CommentTok{\# Set the evidence to assume that the \textquotesingle{}X{-}ray\textquotesingle{} result (variable 7) is positive.}
+\CommentTok{\# Set the evidence to assume that the \textquotesingle{}X{-}ray\textquotesingle{} result (variable 7) is negative.}
 \CommentTok{\# Recompute the contraction order of the tensor network, as setting the evidence}
 \CommentTok{\# may affect it.}
 \InTok{In [4]: }\NormalTok{tn }\OperatorTok{=} \FunctionTok{TensorNetworkModel}\NormalTok{(model, evidence }\OperatorTok{=} \FunctionTok{Dict}\NormalTok{(}\FloatTok{7} \OperatorTok{=\textgreater{}} \FloatTok{0}\NormalTok{))}
@@ -265,9 +265,7 @@ up-to-date version of this example.
         \NormalTok{ [}\FloatTok{1}\NormalTok{, }\FloatTok{1}\NormalTok{, }\FloatTok{0}\NormalTok{, }\FloatTok{0}\NormalTok{, }\FloatTok{1}\NormalTok{, }\FloatTok{0}\NormalTok{, }\FloatTok{0}\NormalTok{, }\FloatTok{1}\NormalTok{]}
         \NormalTok{ [}\FloatTok{1}\NormalTok{, }\FloatTok{1}\NormalTok{, }\FloatTok{0}\NormalTok{, }\FloatTok{1}\NormalTok{, }\FloatTok{1}\NormalTok{, }\FloatTok{1}\NormalTok{, }\FloatTok{0}\NormalTok{, }\FloatTok{0}\NormalTok{]}
 
-\CommentTok{\# Retrieve both the maximum log{-}probability and the most probable}
-\CommentTok{\# configuration. In this configuration, the most likely outcomes are that the}
-\CommentTok{\# patient smokes (variable 3) and has lung cancer (variable 4).}
+\CommentTok{\# Retrieve both the maximum log{-}probability and the most probable configuration}
 \InTok{In [7]: }\NormalTok{logp, cfg }\OperatorTok{=} \FunctionTok{most\_probable\_config}\NormalTok{(tn)}
 
 \OutTok{Out [7]: }\NormalTok{(}\OperatorTok{{-}}\FloatTok{3.6522217920023303}\NormalTok{, [}\FloatTok{1}\NormalTok{, }\FloatTok{1}\NormalTok{, }\FloatTok{0}\NormalTok{, }\FloatTok{0}\NormalTok{, }\FloatTok{0}\NormalTok{, }\FloatTok{0}\NormalTok{, }\FloatTok{0}\NormalTok{, }\FloatTok{0}\NormalTok{])}
