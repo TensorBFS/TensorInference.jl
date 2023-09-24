@@ -66,4 +66,6 @@ read_model_file
 read_evidence_file
 read_td_file
 sample
+update_evidence!
+update_temperature
 ```

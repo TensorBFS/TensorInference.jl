@@ -67,6 +67,7 @@ makedocs(;
         "Contributing" => "contributing.md",
     ],
     doctest = false,
+    warnonly = :missing_docs,
 )
 
 deploydocs(;
