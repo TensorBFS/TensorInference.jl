@@ -76,7 +76,7 @@ get_vars(tn)
 
 # ---
 
-# Set the evidence: Assume that the "X-ray" result (variable 7) is positive.
+# Set the evidence: Assume that the "X-ray" result (variable 7) is negative.
 # Since setting the evidence may affect the contraction order of the tensor
 # network, recompute it.
 tn = TensorNetworkModel(model, evidence = Dict(7 => 0))
@@ -94,8 +94,7 @@ sample(tn, 10)
 # ---
 
 # Retrieve both the maximum log-probability and the most probable
-# configuration. In this configuration, the most likely outcomes are that the
-# patient smokes (variable 3) and has lung cancer (variable 4).
+# configuration. 
 logp, cfg = most_probable_config(tn)
 
 # ---
