@@ -7,7 +7,7 @@ function adapt_tensors(code, tensors, evidence; usecuda, rescale)
     map(tensors, ixs) do t, ix
         dims = map(ixi -> ixi ∉ keys(evidence) ? Colon() : ((evidence[ixi] + 1):(evidence[ixi] + 1)), ix)
         t2 = t[dims...]
-        t3 = usecuda ? CuArray(t2) : t2
+        t3 = usecuda ? togpu(t2) : t2
         rescale ? rescale_array(t3) : t3
     end
 end

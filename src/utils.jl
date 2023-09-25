@@ -305,3 +305,5 @@ function get_artifact_path(artifact_name::String)
     artifact_hash = Pkg.Artifacts.artifact_hash(artifact_name, artifact_toml)
     return Pkg.Artifacts.artifact_path(artifact_hash)
 end
+
+togpu(x) = error("You must import CUDA with `using CUDA` before using GPU!")

@@ -1,7 +1,8 @@
-using .GenericTensorNetworks: generate_tensors, GraphProblem, flavors, labels
-
-# update models
-export update_temperature
+module TensorInferenceGTNExt
+using TensorInference, TensorInference.OMEinsum
+using TensorInference: TYPEDSIGNATURES, Factor
+import TensorInference: update_temperature
+using GenericTensorNetworks: generate_tensors, GraphProblem, flavors, labels
 
 """
 $TYPEDSIGNATURES
@@ -65,3 +66,4 @@ end
  
 @info "`TensorInference` loaded `GenericTensorNetworks` extension successfully,
 `TensorNetworkModel` and `MMAPModel` can be used for converting a `GraphProblem` to a probabilistic model now."
+end
