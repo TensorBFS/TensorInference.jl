@@ -1,7 +1,6 @@
 module TensorInferenceGTNExt
 using TensorInference, TensorInference.OMEinsum
 using TensorInference: TYPEDSIGNATURES, Factor
-import TensorInference: update_temperature
 using GenericTensorNetworks: generate_tensors, GraphProblem, flavors, labels
 
 """
@@ -25,18 +24,7 @@ function TensorInference.TensorNetworkModel(problem::GraphProblem, β::Real; evi
 	return TensorNetworkModel(lbs, fill(nflavors, length(lbs)), factors; openvars=iy, evidence, optimizer, simplifier, mars)
 end
 
-"""
-$TYPEDSIGNATURES
-
-Update the temperature of a tensor network model.
-The program will regenerate tensors from the problem, without repeated optimizing the contraction order.
-
-### Arguments
-- `tnet` is the [`TensorNetworkModel`](@ref) instance.
-- `problem` is the target constraint satisfiability problem.
-- `β` is the inverse temperature.
-"""
-function update_temperature(tnet::TensorNetworkModel, problem::GraphProblem, β::Real)
+function TensorInference.update_temperature(tnet::TensorNetworkModel, problem::GraphProblem, β::Real)
 	tensors = generate_tensors(exp(β), problem)
     alltensors = [tnet.tensors[1:end-length(tensors)]..., tensors...]
     return TensorNetworkModel(tnet.vars, tnet.code, alltensors, tnet.evidence, tnet.mars)

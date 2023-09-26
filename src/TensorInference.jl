@@ -36,7 +36,6 @@ export MMAPModel
 
 # for GenericTensorNetworks
 export update_temperature
-function update_temperature end
 
 include("Core.jl")
 include("RescaledArray.jl")
@@ -54,5 +53,18 @@ include("sampling.jl")
 #         include("../example/asia-network/main.jl")
 #     end
 # end
+
+"""
+$TYPEDSIGNATURES
+
+Update the temperature of a tensor network model.
+The program will regenerate tensors from the problem, without repeated optimizing the contraction order.
+
+### Arguments
+- `tnet` is the [`TensorNetworkModel`](@ref) instance.
+- `problem` is the target constraint satisfiability problem.
+- `β` is the inverse temperature.
+"""
+function update_temperature end
 
 end # module
