@@ -128,28 +128,28 @@ mathematical outcome, but the computational costs can vary by orders of
 magnitude. Since tensor network methods frequently involve multiple
 contractions, optimizing the contraction order becomes crucial.
 
-The use of a tensor network-based infrastructure
-[@Jutho2023] offers several advantages when dealing with
-complex computational tasks. Firstly, it simplifies the process of computing
-gradients by employing differentiable programming [@liao2019differentiable], a
-critical operation for the aforementioned inference tasks. Secondly, it
-supports generic element types without a significant compromise on
-performance. The advantage of supporting generic element types lies in the
-ability to solve a variety of problems using the same tensor network
-contraction algorithm, simply by varying the element types used. This
-flexibility has allowed us to seamlessly implement solutions for several of
-the inference tasks described above [@liu2021tropical;@liu2022computing].
-Thirdly, it allows users to define a hyper-optimized contraction order, which
-is known to have a significant impact on the computational performance of
-contracting tensor networks
+The use of a tensor network-based infrastructure [@Jutho2023] offers several
+advantages when dealing with complex computational tasks. Firstly, it
+simplifies the process of computing gradients by employing differentiable
+programming [@liao2019differentiable], a critical operation for the
+aforementioned inference tasks. Secondly, it supports generic element types
+without a significant compromise on performance. This feature enables the
+solution of a variety of problems using the same tensor network contraction
+algorithm, simply by varying the element types used. This allowed us to
+seamlessly implement solutions for several of the inference tasks described
+above [@liu2021tropical;@liu2022computing]. Thirdly, it allows users to define
+a hyper-optimized contraction order, which is known to have a significant
+impact on the computational performance of contracting tensor networks
 [@markov2008simulating;@Pan2022;@gao2021limitations]. `TensorInference.jl`
-provides a predefined set of state-of-the-art contraction ordering methods.
-These methods include a *local search based method* (`TreeSA`)
-[@kalachev2022multitensor], two *min-cut based methods* (`KaHyParBipartite`)
-[@gray2021hyper] and (`SABipartite`), and a *greedy method* (`GreedyMethod`).
-Finally, `TensorInference.jl` leverages the cutting-edge developments commonly
-found in tensor network libraries, including a highly optimized set of BLAS
-routines [@blackford2002updated] and GPU technology.
+provides a predefined set of state-of-the-art contraction ordering methods,
+each identified by a specific name for ease of reference. These methods
+include a *local search-based method*, denoted as `TreeSA`
+[@kalachev2022multitensor], two methods based on *min-cut algorithms*, denoted
+as `SABipartite` and `KaHyParBipartite` [@gray2021hyper]; as well as a *greedy
+algorithm*, denoted as `GreedyMethod`. Lastly, `TensorInference.jl` leverages
+the cutting-edge developments commonly found in tensor network libraries,
+including a highly optimized set of BLAS routines [@blackford2002updated] and
+GPU technology.
 
 `TensorInference.jl` succeeds `JunctionTrees.jl` [@roa2022partial;
 @roa2023scaling], a Julia package implementing the Junction Tree Algorithm
