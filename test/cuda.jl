@@ -3,6 +3,12 @@ using OMEinsum
 using TensorInference, CUDA
 CUDA.allowscalar(false)
 
+@testset "match array type" begin
+    b = rand(Float32, 2, 2)
+    ra = RescaledArray(3f0, CUDA.randn(5, 5))
+    @test TensorInference.match_arraytype(typeof(ra), b).normalized_value isa CuArray
+end
+
 @testset "gradient-based tensor network solvers" begin
     problem = problem_from_artifact("uai2014", "MAR", "Promedus", 14)
     model, evidence, reference_solution = read_model(problem), read_evidence(problem), read_solution(problem)
