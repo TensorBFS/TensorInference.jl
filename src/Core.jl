@@ -177,6 +177,21 @@ end
 
 """
 $(TYPEDSIGNATURES)
+"""
+function TensorNetworkModel(
+    model::UAIModel{T}, code;
+    evidence = Dict{Int,Int}(),
+    mars = [[i] for i=1:model.nvars],
+    vars = [1:model.nvars...]
+)::TensorNetworkModel where{T}
+    @debug "constructing tensor network model from code"
+    tensors = Array{T}[[ones(T, [model.cards[i] for i in mar]...) for mar in mars]..., [t.vals for t in model.factors]...]
+
+    return TensorNetworkModel(vars, code, tensors, evidence, mars)
+end
+
+"""
+$(TYPEDSIGNATURES)
 
 Get the variables in this tensor network, they are also known as legs, labels, or degree of freedoms.
 """
