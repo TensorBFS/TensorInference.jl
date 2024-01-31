@@ -34,6 +34,9 @@ export sample
 # MMAP
 export MMAPModel
 
+# for GenericTensorNetworks
+export update_temperature
+
 include("Core.jl")
 include("RescaledArray.jl")
 include("utils.jl")
@@ -41,12 +44,6 @@ include("mar.jl")
 include("map.jl")
 include("mmap.jl")
 include("sampling.jl")
-
-using Requires
-function __init__()
-    @require CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba" include("cuda.jl")
-    @require GenericTensorNetworks = "3521c873-ad32-4bb4-b63d-f4f178f42b49" include("generictensornetworks.jl")
-end
 
 # import PrecompileTools
 # PrecompileTools.@setup_workload begin
@@ -56,5 +53,18 @@ end
 #         include("../example/asia-network/main.jl")
 #     end
 # end
+
+"""
+$TYPEDSIGNATURES
+
+Update the temperature of a tensor network model.
+The program will regenerate tensors from the problem, without repeated optimizing the contraction order.
+
+### Arguments
+- `tnet` is the [`TensorNetworkModel`](@ref) instance.
+- `problem` is the target constraint satisfiability problem.
+- `β` is the inverse temperature.
+"""
+function update_temperature end
 
 end # module
