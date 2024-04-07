@@ -39,7 +39,7 @@ show_graph(graph; locs=sites, texts=fill("", length(sites)))
 # The independent set problem involves finding a set of vertices in a graph such that no two vertices in the set are adjacent (i.e., there is no edge connecting them).
 # One can create a tensor network based modeling of an independent set problem with package [`GenericTensorNetworks.jl`](https://github.com/QuEraComputing/GenericTensorNetworks.jl).
 using GenericTensorNetworks
-problem = IndependentSet(graph; optimizer=GreedyMethod());
+problem = IndependentSet(graph)
 
 # There are plenty of discussions related to solution space properties in the `GenericTensorNetworks` [documentaion page](https://queracomputing.github.io/GenericTensorNetworks.jl/dev/generated/IndependentSet/).
 # In this example, we show how to use `TensorInference` to use probabilistic inference for understand the finite temperature properties of this statistical model.
