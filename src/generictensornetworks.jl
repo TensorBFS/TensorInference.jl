@@ -12,16 +12,15 @@ Convert a constraint satisfiability problem (or energy model) to a probabilistic
 * `problem` is a `GraphProblem` instance in [`GenericTensorNetworks`](https://github.com/QuEraComputing/GenericTensorNetworks.jl).
 * `β` is the inverse temperature.
 """
-function TensorInference.TensorNetworkModel(problem::GraphProblem, β::Real; evidence::Dict=Dict{Int,Int}(),
-        optimizer=GreedyMethod(), simplifier=nothing, mars=[[l] for l in labels(problem)])
-	ixs = getixsv(problem.code)
-	iy = getiyv(problem.code)
+function TensorInference.TensorNetworkModel(problem::GraphProblem, β::Real; evidence::Dict=Dict{eltype(labels(problem)),Int}(),
+        optimizer=GreedyMethod(), openvars=empty(labels(problem)), simplifier=nothing, mars=[[l] for l in labels(problem)])
+	ixs = [GenericTensorNetworks.energy_terms(problem)..., GenericTensorNetworks.extra_terms(problem)...]
     lbs = labels(problem)
 	nflavors = length(flavors(problem))
 	# generate tensors for x = e^β
 	tensors = generate_tensors(exp(β), problem)
     factors = [Factor((ix...,), t) for (ix, t) in zip(ixs, tensors)]
-	return TensorNetworkModel(lbs, fill(nflavors, length(lbs)), factors; openvars=iy, evidence, optimizer, simplifier, mars)
+	return TensorNetworkModel(lbs, fill(nflavors, length(lbs)), factors; openvars, evidence, optimizer, simplifier, mars)
 end
 
 """
@@ -43,18 +42,18 @@ end
 
 function TensorInference.MMAPModel(problem::GraphProblem, β::Real;
             queryvars,
-            evidence = Dict{labeltype(problem.code), Int}(),
+            openvars = empty(labels(problem)),
+            evidence = Dict{eltype(labels(problem)), Int}(),
             optimizer = GreedyMethod(), simplifier = nothing,
             marginalize_optimizer = GreedyMethod(), marginalize_simplifier = nothing
         )::MMAPModel
-    ixs = getixsv(problem.code)
-    iy = getiyv(problem.code)
+	ixs = [GenericTensorNetworks.energy_terms(problem)..., GenericTensorNetworks.extra_terms(problem)...]
 	nflavors = length(flavors(problem))
 	# generate tensors for x = e^β
 	tensors = generate_tensors(exp(β), problem)
     factors = [Factor((ix...,), t) for (ix, t) in zip(ixs, tensors)]
     lbs = labels(problem)
-    return MMAPModel(lbs, fill(nflavors, length(lbs)), factors; queryvars, openvars=iy, evidence,
+    return MMAPModel(lbs, fill(nflavors, length(lbs)), factors; queryvars, openvars, evidence,
         optimizer, simplifier,
         marginalize_optimizer, marginalize_simplifier)
 end
