@@ -15,16 +15,16 @@
 
 a, b = (1, 0), (0.5, 0.5*sqrt(3))
 Na, Nb = 10, 10
-sites = [a .* i .+ b .* j for i=1:Na, j=1:Nb]
+sites = vec([50 .* (a .* i .+ b .* j) for i=1:Na, j=1:Nb])
 
 # There exists blockade interactions between hard-core particles.
 # We connect two lattice sites within blockade radius by an edge.
 # Two ends of an edge can not both be occupied by particles.
-blockade_radius = 1.1
+blockade_radius = 55
 using GenericTensorNetworks: show_graph, unit_disk_graph
 using GenericTensorNetworks.Graphs: edges, nv
 graph = unit_disk_graph(vec(sites), blockade_radius)
-show_graph(graph; locs=sites, texts=fill("", length(sites)))
+show_graph(graph, sites; texts=fill("", length(sites)))
 
 # These constraints defines an independent set problem that characterized by the following energy based model.
 # Let $G = (V, E)$ be a graph, where $V$ is the set of vertices and $E$ is the set of edges.
@@ -39,7 +39,7 @@ show_graph(graph; locs=sites, texts=fill("", length(sites)))
 # The independent set problem involves finding a set of vertices in a graph such that no two vertices in the set are adjacent (i.e., there is no edge connecting them).
 # One can create a tensor network based modeling of an independent set problem with package [`GenericTensorNetworks.jl`](https://github.com/QuEraComputing/GenericTensorNetworks.jl).
 using GenericTensorNetworks
-problem = IndependentSet(graph; optimizer=GreedyMethod());
+problem = IndependentSet(graph)
 
 # There are plenty of discussions related to solution space properties in the `GenericTensorNetworks` [documentaion page](https://queracomputing.github.io/GenericTensorNetworks.jl/dev/generated/IndependentSet/).
 # In this example, we show how to use `TensorInference` to use probabilistic inference for understand the finite temperature properties of this statistical model.
@@ -59,15 +59,14 @@ partition_func[]
 
 # The marginal probabilities can be computed with the [`marginals`](@ref) function, which measures how likely a site is occupied.
 mars = marginals(pmodel)
-show_graph(graph; locs=sites, vertex_colors=[(b = mars[[i]][2]; (1-b, 1-b, 1-b)) for i in 1:nv(graph)], texts=fill("", nv(graph)))
+show_graph(graph, sites; vertex_colors=[(b = mars[[i]][2]; (1-b, 1-b, 1-b)) for i in 1:nv(graph)], texts=fill("", nv(graph)))
 # The can see the sites at the corner is more likely to be occupied.
 # To obtain two-site correlations, one can set the variables to query marginal probabilities manually.
 pmodel2 = TensorNetworkModel(problem, β; mars=[[e.src, e.dst] for e in edges(graph)])
 mars = marginals(pmodel2);
 
 # We show the probability that both sites on an edge are not occupied
-show_graph(graph; locs=sites, edge_colors=[(b = mars[[e.src, e.dst]][1, 1]; (1-b, 1-b, 1-b)) for e in edges(graph)], texts=fill("", nv(graph)),
-    edge_line_widths=edge_colors=[8*mars[[e.src, e.dst]][1, 1] for e in edges(graph)])
+show_graph(graph, sites; edge_colors=[(b = mars[[e.src, e.dst]][1, 1]; (1-b, 1-b, 1-b)) for e in edges(graph)], texts=fill("", nv(graph)), config=GraphDisplayConfig(; edge_line_width=5))
 
 # ## The most likely configuration
 # The MAP and MMAP can be used to get the most likely configuration given an evidence.
@@ -78,7 +77,7 @@ mars = marginals(pmodel3)
 logp, config = most_probable_config(pmodel3)
 
 # The log probability is 102. Let us visualize the configuration.
-show_graph(graph; locs=sites, vertex_colors=[(1-b, 1-b, 1-b) for b in config], texts=fill("", nv(graph)))
+show_graph(graph, sites; vertex_colors=[(1-b, 1-b, 1-b) for b in config], texts=fill("", nv(graph)))
 # The number of particles is
 sum(config)
 
@@ -87,7 +86,7 @@ pmodel3 = TensorNetworkModel(problem, β; evidence=Dict(1=>0))
 logp2, config2 = most_probable_config(pmodel)
 
 # The log probability is 99, which is much smaller.
-show_graph(graph; locs=sites, vertex_colors=[(1-b, 1-b, 1-b) for b in config2], texts=fill("", nv(graph)))
+show_graph(graph, sites; vertex_colors=[(1-b, 1-b, 1-b) for b in config2], texts=fill("", nv(graph)))
 # The number of particles is
 sum(config2)
 
