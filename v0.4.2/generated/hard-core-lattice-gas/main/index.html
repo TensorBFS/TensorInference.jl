@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Hard-core Lattice Gas · TensorInference.jl</title><meta name="title" content="Hard-core Lattice Gas · TensorInference.jl"/><meta property="og:title" content="Hard-core Lattice Gas · TensorInference.jl"/><meta property="twitter:title" content="Hard-core Lattice Gas · TensorInference.jl"/><meta name="description" content="Documentation for TensorInference.jl."/><meta property="og:description" content="Documentation for TensorInference.jl."/><meta property="twitter:description" content="Documentation for TensorInference.jl."/><meta property="og:url" content="https://TensorBFS.github.io/TensorInference.jl/generated/hard-core-lattice-gas/main/"/><meta property="twitter:url" content="https://TensorBFS.github.io/TensorInference.jl/generated/hard-core-lattice-gas/main/"/><link rel="canonical" href="https://TensorBFS.github.io/TensorInference.jl/generated/hard-core-lattice-gas/main/"/><script data-outdated-warner src="../../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../../assets/documenter.js"></script><script src="../../../search_index.js"></script><script src="../../../siteinfo.js"></script><script src="../../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../../assets/themeswap.js"></script><link href="../../../assets/favicon.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../../"><img src="../../../assets/logo.svg" alt="TensorInference.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../../">TensorInference.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../../">Home</a></li><li><span class="tocitem">Background</span><ul><li><a class="tocitem" href="../../../probabilistic-inference/">Probabilistic Inference</a></li><li><a class="tocitem" href="../../../tensor-networks/">Tensor Networks</a></li><li><a class="tocitem" href="../../../uai-file-formats/">UAI file formats</a></li></ul></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../../../examples-overview/">Overview</a></li><li><a class="tocitem" href="../../asia-network/main/">Asia Network</a></li><li class="is-active"><a class="tocitem" href>Hard-core Lattice Gas</a><ul class="internal"><li><a class="tocitem" href="#Hard-core-lattice-gas-problem"><span>Hard-core lattice gas problem</span></a></li><li><a class="tocitem" href="#Probabilistic-modeling-correlation-functions"><span>Probabilistic modeling correlation functions</span></a></li><li><a class="tocitem" href="#The-most-likely-configuration"><span>The most likely configuration</span></a></li></ul></li></ul></li><li><a class="tocitem" href="../../../performance-evaluation/">Performance evaluation</a></li><li><a class="tocitem" href="../../performance-tips/">Performance tips</a></li><li><span class="tocitem">API</span><ul><li><a class="tocitem" href="../../../api/public/">Public</a></li><li><a class="tocitem" href="../../../api/internal/">Internal</a></li></ul></li><li><a class="tocitem" href="../../../contributing/">Contributing</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Examples</a></li><li class="is-active"><a href>Hard-core Lattice Gas</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Hard-core Lattice Gas</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/TensorBFS/TensorInference.jl/blob/main/docs/src/generated/hard-core-lattice-gas/main.jl#" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="The-hard-core-lattice-gas"><a class="docs-heading-anchor" href="#The-hard-core-lattice-gas">The hard core lattice gas</a><a id="The-hard-core-lattice-gas-1"></a><a class="docs-heading-anchor-permalink" href="#The-hard-core-lattice-gas" title="Permalink"></a></h1><h2 id="Hard-core-lattice-gas-problem"><a class="docs-heading-anchor" href="#Hard-core-lattice-gas-problem">Hard-core lattice gas problem</a><a id="Hard-core-lattice-gas-problem-1"></a><a class="docs-heading-anchor-permalink" href="#Hard-core-lattice-gas-problem" title="Permalink"></a></h2><p>Hard-core lattice gas refers to a model used in statistical physics to study the behavior of particles on a lattice, where the particles are subject to an exclusion principle known as the &quot;hard-core&quot; interaction that characterized by a blockade radius. Distances between two particles can not be smaller than this radius.</p><ul><li>Nath T, Rajesh R. Multiple phase transitions in extended hard-core lattice gas models in two dimensions[J]. Physical Review E, 2014, 90(1): 012120.</li><li>Fernandes H C M, Arenzon J J, Levin Y. Monte Carlo simulations of two-dimensional hard core lattice gases[J]. The Journal of chemical physics, 2007, 126(11).</li></ul><p>Let define a <span>$10 \times 10$</span> triangular lattice, with unit vectors</p><p class="math-container">\[\begin{align*}
+\vec a &amp;= \left(\begin{matrix}1 \\ 0\end{matrix}\right)\\
+\vec b &amp;= \left(\begin{matrix}\frac{1}{2} \\ \frac{\sqrt{3}}{2}\end{matrix}\right)
+\end{align*}\]</p><pre><code class="language-julia hljs">a, b = (1, 0), (0.5, 0.5*sqrt(3))
+Na, Nb = 10, 10
+sites = vec([50 .* (a .* i .+ b .* j) for i=1:Na, j=1:Nb])</code></pre><pre><code class="nohighlight hljs">100-element Vector{Tuple{Float64, Float64}}:
+ (75.0, 43.30127018922193)
+ (125.0, 43.30127018922193)
+ (175.0, 43.30127018922193)
+ (225.0, 43.30127018922193)
+ (275.0, 43.30127018922193)
+ (325.0, 43.30127018922193)
+ (375.0, 43.30127018922193)
+ (425.0, 43.30127018922193)
+ (475.0, 43.30127018922193)
+ (525.0, 43.30127018922193)
+ (100.0, 86.60254037844386)
+ (150.0, 86.60254037844386)
+ (200.0, 86.60254037844386)
+ (250.0, 86.60254037844386)
+ (300.0, 86.60254037844386)
+ (350.0, 86.60254037844386)
+ (400.0, 86.60254037844386)
+ (450.0, 86.60254037844386)
+ (500.0, 86.60254037844386)
+ (550.0, 86.60254037844386)
+ (125.0, 129.9038105676658)
+ (175.0, 129.9038105676658)
+ (225.0, 129.9038105676658)
+ (275.0, 129.9038105676658)
+ (325.0, 129.9038105676658)
+ (375.0, 129.9038105676658)
+ (425.0, 129.9038105676658)
+ (475.0, 129.9038105676658)
+ (525.0, 129.9038105676658)
+ (575.0, 129.9038105676658)
+ (150.0, 173.20508075688772)
+ (200.0, 173.20508075688772)
+ (250.0, 173.20508075688772)
+ (300.0, 173.20508075688772)
+ (350.0, 173.20508075688772)
+ (400.0, 173.20508075688772)
+ (450.0, 173.20508075688772)
+ (500.0, 173.20508075688772)
+ (550.0, 173.20508075688772)
+ (600.0, 173.20508075688772)
+ (175.0, 216.50635094610965)
+ (225.0, 216.50635094610965)
+ (275.0, 216.50635094610965)
+ (325.0, 216.50635094610965)
+ (375.0, 216.50635094610965)
+ (425.0, 216.50635094610965)
+ (475.0, 216.50635094610965)
+ (525.0, 216.50635094610965)
+ (575.0, 216.50635094610965)
+ (625.0, 216.50635094610965)
+ (200.0, 259.8076211353316)
+ (250.0, 259.8076211353316)
+ (300.0, 259.8076211353316)
+ (350.0, 259.8076211353316)
+ (400.0, 259.8076211353316)
+ (450.0, 259.8076211353316)
+ (500.0, 259.8076211353316)
+ (550.0, 259.8076211353316)
+ (600.0, 259.8076211353316)
+ (650.0, 259.8076211353316)
+ (225.0, 303.1088913245535)
+ (275.0, 303.1088913245535)
+ (325.0, 303.1088913245535)
+ (375.0, 303.1088913245535)
+ (425.0, 303.1088913245535)
+ (475.0, 303.1088913245535)
+ (525.0, 303.1088913245535)
+ (575.0, 303.1088913245535)
+ (625.0, 303.1088913245535)
+ (675.0, 303.1088913245535)
+ (250.0, 346.41016151377545)
+ (300.0, 346.41016151377545)
+ (350.0, 346.41016151377545)
+ (400.0, 346.41016151377545)
+ (450.0, 346.41016151377545)
+ (500.0, 346.41016151377545)
+ (550.0, 346.41016151377545)
+ (600.0, 346.41016151377545)
+ (650.0, 346.41016151377545)
+ (700.0, 346.41016151377545)
+ (275.0, 389.71143170299734)
+ (325.0, 389.71143170299734)
+ (375.0, 389.71143170299734)
+ (425.0, 389.71143170299734)
+ (475.0, 389.71143170299734)
+ (525.0, 389.71143170299734)
+ (575.0, 389.71143170299734)
+ (625.0, 389.71143170299734)
+ (675.0, 389.71143170299734)
+ (725.0, 389.71143170299734)
+ (300.0, 433.0127018922193)
+ (350.0, 433.0127018922193)
+ (400.0, 433.0127018922193)
+ (450.0, 433.0127018922193)
+ (500.0, 433.0127018922193)
+ (550.0, 433.0127018922193)
+ (600.0, 433.0127018922193)
+ (650.0, 433.0127018922193)
+ (700.0, 433.0127018922193)
+ (750.0, 433.0127018922193)</code></pre><p>There exists blockade interactions between hard-core particles. We connect two lattice sites within blockade radius by an edge. Two ends of an edge can not both be occupied by particles.</p><pre><code class="language-julia hljs">blockade_radius = 55
+using GenericTensorNetworks: show_graph, unit_disk_graph
+using GenericTensorNetworks.Graphs: edges, nv
+graph = unit_disk_graph(vec(sites), blockade_radius)
+show_graph(graph, sites; texts=fill(&quot;&quot;, length(sites)))</code></pre><p><img src="../main-5.svg" alt/></p><p>These constraints defines an independent set problem that characterized by the following energy based model. Let <span>$G = (V, E)$</span> be a graph, where <span>$V$</span> is the set of vertices and <span>$E$</span> is the set of edges. The energy model for the hard-core lattice gas problem is</p><p class="math-container">\[E(\mathbf{n}) = -\sum_{i \in V}w_i n_i + U \sum_{(i, j) \in E} n_i n_j\]</p><p>where <span>$n_i \in \{0, 1\}$</span> is the number of particles at site <span>$i$</span>, and <span>$w_i$</span> is the weight associated with it. For unweighted graphs, the weights are uniform. <span>$U$</span> is the repulsive interaction strength between two particles. To represent the independence constraint, we let <span>$U = \infty$</span>, i.e. coexitence of two particles at two sites connected by an edge is completely forbidden. The solution space hard-core lattice gas is equivalent to that of an independent set problem. The independent set problem involves finding a set of vertices in a graph such that no two vertices in the set are adjacent (i.e., there is no edge connecting them). One can create a tensor network based modeling of an independent set problem with package <a href="https://github.com/QuEraComputing/GenericTensorNetworks.jl"><code>GenericTensorNetworks.jl</code></a>.</p><pre><code class="language-julia hljs">using GenericTensorNetworks
+problem = IndependentSet(graph)</code></pre><pre><code class="nohighlight hljs">GenericTensorNetworks.IndependentSet{GenericTensorNetworks.UnitWeight}(Graphs.SimpleGraphs.SimpleGraph{Int64}(261, [[2, 11], [1, 3, 11, 12], [2, 4, 12, 13], [3, 5, 13, 14], [4, 6, 14, 15], [5, 7, 15, 16], [6, 8, 16, 17], [7, 9, 17, 18], [8, 10, 18, 19], [9, 19, 20], [1, 2, 12, 21], [2, 3, 11, 13, 21, 22], [3, 4, 12, 14, 22, 23], [4, 5, 13, 15, 23, 24], [5, 6, 14, 16, 24, 25], [6, 7, 15, 17, 25, 26], [7, 8, 16, 18, 26, 27], [8, 9, 17, 19, 27, 28], [9, 10, 18, 20, 28, 29], [10, 19, 29, 30], [11, 12, 22, 31], [12, 13, 21, 23, 31, 32], [13, 14, 22, 24, 32, 33], [14, 15, 23, 25, 33, 34], [15, 16, 24, 26, 34, 35], [16, 17, 25, 27, 35, 36], [17, 18, 26, 28, 36, 37], [18, 19, 27, 29, 37, 38], [19, 20, 28, 30, 38, 39], [20, 29, 39, 40], [21, 22, 32, 41], [22, 23, 31, 33, 41, 42], [23, 24, 32, 34, 42, 43], [24, 25, 33, 35, 43, 44], [25, 26, 34, 36, 44, 45], [26, 27, 35, 37, 45, 46], [27, 28, 36, 38, 46, 47], [28, 29, 37, 39, 47, 48], [29, 30, 38, 40, 48, 49], [30, 39, 49, 50], [31, 32, 42, 51], [32, 33, 41, 43, 51, 52], [33, 34, 42, 44, 52, 53], [34, 35, 43, 45, 53, 54], [35, 36, 44, 46, 54, 55], [36, 37, 45, 47, 55, 56], [37, 38, 46, 48, 56, 57], [38, 39, 47, 49, 57, 58], [39, 40, 48, 50, 58, 59], [40, 49, 59, 60], [41, 42, 52, 61], [42, 43, 51, 53, 61, 62], [43, 44, 52, 54, 62, 63], [44, 45, 53, 55, 63, 64], [45, 46, 54, 56, 64, 65], [46, 47, 55, 57, 65, 66], [47, 48, 56, 58, 66, 67], [48, 49, 57, 59, 67, 68], [49, 50, 58, 60, 68, 69], [50, 59, 69, 70], [51, 52, 62, 71], [52, 53, 61, 63, 71, 72], [53, 54, 62, 64, 72, 73], [54, 55, 63, 65, 73, 74], [55, 56, 64, 66, 74, 75], [56, 57, 65, 67, 75, 76], [57, 58, 66, 68, 76, 77], [58, 59, 67, 69, 77, 78], [59, 60, 68, 70, 78, 79], [60, 69, 79, 80], [61, 62, 72, 81], [62, 63, 71, 73, 81, 82], [63, 64, 72, 74, 82, 83], [64, 65, 73, 75, 83, 84], [65, 66, 74, 76, 84, 85], [66, 67, 75, 77, 85, 86], [67, 68, 76, 78, 86, 87], [68, 69, 77, 79, 87, 88], [69, 70, 78, 80, 88, 89], [70, 79, 89, 90], [71, 72, 82, 91], [72, 73, 81, 83, 91, 92], [73, 74, 82, 84, 92, 93], [74, 75, 83, 85, 93, 94], [75, 76, 84, 86, 94, 95], [76, 77, 85, 87, 95, 96], [77, 78, 86, 88, 96, 97], [78, 79, 87, 89, 97, 98], [79, 80, 88, 90, 98, 99], [80, 89, 99, 100], [81, 82, 92], [82, 83, 91, 93], [83, 84, 92, 94], [84, 85, 93, 95], [85, 86, 94, 96], [86, 87, 95, 97], [87, 88, 96, 98], [88, 89, 97, 99], [89, 90, 98, 100], [90, 99]]), GenericTensorNetworks.UnitWeight())</code></pre><p>There are plenty of discussions related to solution space properties in the <code>GenericTensorNetworks</code> <a href="https://queracomputing.github.io/GenericTensorNetworks.jl/dev/generated/IndependentSet/">documentaion page</a>. In this example, we show how to use <code>TensorInference</code> to use probabilistic inference for understand the finite temperature properties of this statistical model. We use <a href="../../../api/public/#TensorInference.TensorNetworkModel"><code>TensorNetworkModel</code></a> to convert a combinatorial optimization problem to a probabilistic model. Here, we let the inverse temperature be <span>$\beta = 3$</span>.</p><h2 id="Probabilistic-modeling-correlation-functions"><a class="docs-heading-anchor" href="#Probabilistic-modeling-correlation-functions">Probabilistic modeling correlation functions</a><a id="Probabilistic-modeling-correlation-functions-1"></a><a class="docs-heading-anchor-permalink" href="#Probabilistic-modeling-correlation-functions" title="Permalink"></a></h2><pre><code class="language-julia hljs">using TensorInference
+β = 3.0
+pmodel = TensorNetworkModel(problem, β)</code></pre><pre><code class="nohighlight hljs">TensorNetworkModel{Int64, OMEinsum.DynamicNestedEinsum{Int64}, Array{Float64}}
+variables: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100
+contraction time = 2^17.689, space = 2^12.0, read-write = 2^15.653</code></pre><p>The partition function of this statistical model can be computed with the <a href="../../../api/public/#TensorInference.probability"><code>probability</code></a> function.</p><pre><code class="language-julia hljs">partition_func = probability(pmodel)</code></pre><pre><code class="nohighlight hljs">exp(107.42267890429402) * fill(1.0)</code></pre><p>The default return value is a log-rescaled tensor. Use indexing to get the real value.</p><pre><code class="language-julia hljs">partition_func[]</code></pre><pre><code class="nohighlight hljs">4.4985927541461473e46</code></pre><p>The marginal probabilities can be computed with the <a href="../../../api/public/#TensorInference.marginals"><code>marginals</code></a> function, which measures how likely a site is occupied.</p><pre><code class="language-julia hljs">mars = marginals(pmodel)
+show_graph(graph, sites; vertex_colors=[(b = mars[[i]][2]; (1-b, 1-b, 1-b)) for i in 1:nv(graph)], texts=fill(&quot;&quot;, nv(graph)))</code></pre><p><img src="../main-16.svg" alt/></p><p>The can see the sites at the corner is more likely to be occupied. To obtain two-site correlations, one can set the variables to query marginal probabilities manually.</p><pre><code class="language-julia hljs">pmodel2 = TensorNetworkModel(problem, β; mars=[[e.src, e.dst] for e in edges(graph)])
+mars = marginals(pmodel2);</code></pre><p>We show the probability that both sites on an edge are not occupied</p><pre><code class="language-julia hljs">show_graph(graph, sites; edge_colors=[(b = mars[[e.src, e.dst]][1, 1]; (1-b, 1-b, 1-b)) for e in edges(graph)], texts=fill(&quot;&quot;, nv(graph)), config=GraphDisplayConfig(; edge_line_width=5))</code></pre><p><img src="../main-20.svg" alt/></p><h2 id="The-most-likely-configuration"><a class="docs-heading-anchor" href="#The-most-likely-configuration">The most likely configuration</a><a id="The-most-likely-configuration-1"></a><a class="docs-heading-anchor-permalink" href="#The-most-likely-configuration" title="Permalink"></a></h2><p>The MAP and MMAP can be used to get the most likely configuration given an evidence. The relavant function is <a href="../../../api/public/#TensorInference.most_probable_config"><code>most_probable_config</code></a>. If we fix the vertex configuration at one corner to be one, we get the most probably configuration as bellow.</p><pre><code class="language-julia hljs">pmodel3 = TensorNetworkModel(problem, β; evidence=Dict(1=&gt;1))
+mars = marginals(pmodel3)
+logp, config = most_probable_config(pmodel3)</code></pre><pre><code class="nohighlight hljs">(102.0, [1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1])</code></pre><p>The log probability is 102. Let us visualize the configuration.</p><pre><code class="language-julia hljs">show_graph(graph, sites; vertex_colors=[(1-b, 1-b, 1-b) for b in config], texts=fill(&quot;&quot;, nv(graph)))</code></pre><p><img src="../main-24.svg" alt/></p><p>The number of particles is</p><pre><code class="language-julia hljs">sum(config)</code></pre><pre><code class="nohighlight hljs">34</code></pre><p>Otherwise, we will get a suboptimal configuration.</p><pre><code class="language-julia hljs">pmodel3 = TensorNetworkModel(problem, β; evidence=Dict(1=&gt;0))
+logp2, config2 = most_probable_config(pmodel)</code></pre><pre><code class="nohighlight hljs">(102.0, [1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1])</code></pre><p>The log probability is 99, which is much smaller.</p><pre><code class="language-julia hljs">show_graph(graph, sites; vertex_colors=[(1-b, 1-b, 1-b) for b in config2], texts=fill(&quot;&quot;, nv(graph)))</code></pre><p><img src="../main-30.svg" alt/></p><p>The number of particles is</p><pre><code class="language-julia hljs">sum(config2)
+
+# Sampling configurations</code></pre><pre><code class="nohighlight hljs">34</code></pre><p>One can ue <a href="../../../api/public/#TensorInference.sample"><code>sample</code></a> to generate samples from hard-core lattice gas at finite temperature. The return value is a matrix, with the columns correspond to different samples.</p><pre><code class="language-julia hljs">configs = sample(pmodel3, 1000)
+sizes = sum.(configs)
+[count(==(i), sizes) for i=0:34]  # counting sizes</code></pre><pre><code class="nohighlight hljs">35-element Vector{Int64}:
+   0
+   0
+   0
+   0
+   0
+   0
+   0
+   0
+   0
+   0
+   0
+   0
+   0
+   0
+   0
+   0
+   0
+   0
+   0
+   0
+   0
+   0
+   0
+   2
+   5
+  17
+  57
+ 123
+ 200
+ 205
+ 182
+ 135
+  55
+  19
+   0</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../asia-network/main/">« Asia Network</a><a class="docs-footer-nextpage" href="../../../performance-evaluation/">Performance evaluation »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.4.1 on <span class="colophon-date" title="Saturday 1 June 2024 16:59">Saturday 1 June 2024</span>. Using Julia version 1.10.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
