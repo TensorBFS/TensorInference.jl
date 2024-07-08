@@ -37,7 +37,7 @@ function Base.show(io::IO, mmap::MMAPModel)
     tc, sc, rw = contraction_complexity(mmap)
     println(io, "$(typeof(mmap))")
     println(io, "variables: $variables")
-    println(io, "query variables: $(map(x->x.eliminated_vars, mmap.clusters))")
+    println(io, "query variables: $(join(string.(setdiff(get_vars(mmap), keys(mmap.evidence))), ", "))")
     print_tcscrw(io, tc, sc, rw)
 end
 Base.show(io::IO, ::MIME"text/plain", mmap::MMAPModel) = Base.show(io, mmap)
