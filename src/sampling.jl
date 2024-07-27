@@ -14,7 +14,7 @@ struct Samples{L} <: AbstractVector{SubArray{Float64, 1, Matrix{Float64}, Tuple{
     labels::Vector{L}
     setmask::BitVector
 end
-function setmask!(samples::Samples, eliminated_variables)
+function set_eliminated!(samples::Samples, eliminated_variables)
     for var in eliminated_variables
         loc = findfirst(==(var), samples.labels)
         samples.setmask[loc] && error("varaible `$var` is already eliminated.")
@@ -25,6 +25,7 @@ end
 Base.getindex(s::Samples, i::Int) = view(s.samples, :, i)
 Base.length(s::Samples) = size(s.samples, 2)
 Base.size(s::Samples) = (size(s.samples, 2),)
+eliminated_variables(samples::Samples) = samples.labels[samples.setmask]
 idx4labels(totalset, labels)::Vector{Int} = map(v->findfirst(==(v), totalset), labels)
 
 """
@@ -32,38 +33,49 @@ $(TYPEDSIGNATURES)
 
 The backward process for sampling configurations.
 
-* `ixs` and `xs` are labels and tensor data for input tensors,
-* `iy` and `y` are labels and tensor data for the output tensor,
+### Arguments
+* `code` is the contraction code in the current step,
+* `env` is the environment tensor,
 * `samples` is the samples generated for eliminated variables,
 * `size_dict` is a key-value map from tensor label to dimension size.
 """
-function backward_sampling!(ixs, @nospecialize(xs::Tuple), iy, @nospecialize(y), samples::Samples, size_dict)
-    eliminated_variables = setdiff(vcat(ixs...), iy)
-    eliminated_locs = idx4labels(samples.labels, eliminated_variables)
-    setmask!(samples, eliminated_variables)
+function backward_sampling!(code::EinCode, @nospecialize(xs::Tuple), @nospecialize(y), @nospecialize(env), samples::Samples, size_dict)
+    ixs, iy = getixsv(code), getiyv(code)
+    el = setdiff(vcat(ixs...), iy)
+    # get probability
+    prob_code = optimize_code(EinCode([ixs..., iy], el), size_dict, GreedyMethod(; nrepeat=1))
+    probabilities = einsum(prob_code, (xs..., env), size_dict)
 
-    # the contraction code to get probability
-    newixs = map(ix->setdiff(ix, iy), ixs)
-    ix_in_sample = map(ix->idx4labels(samples.labels, ix ∩ iy), ixs)
-    slice_xs_dim = map(ix->idx4labels(ix, ix ∩ iy), ixs)
+    # sample from the probability tensor
+    totalset = CartesianIndices((map(x->size_dict[x], el)...,))
+    eliminated_locs = idx4labels(samples.labels, el)
+    for i=axes(samples.samples, 2)
+        config = StatsBase.sample(totalset, Weights(vec(selectdim(probabilities, ndims(probabilities), i))))
+        samples.samples[eliminated_locs, i] .= config.I .- 1
+    end
 
-    # relabel and compute probabilities
+    # eliminate the sampled variables
+    set_eliminated!(samples, el)
+    for l in el
+        size_dict[l] = 1
+    end
+    for sample in sampels
+        map(x->eliminate_dimensions!(x, el=>sample), xs)
+    end
+
+    # update environment
+    for (i, ix) in enumerate(ixs)
+    end
+    return envs
+end
+
+function addbatch(samples::Samples, eliminated_variables)
     uniquelabels = unique!(vcat(ixs..., iy))
     labelmap = Dict(zip(uniquelabels, 1:length(uniquelabels)))
     batchdim = length(labelmap) + 1
     newnewixs = [Int[getindex.(Ref(labelmap), ix)..., batchdim] for ix in newixs]
     newnewiy = Int[getindex.(Ref(labelmap), eliminated_variables)..., batchdim]
     newnewxs = [get_slice(x, dimx, samples.samples[ixloc, :]) for (x, dimx, ixloc) in zip(xs, slice_xs_dim, ix_in_sample)]
-    code = DynamicEinCode(newnewixs, newnewiy)
-    probabilities = code(newnewxs...)
-
-    totalset = CartesianIndices((map(x->size_dict[x], eliminated_variables)...,))
-    for i=axes(samples.samples, 2)
-        config = StatsBase.sample(totalset, Weights(vec(selectdim(probabilities, ndims(probabilities), i))))
-        # update the samplesS
-        samples.samples[eliminated_locs, i] .= config.I .- 1
-    end
-    return samples
 end
 
 # type unstable
@@ -137,12 +149,12 @@ function generate_samples(se::SlicedEinsum, cache::CacheTree{T}, samples, size_d
     end
     return generate_samples(se.eins, cache, samples, size_dict)
 end
-function generate_samples(code::NestedEinsum, cache::CacheTree{T}, samples, size_dict::Dict) where {T}
+function generate_samples(code::NestedEinsum, cache::CacheTree{T}, env::AbstractArray{T}, samples, size_dict::Dict) where {T}
     if !OMEinsum.isleaf(code)
         xs = ntuple(i -> cache.siblings[i].content, length(cache.siblings))
-        backward_sampling!(OMEinsum.getixs(code.eins), xs, OMEinsum.getiy(code.eins), cache.content, samples, size_dict)
-        for (arg, sib) in zip(code.args, cache.siblings)
-            generate_samples(arg, sib, samples, size_dict)
+        envs = backward_sampling!(code.eins, xs, cache.content, env, samples, copy(size_dict))
+        for (arg, sib, env) in zip(code.args, cache.siblings, envs)
+            generate_samples(arg, sib, env, samples, size_dict)
         end
     end
 end

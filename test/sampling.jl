@@ -1,4 +1,5 @@
 using TensorInference, Test
+using StatsBase: kldivergence
 
 @testset "sampling" begin
     model = TensorInference.read_model_from_string("""MARKOV
@@ -59,4 +60,27 @@ using TensorInference, Test
     mars = marginals(tnet)
     mars_sample = [count(s->s[k]==(0), samples) for k=1:8] ./ n
     @test isapprox([[mars[[i]][1] for i=1:6]..., mars[[8]][1]], [mars_sample[1:6]..., mars_sample[8]], atol=0.05)
+end
+
+@testset "sample MPS" begin
+    tensors = [
+        [rand(2, 2) for i=1:2],
+        [rand(2, 2, 2) for i=1:2],
+        [rand(2, 2, 2) for i=1:2],
+        [rand(2, 2) for i=1:2],
+    ]
+    ixs = [[1, 5], [5, 2, 6], [6, 3, 7], [7, 4], [1, 8], [8, 2, 9], [9, 3, 10], [10, 4]]
+    mps = TensorNetworkModel(
+        collect(1:10),
+        DynamicEinCode(ixs, Int[]),
+        [tensors..., conj.(tensors)...],
+        Dict{Int, Int}(),
+        collect(5:10)
+    )
+    samples = sample(mps, 1000)
+    indices = samples.samples
+    @show indices
+    probs = vec(DynamicEinCode(ixs, collect(1:4))(tensors...))
+    negative_loglikelyhood(samples, probs) = -sum(log.(probs[indices]))
+    @test negative_loglikelyhood(samples, probs)
 end
