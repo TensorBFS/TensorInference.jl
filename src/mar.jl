@@ -16,10 +16,10 @@ end
 # `CacheTree` stores intermediate `NestedEinsum` contraction results.
 # It is a tree structure that isomorphic to the contraction tree,
 # `content` is the cached intermediate contraction result.
-# `siblings` are the siblings of current node.
+# `children` are the children of current node, e.g. tensors that are contracted to get `content`.
 struct CacheTree{T}
     content::AbstractArray{T}
-    siblings::Vector{CacheTree{T}}
+    children::Vector{CacheTree{T}}
 end
 
 function cached_einsum(se::SlicedEinsum, @nospecialize(xs), size_dict)
@@ -62,7 +62,7 @@ function generate_gradient_tree(code::NestedEinsum, cache::CacheTree{T}, dy::Abs
     if OMEinsum.isleaf(code)
         return CacheTree(dy, CacheTree{T}[])
     else
-        xs = ntuple(i -> cache.siblings[i].content, length(cache.siblings))
+        xs = ntuple(i -> cache.children[i].content, length(cache.children))
         # `einsum_grad` is the back-propagation rule for einsum function.
         # If the forward pass is `y = einsum(EinCode(inputs_labels, output_labels), (A, B, ...), size_dict)`
         # Then the back-propagation pass is
@@ -73,7 +73,7 @@ function generate_gradient_tree(code::NestedEinsum, cache::CacheTree{T}, dy::Abs
         # ```
         # Let `L` be the loss, we will have `y̅ := ∂L/∂y`, `A̅ := ∂L/∂A`...
         dxs = einsum_backward_rule(code.eins, xs, cache.content, size_dict, dy)
-        return CacheTree(dy, generate_gradient_tree.(code.args, cache.siblings, dxs, Ref(size_dict)))
+        return CacheTree(dy, generate_gradient_tree.(code.args, cache.children, dxs, Ref(size_dict)))
     end
 end
 
@@ -116,7 +116,7 @@ function extract_leaves!(code, cache, res)
         res[code.tensorindex] = cache.content
     else
         # resurse deeper
-        extract_leaves!.(code.args, cache.siblings, Ref(res))
+        extract_leaves!.(code.args, cache.children, Ref(res))
     end
     return res
 end

@@ -23,12 +23,12 @@ $(TYPEDSIGNATURES)
 Returns a rescaled array that equivalent to the input tensor.
 """
 function rescale_array(tensor::AbstractArray{T})::RescaledArray where {T}
-    maxf = maximum(tensor)
+    maxf = maximum(abs, tensor)
     if iszero(maxf)
         @warn("The maximum value of the array to rescale is 0!")
         return RescaledArray(zero(T), tensor)
     end
-    return RescaledArray(log(maxf), OMEinsum.asarray(tensor ./ maxf, tensor))
+    return RescaledArray(T(log(maxf)), OMEinsum.asarray(tensor ./ maxf, tensor))
 end
 
 for CT in [:DynamicEinCode, :StaticEinCode]

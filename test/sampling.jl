@@ -1,5 +1,6 @@
 using TensorInference, Test
 using StatsBase: kldivergence
+using OMEinsum
 
 @testset "sampling" begin
     model = TensorInference.read_model_from_string("""MARKOV
@@ -64,21 +65,26 @@ end
 
 @testset "sample MPS" begin
     tensors = [
-        [rand(2, 2) for i=1:2],
-        [rand(2, 2, 2) for i=1:2],
-        [rand(2, 2, 2) for i=1:2],
-        [rand(2, 2) for i=1:2],
+        randn(ComplexF64, 2, 3),
+        randn(ComplexF64, 3, 2, 3),
+        randn(ComplexF64, 3, 2, 3),
+        randn(ComplexF64, 3, 2),
     ]
+    tensors = [tensors..., conj.(tensors)...]
     ixs = [[1, 5], [5, 2, 6], [6, 3, 7], [7, 4], [1, 8], [8, 2, 9], [9, 3, 10], [10, 4]]
     mps = TensorNetworkModel(
         collect(1:10),
-        DynamicEinCode(ixs, Int[]),
-        [tensors..., conj.(tensors)...],
+        optimize_code(DynamicEinCode(ixs, Int[]), OMEinsum.get_size_dict(ixs, tensors), GreedyMethod()),
+        tensors,
         Dict{Int, Int}(),
-        collect(5:10)
+        [[i] for i=5:10]
     )
-    samples = sample(mps, 1000)
-    indices = samples.samples
+    num_samples = 1
+    samples = sample(mps, num_samples; queryvars=[1, 2, 3, 4])
+    indices = map(samples) do sample
+        sum(i->sample[i] * 2^(i-1), 1:4) + 1
+    end
+    @show samples
     @show indices
     probs = vec(DynamicEinCode(ixs, collect(1:4))(tensors...))
     negative_loglikelyhood(samples, probs) = -sum(log.(probs[indices]))

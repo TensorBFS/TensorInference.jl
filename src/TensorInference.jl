@@ -11,6 +11,7 @@ using OMEinsum, LinearAlgebra
 using DocStringExtensions, TropicalNumbers
 # The Tropical GEMM support
 using StatsBase
+using PrettyTables
 import Pkg
 
 # reexport OMEinsum functions
