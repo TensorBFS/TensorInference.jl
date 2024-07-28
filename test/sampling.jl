@@ -1,6 +1,6 @@
 using TensorInference, Test, LinearAlgebra
 import StatsBase
-using OMEinsum
+using OMEinsum, Random
 
 @testset "sampling" begin
     model = TensorInference.read_model_from_string("""MARKOV
@@ -50,6 +50,7 @@ using OMEinsum
 """)
     n = 10000
     tnet = TensorNetworkModel(model)
+    @show sample(tnet, 10)
     samples = sample(tnet, n)
     mars = marginals(tnet)
     mars_sample = [count(s->s[k]==(1), samples) for k=1:8] ./ n
@@ -67,16 +68,21 @@ end
     n = 4
     chi = 3
     mps = random_matrix_product_state(n, chi)
-    num_samples = 1000
-    sample(mps, num_samples; queryvars=vcat(mps.mars...))
+    Random.seed!(134)
+    num_samples = 10000
+    # samples = map(1:num_samples) do i
+    #     sample(mps, 1; queryvars=vcat(mps.mars...)).samples[:,1]
+    # end
+    samples = sample(mps, num_samples; queryvars=vcat(mps.mars...))
     indices = map(samples) do sample
-        sum(i->sample[i] * 2^(i-1), 1:4) + 1
+        sum(i->sample[i] * 2^(i-1), 1:n) + 1
     end
-    distribution = map(1:16) do i
+    distribution = map(1:2^n) do i
         count(j->j==i, indices) / num_samples
     end
     probs = normalize!(real.(vec(DynamicEinCode(ixs, collect(1:4))(mps.tensors...))), 1)
     negative_loglikelyhood(probs, samples) = -sum(log.(probs[samples]))/length(samples)
     entropy(probs) = -sum(probs .* log.(probs))
+    @show negative_loglikelyhood(probs, indices), entropy(probs)
     @test negative_loglikelyhood(probs, indices) ≈ entropy(probs) atol=1e-1
 end
