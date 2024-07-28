@@ -90,9 +90,7 @@ end
         count(j->j==i, indices) / num_samples
     end
     probs = normalize!(real.(vec(DynamicEinCode(ixs, collect(1:4))(tensors...))), 1)
-    #indices = StatsBase.sample(1:16, StatsBase.Weights(probs), 1000)
     negative_loglikelyhood(probs, samples) = -sum(log.(probs[samples]))/length(samples)
     entropy(probs) = -sum(probs .* log.(probs))
-    @show distribution, probs
     @test negative_loglikelyhood(probs, indices) ≈ entropy(probs) atol=1e-1
 end

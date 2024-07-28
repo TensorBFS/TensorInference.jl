@@ -7,20 +7,10 @@ $TYPEDFIELDS
 
 The sampled configurations are stored in `samples`, which is a vector of vector.
 `labels` is a vector of variable names for labeling configurations.
-The `setmask` is an boolean indicator to denote whether the sampling process of a variable is complete.
 """
 struct Samples{L} <: AbstractVector{SubArray{Float64, 1, Matrix{Float64}, Tuple{Base.Slice{Base.OneTo{Int64}}, Int64}, true}}
     samples::Matrix{Int}  # size is nvars × nsample
     labels::Vector{L}
-    setmask::BitVector
-end
-function set_eliminated!(samples::Samples, eliminated_variables)
-    for var in eliminated_variables
-        loc = findfirst(==(var), samples.labels)
-        samples.setmask[loc] && error("varaible `$var` is already eliminated.")
-        samples.setmask[loc] = true
-    end
-    return samples
 end
 Base.getindex(s::Samples, i::Int) = view(s.samples, :, i)
 Base.length(s::Samples) = size(s.samples, 2)
@@ -30,16 +20,12 @@ function Base.show(io::IO, s::Samples)  # display with PrettyTables
     PrettyTables.pretty_table(io, s.samples', header=s.labels)
 end
 num_samples(samples::Samples) = size(samples.samples, 2)
-eliminated_variables(samples::Samples) = samples.labels[samples.setmask]
-is_eliminated(samples::Samples{L}, var::L) where L = samples.setmask[findfirst(==(var), samples.labels)]
 function idx4labels(totalset::AbstractVector{L}, labels::AbstractVector{L})::Vector{Int} where L
     map(v->findfirst(==(v), totalset), labels)
 end
-idx4labels(samples::Samples{L}, lb::L) where L = findfirst(==(lb), samples.labels)
 function subset(samples::Samples{L}, labels::AbstractVector{L}) where L
     idx = idx4labels(samples.labels, labels)
-    @assert all(i->samples.setmask[i], idx)
-    return samples.samples[idx, :]
+    return view(samples.samples, idx, :)
 end
 
 function eliminate_dimensions(x::AbstractArray{T, N}, ix::AbstractVector{L}, el::Pair{<:AbstractVector{L}}) where {T, N, L}
@@ -53,40 +39,6 @@ function eliminate_dimensions(x::AbstractArray{T, N}, ix::AbstractVector{L}, el:
         end
     end
     return asarray(x[idx...], x)
-end
-
-function addbatch(samples::Samples, eliminated_variables)
-    uniquelabels = unique!(vcat(ixs..., iy))
-    labelmap = Dict(zip(uniquelabels, 1:length(uniquelabels)))
-    batchdim = length(labelmap) + 1
-    newnewixs = [Int[getindex.(Ref(labelmap), ix)..., batchdim] for ix in newixs]
-    newnewiy = Int[getindex.(Ref(labelmap), eliminated_variables)..., batchdim]
-    newnewxs = [get_slice(x, dimx, samples.samples[ixloc, :]) for (x, dimx, ixloc) in zip(xs, slice_xs_dim, ix_in_sample)]
-end
-
-# type unstable
-function get_slice(x::AbstractArray{T}, slicedim, configs::AbstractMatrix) where T
-    outdim = setdiff(1:ndims(x), slicedim)
-    res = similar(x, [size(x, d) for d in outdim]..., size(configs, 2))
-    return get_slice!(res, x, outdim, slicedim, configs)
-end
-
-function get_slice!(res, x::AbstractArray{T}, outdim, slicedim, configs::AbstractMatrix) where T
-    xstrides = strides(x)
-    @inbounds for ci in CartesianIndices(res)
-        idx = 1
-        # the output dimension part
-        for (dim, k) in zip(outdim, ci.I)
-            idx += (k-1) * xstrides[dim]
-        end
-        # the sliced part
-        batchidx = ci.I[end]
-        for (dim, k) in zip(slicedim, view(configs, :, batchidx))
-            idx += k * xstrides[dim]
-        end
-        res[ci] = x[idx]
-    end
-    return res
 end
 
 """
@@ -108,15 +60,13 @@ function sample(tn::TensorNetworkModel, n::Int; usecuda = false, queryvars = get
     cache = cached_einsum(tn.code, xs, size_dict)
     # initialize `y̅` as the initial batch of samples.
     iy = getiyv(tn.code)
-    setmask = falses(length(queryvars))
     idx = map(l->findfirst(==(l), queryvars), iy ∩ queryvars)
-    setmask[idx] .= true
     indices = StatsBase.sample(CartesianIndices(size(cache.content)), _Weights(vec(cache.content)), n)
     configs = zeros(Int, length(queryvars), n)
     for i=1:n
         configs[idx, i] .= indices[i].I .- 1
     end
-    samples = Samples(configs, queryvars, setmask)
+    samples = Samples(configs, queryvars)
     # back-propagate
     env = copy(cache.content)
     fill!(env, one(eltype(env)))
@@ -157,12 +107,12 @@ function generate_samples!(code::NestedEinsum, cache::CacheTree{T}, env::Abstrac
             sample_vars = ix ∩ pool
             probabilities = einsum(DynamicEinCode([ix, ix], sample_vars), (child.content, subenv), size_dict)
             update_samples!(samples, sample_vars, probabilities)
-            pool = setdiff(pool, sample_vars)
+            setdiff!(pool, sample_vars)
 
             # eliminate the sampled variables
             setindex!.(Ref(size_dict), 1, sample_vars)
             subsamples = subset(samples, sample_vars)[:, 1]
-            udpate_cache_tree!(code, cache, sample_vars=>subsamples)
+            udpate_cache_tree!(code, cache, sample_vars=>subsamples, size_dict)
             subenv = eliminate_dimensions(subenv, ix, sample_vars=>subsamples)
 
             # recurse
@@ -178,13 +128,15 @@ function update_samples!(samples::Samples, vars::AbstractVector{L}, probabilitie
     eliminated_locs = idx4labels(samples.labels, vars)
     config = StatsBase.sample(totalset, _Weights(vec(probabilities)))
     samples.samples[eliminated_locs, 1] .= config.I .- 1
-    set_eliminated!(samples, vars)
 end
 
-function udpate_cache_tree!(ne::NestedEinsum, cache::CacheTree{T}, el::Pair{<:AbstractVector{L}}) where {T, L}
+function udpate_cache_tree!(ne::NestedEinsum, cache::CacheTree{T}, el::Pair{<:AbstractVector{L}}, size_dict::Dict{L}) where {T, L}
     OMEinsum.isleaf(ne) && return
+    updated = false
     for (subcode, child, ix) in zip(ne.args, cache.children, getixsv(ne.eins))
+        updated = updated || any(x->x ∈ el.first, ix)
         child.content = eliminate_dimensions(child.content, ix, el)
-        udpate_cache_tree!(subcode, child, el)
+        udpate_cache_tree!(subcode, child, el, size_dict)
     end
+    updated && (cache.content = einsum(ne.eins, (getfield.(cache.children, :content)...,), size_dict))
 end
