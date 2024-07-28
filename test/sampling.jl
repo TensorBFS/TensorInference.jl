@@ -67,12 +67,12 @@ end
 @testset "sample MPS" begin
     n = 4
     chi = 3
+    Random.seed!(140)
     mps = random_matrix_product_state(n, chi)
-    Random.seed!(134)
     num_samples = 10000
-    # samples = map(1:num_samples) do i
-    #     sample(mps, 1; queryvars=vcat(mps.mars...)).samples[:,1]
-    # end
+    samples = map(1:num_samples) do i
+        sample(mps, 1; queryvars=vcat(mps.mars...)).samples[:,1]
+    end
     samples = sample(mps, num_samples; queryvars=vcat(mps.mars...))
     indices = map(samples) do sample
         sum(i->sample[i] * 2^(i-1), 1:n) + 1
@@ -80,7 +80,7 @@ end
     distribution = map(1:2^n) do i
         count(j->j==i, indices) / num_samples
     end
-    probs = normalize!(real.(vec(DynamicEinCode(ixs, collect(1:4))(mps.tensors...))), 1)
+    probs = normalize!(real.(vec(DynamicEinCode(OMEinsum.getixsv(mps.code), collect(1:4))(mps.tensors...))), 1)
     negative_loglikelyhood(probs, samples) = -sum(log.(probs[samples]))/length(samples)
     entropy(probs) = -sum(probs .* log.(probs))
     @show negative_loglikelyhood(probs, indices), entropy(probs)
