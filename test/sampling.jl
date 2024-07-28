@@ -1,5 +1,5 @@
-using TensorInference, Test
-using StatsBase: kldivergence
+using TensorInference, Test, LinearAlgebra
+import StatsBase
 using OMEinsum
 
 @testset "sampling" begin
@@ -77,16 +77,22 @@ end
         optimize_code(DynamicEinCode(ixs, Int[]), OMEinsum.get_size_dict(ixs, tensors), GreedyMethod()),
         tensors,
         Dict{Int, Int}(),
-        [[i] for i=5:10]
+        Vector{Int}[]
     )
-    num_samples = 1
-    samples = sample(mps, num_samples; queryvars=[1, 2, 3, 4])
+    num_samples = 1000
+    samples = map(1:num_samples) do i
+        sample(mps, 1; queryvars=[1, 2, 3, 4]).samples[:, 1]
+    end
     indices = map(samples) do sample
         sum(i->sample[i] * 2^(i-1), 1:4) + 1
     end
-    @show samples
-    @show indices
-    probs = vec(DynamicEinCode(ixs, collect(1:4))(tensors...))
-    negative_loglikelyhood(samples, probs) = -sum(log.(probs[indices]))
-    @test negative_loglikelyhood(samples, probs)
+    distribution = map(1:16) do i
+        count(j->j==i, indices) / num_samples
+    end
+    probs = normalize!(real.(vec(DynamicEinCode(ixs, collect(1:4))(tensors...))), 1)
+    #indices = StatsBase.sample(1:16, StatsBase.Weights(probs), 1000)
+    negative_loglikelyhood(probs, samples) = -sum(log.(probs[samples]))/length(samples)
+    entropy(probs) = -sum(probs .* log.(probs))
+    @show distribution, probs
+    @test negative_loglikelyhood(probs, indices) ≈ entropy(probs) atol=1e-1
 end

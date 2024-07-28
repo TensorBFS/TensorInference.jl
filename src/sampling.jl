@@ -60,30 +60,33 @@ function backward_sampling!(code::EinCode, @nospecialize(xs::Tuple), @nospeciali
     # get probability
     prob_code = optimize_code(EinCode([ixs..., iy], el), size_dict, GreedyMethod(; nrepeat=1))
     el_prev = eliminated_variables(samples)
+    @show el_prev=>subset(samples, el_prev)[:,1]
     xs = [eliminate_dimensions(x, ix, el_prev=>subset(samples, el_prev)[:,1]) for (ix, x) in zip(ixs, xs)]
     probabilities = einsum(prob_code, (xs..., env), size_dict)
+    @show el
+    @show normalize(real.(vec(probabilities)), 1)
 
     # sample from the probability tensor
     totalset = CartesianIndices((map(x->size_dict[x], el)...,))
     eliminated_locs = idx4labels(samples.labels, el)
     config = StatsBase.sample(totalset, _Weights(vec(probabilities)))
+    @show eliminated_locs, config.I .- 1
     samples.samples[eliminated_locs, 1] .= config.I .- 1
 
     # eliminate the sampled variables
     set_eliminated!(samples, el)
-    for l in el
-        size_dict[l] = 1
-    end
+    setindex!.(Ref(size_dict), 1, el)
     sub = subset(samples, el)[:, 1]
+    @show ixs, el=>sub
     xs = [eliminate_dimensions(x, ix, el=>sub) for (ix, x) in zip(ixs, xs)]
-    env = eliminate_dimensions(env, iy, el=>sub)
 
     # update environment
-    return map(1:length(ixs)) do i
+    envs = map(1:length(ixs)) do i
         rest = setdiff(1:length(ixs), i)
         code = optimize_code(EinCode([ixs[rest]..., iy], ixs[i]), size_dict, GreedyMethod(; nrepeat=1))
         einsum(code, (xs[rest]..., env), size_dict)
     end
+    @show envs
 end
 
 function eliminate_dimensions(x::AbstractArray{T, N}, ix::AbstractVector{L}, el::Pair{<:AbstractVector{L}}) where {T, N, L}
@@ -95,6 +98,7 @@ function eliminate_dimensions(x::AbstractArray{T, N}, ix::AbstractVector{L}, el:
             1:size(x, i)
         end
     end
+    @show idx
     return asarray(x[idx...], x)
 end
 
@@ -185,11 +189,22 @@ function generate_samples!(se::SlicedEinsum, cache::CacheTree{T}, env::AbstractA
     return generate_samples!(se.eins, cache, env, samples, size_dict)
 end
 function generate_samples!(code::NestedEinsum, cache::CacheTree{T}, env::AbstractArray{T}, samples::Samples, size_dict::Dict) where {T}
-    if !OMEinsum.isleaf(code)
+    @info "@"
+    if !(OMEinsum.isleaf(code))
+        @info "non-leaf node"
+        @show env
         xs = ntuple(i -> cache.children[i].content, length(cache.children))
         envs = backward_sampling!(code.eins, xs, env, samples, size_dict)
-        for (arg, sib, env) in zip(code.args, cache.children, envs)
-            generate_samples!(arg, sib, env, samples, size_dict)
+        @show envs
+        fucks = map(1:length(code.args)) do k
+            @info k
+            generate_samples!(code.args[k], cache.children[k], envs[k], samples, size_dict)
+            return "fuck"
         end
+        @info fucks
+        return
+    else
+        @info "leaf node"
+        return
     end
 end
