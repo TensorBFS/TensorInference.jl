@@ -43,6 +43,7 @@ function subset(samples::Samples{L}, labels::AbstractVector{L}) where L
 end
 
 function eliminate_dimensions(x::AbstractArray{T, N}, ix::AbstractVector{L}, el::Pair{<:AbstractVector{L}}) where {T, N, L}
+    @assert length(ix) == N
     idx = ntuple(N) do i
         if ix[i] ∈ el.first
             k = el.second[findfirst(==(ix[i]), el.first)] + 1
@@ -51,7 +52,6 @@ function eliminate_dimensions(x::AbstractArray{T, N}, ix::AbstractVector{L}, el:
             1:size(x, i)
         end
     end
-    @show idx
     return asarray(x[idx...], x)
 end
 
@@ -143,9 +143,9 @@ function generate_samples!(se::SlicedEinsum, cache::CacheTree{T}, env::AbstractA
 end
 
 # pool is a vector of labels that are not eliminated yet.
-function generate_samples!(code::NestedEinsum, cache::CacheTree{T}, env::AbstractArray{T}, samples::Samples{L}, pool::Vector{L}, size_dict::Dict) where {T, L}
+function generate_samples!(code::NestedEinsum, cache::CacheTree{T}, env::AbstractArray{T}, samples::Samples{L}, pool::Vector{L}, size_dict::Dict{L}) where {T, L}
     if !(OMEinsum.isleaf(code))
-        ixs, iy = getixsv(code), getiyv(code)
+        ixs, iy = getixsv(code.eins), getiyv(code.eins)
         for (subcode, child, ix) in zip(code.args, cache.children, ixs)
             # subenv for the current child, use it to sample and update its cache
             siblings = filter(x->x !== child, cache.children)
@@ -153,52 +153,38 @@ function generate_samples!(code::NestedEinsum, cache::CacheTree{T}, env::Abstrac
             envcode = optimize_code(EinCode([siblings_ixs..., iy], ix), size_dict, GreedyMethod(; nrepeat=1))
             subenv = einsum(envcode, (getfield.(siblings, :content)..., env), size_dict)
 
-            # sample
+            # get samples
             sample_vars = ix ∩ pool
-            update_samples!(child.content, subenv, samples, ix, sample_vars, size_dict)
+            probabilities = einsum(DynamicEinCode([ix, ix], sample_vars), (child.content, subenv), size_dict)
+            update_samples!(samples, sample_vars, probabilities)
+            pool = setdiff(pool, sample_vars)
 
+            # eliminate the sampled variables
+            setindex!.(Ref(size_dict), 1, sample_vars)
+            subsamples = subset(samples, sample_vars)[:, 1]
+            udpate_cache_tree!(code, cache, sample_vars=>subsamples)
+            subenv = eliminate_dimensions(subenv, ix, sample_vars=>subsamples)
+
+            # recurse
             generate_samples!(subcode, child, subenv, samples, setdiff(pool, sample_vars), size_dict)
         end
     end
 end
 
-"""
-$(TYPEDSIGNATURES)
-
-The backward process for sampling configurations.
-
-### Arguments
-* `code` is the contraction code in the current step,
-* `env` is the environment tensor,
-* `samples` is the samples generated for eliminated variables,
-* `size_dict` is a key-value map from tensor label to dimension size.
-"""
-function update_samples!(code::EinCode, @nospecialize(xs::Tuple), @nospecialize(env), samples::Samples, size_dict)
-    ixs, iy = getixsv(code), getiyv(code)
-    el = setdiff(vcat(ixs...), iy) ∩ samples.labels
-
-    # get probability
-    prob_code = optimize_code(EinCode([ixs..., iy], el), size_dict, GreedyMethod(; nrepeat=1))
-    el_prev = eliminated_variables(samples)
-    xs = [eliminate_dimensions(x, ix, el_prev=>subset(samples, el_prev)[:,1]) for (ix, x) in zip(ixs, xs)]
-    probabilities = einsum(prob_code, (xs..., env), size_dict)
-
-    # sample from the probability tensor
-    totalset = CartesianIndices((map(x->size_dict[x], el)...,))
-    eliminated_locs = idx4labels(samples.labels, el)
+# probabilities is a tensor of probabilities for each variable in `vars`.
+function update_samples!(samples::Samples, vars::AbstractVector{L}, probabilities::AbstractArray{T, N}) where {L, T, N}
+    @assert length(vars) == N
+    totalset = CartesianIndices(probabilities)
+    eliminated_locs = idx4labels(samples.labels, vars)
     config = StatsBase.sample(totalset, _Weights(vec(probabilities)))
     samples.samples[eliminated_locs, 1] .= config.I .- 1
+    set_eliminated!(samples, vars)
+end
 
-    # eliminate the sampled variables
-    set_eliminated!(samples, el)
-    setindex!.(Ref(size_dict), 1, el)
-    sub = subset(samples, el)[:, 1]
-    xs = [eliminate_dimensions(x, ix, el=>sub) for (ix, x) in zip(ixs, xs)]
-
-    # update environment
-    return map(1:length(ixs)) do i
-        rest = setdiff(1:length(ixs), i)
-        code = optimize_code(EinCode([ixs[rest]..., iy], ixs[i]), size_dict, GreedyMethod(; nrepeat=1))
-        einsum(code, (xs[rest]..., env), size_dict)
+function udpate_cache_tree!(ne::NestedEinsum, cache::CacheTree{T}, el::Pair{<:AbstractVector{L}}) where {T, L}
+    OMEinsum.isleaf(ne) && return
+    for (subcode, child, ix) in zip(ne.args, cache.children, getixsv(ne.eins))
+        child.content = eliminate_dimensions(child.content, ix, el)
+        udpate_cache_tree!(subcode, child, el)
     end
 end

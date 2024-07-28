@@ -17,9 +17,9 @@ end
 # It is a tree structure that isomorphic to the contraction tree,
 # `content` is the cached intermediate contraction result.
 # `children` are the children of current node, e.g. tensors that are contracted to get `content`.
-struct CacheTree{T}
+mutable struct CacheTree{T}
     content::AbstractArray{T}
-    children::Vector{CacheTree{T}}
+    const children::Vector{CacheTree{T}}
 end
 
 function cached_einsum(se::SlicedEinsum, @nospecialize(xs), size_dict)
