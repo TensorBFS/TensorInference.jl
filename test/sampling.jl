@@ -64,24 +64,12 @@ using OMEinsum
 end
 
 @testset "sample MPS" begin
-    tensors = [
-        randn(ComplexF64, 2, 3),
-        randn(ComplexF64, 3, 2, 3),
-        randn(ComplexF64, 3, 2, 3),
-        randn(ComplexF64, 3, 2),
-    ]
-    tensors = [tensors..., conj.(tensors)...]
-    ixs = [[1, 5], [5, 2, 6], [6, 3, 7], [7, 4], [1, 8], [8, 2, 9], [9, 3, 10], [10, 4]]
-    mps = TensorNetworkModel(
-        collect(1:10),
-        optimize_code(DynamicEinCode(ixs, Int[]), OMEinsum.get_size_dict(ixs, tensors), GreedyMethod()),
-        tensors,
-        Dict{Int, Int}(),
-        Vector{Int}[]
-    )
+    n = 4
+    chi = 3
+    mps = matrix_product_state(n, chi)
     num_samples = 1000
     samples = map(1:num_samples) do i
-        sample(mps, 1; queryvars=[1, 2, 3, 4]).samples[:, 1]
+        sample(mps, 1; queryvars=vcat(mps.mars...)).samples[:, 1]
     end
     indices = map(samples) do sample
         sum(i->sample[i] * 2^(i-1), 1:4) + 1
@@ -89,7 +77,7 @@ end
     distribution = map(1:16) do i
         count(j->j==i, indices) / num_samples
     end
-    probs = normalize!(real.(vec(DynamicEinCode(ixs, collect(1:4))(tensors...))), 1)
+    probs = normalize!(real.(vec(DynamicEinCode(ixs, collect(1:4))(mps.tensors...))), 1)
     negative_loglikelyhood(probs, samples) = -sum(log.(probs[samples]))/length(samples)
     entropy(probs) = -sum(probs .* log.(probs))
     @test negative_loglikelyhood(probs, indices) ≈ entropy(probs) atol=1e-1

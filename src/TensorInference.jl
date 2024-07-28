@@ -35,6 +35,9 @@ export sample
 # MMAP
 export MMAPModel
 
+# utils
+export matrix_product_state
+
 include("Core.jl")
 include("RescaledArray.jl")
 include("utils.jl")

@@ -70,7 +70,7 @@ function sample(tn::TensorNetworkModel, n::Int; usecuda = false, queryvars = get
     # back-propagate
     env = copy(cache.content)
     fill!(env, one(eltype(env)))
-    generate_samples!(tn.code, cache, env, samples, samples.labels, size_dict)
+    generate_samples!(tn.code, cache, env, samples, copy(samples.labels), size_dict)  # note: `copy` is necessary
     # set evidence variables
     for (k, v) in tn.evidence
         idx = findfirst(==(k), samples.labels)
@@ -80,7 +80,7 @@ function sample(tn::TensorNetworkModel, n::Int; usecuda = false, queryvars = get
 end
 _Weights(x::AbstractVector{<:Real}) = Weights(x)
 function _Weights(x::AbstractArray{<:Complex})
-    @assert all(e->abs(imag(e)) < 100*eps(abs(e)), x)
+    @assert all(e->abs(imag(e)) < 100*eps(abs(e)), x) "Complex probability encountered: $x"
     return Weights(real.(x))
 end
 
@@ -118,7 +118,7 @@ function generate_samples!(code::NestedEinsum, cache::CacheTree{T}, env::Abstrac
             end
 
             # recurse
-            generate_samples!(subcode, child, subenv, samples, setdiff(pool, sample_vars), size_dict)
+            generate_samples!(subcode, child, subenv, samples, pool, size_dict)
         end
     end
 end
