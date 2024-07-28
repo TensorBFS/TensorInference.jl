@@ -68,4 +68,5 @@ read_td_file
 sample
 update_evidence!
 update_temperature
+random_matrix_product_state
 ```

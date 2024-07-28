@@ -331,7 +331,6 @@ connected in a chain.
 - `chi` is the bond dimension of the virtual indices.
 - `d` is the dimension of the physical indices.
 """
-random_matrix_product_state(n::Int, chi::Int, d::Int=2) = random_matrix_product_state(ComplexF64, n, chi, d)
 function random_matrix_product_state(::Type{T}, n::Int, chi::Int, d::Int=2) where T
     # chi ^ (n-1) * (variance^n)^2 == 1/d^n
     variance = d^(-1/2) * chi^(-1/2+1/2n)
@@ -358,3 +357,4 @@ function random_matrix_product_state(::Type{T}, n::Int, chi::Int, d::Int=2) wher
         Vector{Int}[[i] for i=1:n]
     )
 end
+random_matrix_product_state(n::Int, chi::Int, d::Int=2) = random_matrix_product_state(ComplexF64, n, chi, d)
