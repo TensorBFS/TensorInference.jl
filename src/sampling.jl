@@ -103,17 +103,19 @@ function generate_samples!(code::NestedEinsum, cache::CacheTree{T}, env::Abstrac
             envcode = optimize_code(EinCode([siblings_ixs..., iy], ix), size_dict, GreedyMethod(; nrepeat=1))
             subenv = einsum(envcode, (getfield.(siblings, :content)..., env), size_dict)
 
-            # get samples
+            # generate samples
             sample_vars = ix ∩ pool
-            probabilities = einsum(DynamicEinCode([ix, ix], sample_vars), (child.content, subenv), size_dict)
-            update_samples!(samples, sample_vars, probabilities)
-            setdiff!(pool, sample_vars)
+            if !isempty(sample_vars)
+                probabilities = einsum(DynamicEinCode([ix, ix], sample_vars), (child.content, subenv), size_dict)
+                update_samples!(samples, sample_vars, probabilities)
+                setdiff!(pool, sample_vars)
 
-            # eliminate the sampled variables
-            setindex!.(Ref(size_dict), 1, sample_vars)
-            subsamples = subset(samples, sample_vars)[:, 1]
-            udpate_cache_tree!(code, cache, sample_vars=>subsamples, size_dict)
-            subenv = eliminate_dimensions(subenv, ix, sample_vars=>subsamples)
+                # eliminate the sampled variables
+                setindex!.(Ref(size_dict), 1, sample_vars)
+                subsamples = subset(samples, sample_vars)[:, 1]
+                udpate_cache_tree!(code, cache, sample_vars=>subsamples, size_dict)
+                subenv = eliminate_dimensions(subenv, ix, sample_vars=>subsamples)
+            end
 
             # recurse
             generate_samples!(subcode, child, subenv, samples, setdiff(pool, sample_vars), size_dict)
@@ -134,9 +136,11 @@ function udpate_cache_tree!(ne::NestedEinsum, cache::CacheTree{T}, el::Pair{<:Ab
     OMEinsum.isleaf(ne) && return
     updated = false
     for (subcode, child, ix) in zip(ne.args, cache.children, getixsv(ne.eins))
-        updated = updated || any(x->x ∈ el.first, ix)
-        child.content = eliminate_dimensions(child.content, ix, el)
-        udpate_cache_tree!(subcode, child, el, size_dict)
+        if any(x->x ∈ el.first, ix)
+            updated = true
+            child.content = eliminate_dimensions(child.content, ix, el)
+            udpate_cache_tree!(subcode, child, el, size_dict)
+        end
     end
     updated && (cache.content = einsum(ne.eins, (getfield.(cache.children, :content)...,), size_dict))
 end
