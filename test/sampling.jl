@@ -66,11 +66,9 @@ end
 @testset "sample MPS" begin
     n = 4
     chi = 3
-    mps = matrix_product_state(n, chi)
+    mps = random_matrix_product_state(n, chi)
     num_samples = 1000
-    samples = map(1:num_samples) do i
-        sample(mps, 1; queryvars=vcat(mps.mars...)).samples[:, 1]
-    end
+    sample(mps, num_samples; queryvars=vcat(mps.mars...))
     indices = map(samples) do sample
         sum(i->sample[i] * 2^(i-1), 1:4) + 1
     end

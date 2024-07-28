@@ -36,7 +36,7 @@ export sample
 export MMAPModel
 
 # utils
-export matrix_product_state
+export random_matrix_product_state
 
 include("Core.jl")
 include("RescaledArray.jl")

@@ -331,19 +331,22 @@ connected in a chain.
 - `chi` is the bond dimension of the virtual indices.
 - `d` is the dimension of the physical indices.
 """
-function matrix_product_state(n::Int, chi::Int, d::Int=2)
-    tensors = Any[randn(ComplexF64, d, chi)]
+random_matrix_product_state(n::Int, chi::Int, d::Int=2) = random_matrix_product_state(ComplexF64, n, chi, d)
+function random_matrix_product_state(::Type{T}, n::Int, chi::Int, d::Int=2) where T
+    # chi ^ (n-1) * (variance^n)^2 == 1/d^n
+    variance = d^(-1/2) * chi^(-1/2+1/2n)
+    tensors = Any[randn(T, d, chi) .* variance]
     physical_indices = collect(1:n)
     virtual_indices_ket = collect(n+1:2n-1)
     virtual_indices_bra = collect(2n:3n-2)
     ixs_ket = [[physical_indices[1], virtual_indices_ket[1]]]
     ixs_bra = [[physical_indices[1], virtual_indices_bra[1]]]
     for i = 2:n-1
-        push!(tensors, randn(ComplexF64, chi, d, chi))
+        push!(tensors, randn(T, chi, d, chi) .* variance)
         push!(ixs_ket, [virtual_indices_ket[i-1], physical_indices[i], virtual_indices_ket[i]])
         push!(ixs_bra, [virtual_indices_bra[i-1], physical_indices[i], virtual_indices_bra[i]])
     end
-    push!(tensors, randn(ComplexF64, chi, d))
+    push!(tensors, randn(T, chi, d) .* variance)
     push!(ixs_ket, [virtual_indices_ket[n-1], physical_indices[n]])
     push!(ixs_bra, [virtual_indices_bra[n-1], physical_indices[n]])
     tensors, ixs = [tensors..., conj.(tensors)...], [ixs_ket..., ixs_bra...]

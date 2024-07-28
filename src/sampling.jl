@@ -50,6 +50,10 @@ Returns a vector of vector, each element being a configurations defined on `get_
 ### Arguments
 * `tn` is the tensor network model.
 * `n` is the number of samples to be returned.
+
+### Keyword Arguments
+* `usecuda` is a boolean flag to indicate whether to use CUDA for tensor computation.
+* `queryvars` is the variables to be sampled, default is `get_vars(tn)`.
 """
 function sample(tn::TensorNetworkModel, n::Int; usecuda = false, queryvars = get_vars(tn))::Samples
     # generate tropical tensors with its elements being log(p).
@@ -80,7 +84,7 @@ function sample(tn::TensorNetworkModel, n::Int; usecuda = false, queryvars = get
 end
 _Weights(x::AbstractVector{<:Real}) = Weights(x)
 function _Weights(x::AbstractArray{<:Complex})
-    @assert all(e->abs(imag(e)) < 100*eps(abs(e)), x) "Complex probability encountered: $x"
+    @assert all(e->abs(imag(e)) < max(100*eps(abs(e)), 1e-10), x) "Complex probability encountered: $x"
     return Weights(real.(x))
 end
 
