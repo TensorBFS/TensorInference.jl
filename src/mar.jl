@@ -145,10 +145,7 @@ The following example is taken from [`examples/asia-network/main.jl`](https://te
 ```jldoctest; setup = :(using TensorInference, Random; Random.seed!(0))
 julia> model = read_model_file(pkgdir(TensorInference, "examples", "asia-network", "model.uai"));
 
-julia> tn = TensorNetworkModel(model; evidence=Dict(1=>0))
-TensorNetworkModel{Int64, DynamicNestedEinsum{Int64}, Array{Float64}}
-variables: 1 (evidence → 0), 2, 3, 4, 5, 6, 7, 8
-contraction time = 2^6.022, space = 2^2.0, read-write = 2^7.077
+julia> tn = TensorNetworkModel(model; evidence=Dict(1=>0));
 
 julia> marginals(tn)
 Dict{Vector{Int64}, Vector{Float64}} with 8 entries:
@@ -161,10 +158,7 @@ Dict{Vector{Int64}, Vector{Float64}} with 8 entries:
   [7] => [0.145092, 0.854908]
   [2] => [0.05, 0.95]
 
-julia> tn2 = TensorNetworkModel(model; evidence=Dict(1=>0), mars=[[2, 3], [3, 4]])
-TensorNetworkModel{Int64, DynamicNestedEinsum{Int64}, Array{Float64}}
-variables: 1 (evidence → 0), 2, 3, 4, 5, 6, 7, 8
-contraction time = 2^7.781, space = 2^5.0, read-write = 2^8.443
+julia> tn2 = TensorNetworkModel(model; evidence=Dict(1=>0), mars=[[2, 3], [3, 4]]);
 
 julia> marginals(tn2)
 Dict{Vector{Int64}, Matrix{Float64}} with 2 entries:
