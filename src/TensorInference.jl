@@ -11,6 +11,7 @@ using OMEinsum, LinearAlgebra
 using DocStringExtensions, TropicalNumbers
 # The Tropical GEMM support
 using StatsBase
+using PrettyTables
 import Pkg
 
 # reexport OMEinsum functions
@@ -33,6 +34,9 @@ export sample
 
 # MMAP
 export MMAPModel
+
+# utils
+export random_matrix_product_state
 
 include("Core.jl")
 include("RescaledArray.jl")
