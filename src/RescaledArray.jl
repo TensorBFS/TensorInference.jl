@@ -46,4 +46,4 @@ end
 Base.size(arr::RescaledArray) = size(arr.normalized_value)
 Base.size(arr::RescaledArray, i::Int) = size(arr.normalized_value, i)
 
-match_arraytype(::Type{<:RescaledArray{T, N}}, target::AbstractArray{T, N}) where {T, N} = rescale_array(target)
+match_arraytype(::Type{<:RescaledArray{T, N, AT}}, target::AbstractArray{T, N}) where {T, N, AT} = rescale_array(match_arraytype(AT, target))
