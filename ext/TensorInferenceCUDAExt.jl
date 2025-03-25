@@ -1,4 +1,7 @@
-using .CUDA: CuArray
+module TensorInferenceCUDAExt
+using CUDA: CuArray
+import CUDA
+import TensorInference: match_arraytype, keep_only!, onehot_like, togpu
 
 function onehot_like(A::CuArray, j)
     mask = zero(A)
@@ -14,4 +17,8 @@ function keep_only!(x::CuArray{T}, j) where T
     fill!(x, zero(T))
     CUDA.@allowscalar x[j] = hotvalue
     return x
+end
+
+togpu(x::AbstractArray) = CuArray(x)
+
 end

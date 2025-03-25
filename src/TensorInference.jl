@@ -12,6 +12,8 @@ using DocStringExtensions, TropicalNumbers
 # The Tropical GEMM support
 using StatsBase
 using PrettyTables
+using ProblemReductions
+
 import Pkg
 
 # reexport OMEinsum functions
@@ -35,6 +37,9 @@ export sample
 # MMAP
 export MMAPModel
 
+# for ProblemReductions
+export update_temperature
+
 # utils
 export random_matrix_product_state
 
@@ -45,12 +50,7 @@ include("mar.jl")
 include("map.jl")
 include("mmap.jl")
 include("sampling.jl")
-
-using Requires
-function __init__()
-    @require CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba" include("cuda.jl")
-    @require GenericTensorNetworks = "3521c873-ad32-4bb4-b63d-f4f178f42b49" include("generictensornetworks.jl")
-end
+include("cspmodels.jl")
 
 # import PrecompileTools
 # PrecompileTools.@setup_workload begin

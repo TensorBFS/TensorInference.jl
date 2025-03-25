@@ -1,5 +1,6 @@
 using Test
-using GenericTensorNetworks, TensorInference
+using TensorInference, ProblemReductions.Graphs
+using GenericTensorNetworks
 
 @testset "marginals" begin
     # compute the probability
@@ -24,4 +25,10 @@ using GenericTensorNetworks, TensorInference
     model = MMAPModel(problem, β; queryvars=[1,4])
     logp, config = most_probable_config(model)
     @test config == [0, 0]
+
+    β = 1.0
+    problem = SpinGlass(g, -ones(Int, ne(g)), zeros(Int, nv(g)))
+    model = TensorNetworkModel(problem, β; mars=[[2, 3]])
+    samples = sample(model, 100)
+    @test sum(energy.(Ref(problem), samples))/100 <= -14
 end
