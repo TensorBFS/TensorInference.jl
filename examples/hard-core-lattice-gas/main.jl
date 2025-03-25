@@ -15,7 +15,7 @@
 
 a, b = (1, 0), (0.5, 0.5*sqrt(3))
 Na, Nb = 10, 10
-sites = vec([50 .* (a .* i .+ b .* j) for i=1:Na, j=1:Nb])
+sites = vec([50 .* (a .* i .+ b .* j) for i=1:Na, j=1:Nb]);
 
 # There exists blockade interactions between hard-core particles.
 # We connect two lattice sites within blockade radius by an edge.
