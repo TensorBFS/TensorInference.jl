@@ -4,7 +4,7 @@ function generate_tensors(β::T, problem::ConstraintSatisfactionProblem) where T
     objs = ProblemReductions.objectives(problem)
     ixs = vcat([t.variables for t in cons], [t.variables for t in objs])
 	# generate tensors for x = e^β
-    x = exp(β)
+    x = energy_mode(problem) === LargerSizeIsBetter() ? exp(β) : exp(-β)
     tensors = vcat(
         Array{T}[reshape(map(s -> s ? one(x) : zero(x), t.specification), ntuple(i->num_flavors(problem), length(t.variables))) for t in cons],
         Array{T}[reshape(map(s -> x^s, t.specification), ntuple(i->num_flavors(problem), length(t.variables))) for t in objs]
