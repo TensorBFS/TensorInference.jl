@@ -7,86 +7,63 @@ $TYPEDFIELDS
 
 The sampled configurations are stored in `samples`, which is a vector of vector.
 `labels` is a vector of variable names for labeling configurations.
-The `setmask` is an boolean indicator to denote whether the sampling process of a variable is complete.
 """
 struct Samples{L} <: AbstractVector{SubArray{Float64, 1, Matrix{Float64}, Tuple{Base.Slice{Base.OneTo{Int64}}, Int64}, true}}
     samples::Matrix{Int}  # size is nvars × nsample
     labels::Vector{L}
-    setmask::BitVector
-end
-function setmask!(samples::Samples, eliminated_variables)
-    for var in eliminated_variables
-        loc = findfirst(==(var), samples.labels)
-        samples.setmask[loc] && error("varaible `$var` is already eliminated.")
-        samples.setmask[loc] = true
-    end
-    return samples
 end
 Base.getindex(s::Samples, i::Int) = view(s.samples, :, i)
 Base.length(s::Samples) = size(s.samples, 2)
 Base.size(s::Samples) = (size(s.samples, 2),)
-idx4labels(totalset, labels)::Vector{Int} = map(v->findfirst(==(v), totalset), labels)
+function Base.show(io::IO, s::Samples)  # display with PrettyTables
+    println(io, typeof(s))
+    PrettyTables.pretty_table(io, s.samples', header=s.labels)
+end
+num_samples(samples::Samples) = size(samples.samples, 2)
+function idx4labels(totalset::AbstractVector{L}, labels::AbstractVector{L})::Vector{Int} where L
+    map(v->findfirst(==(v), totalset), labels)
+end
+function subset(samples::Samples{L}, labels::AbstractVector{L}) where L
+    idx = idx4labels(samples.labels, labels)
+    return view(samples.samples, idx, :)
+end
 
-"""
-$(TYPEDSIGNATURES)
-
-The backward process for sampling configurations.
-
-* `ixs` and `xs` are labels and tensor data for input tensors,
-* `iy` and `y` are labels and tensor data for the output tensor,
-* `samples` is the samples generated for eliminated variables,
-* `size_dict` is a key-value map from tensor label to dimension size.
-"""
-function backward_sampling!(ixs, @nospecialize(xs::Tuple), iy, @nospecialize(y), samples::Samples, size_dict)
-    eliminated_variables = setdiff(vcat(ixs...), iy)
-    eliminated_locs = idx4labels(samples.labels, eliminated_variables)
-    setmask!(samples, eliminated_variables)
-
-    # the contraction code to get probability
-    newixs = map(ix->setdiff(ix, iy), ixs)
-    ix_in_sample = map(ix->idx4labels(samples.labels, ix ∩ iy), ixs)
-    slice_xs_dim = map(ix->idx4labels(ix, ix ∩ iy), ixs)
-
-    # relabel and compute probabilities
-    uniquelabels = unique!(vcat(ixs..., iy))
-    labelmap = Dict(zip(uniquelabels, 1:length(uniquelabels)))
-    batchdim = length(labelmap) + 1
-    newnewixs = [Int[getindex.(Ref(labelmap), ix)..., batchdim] for ix in newixs]
-    newnewiy = Int[getindex.(Ref(labelmap), eliminated_variables)..., batchdim]
-    newnewxs = [get_slice(x, dimx, samples.samples[ixloc, :]) for (x, dimx, ixloc) in zip(xs, slice_xs_dim, ix_in_sample)]
-    code = DynamicEinCode(newnewixs, newnewiy)
-    probabilities = code(newnewxs...)
-
-    totalset = CartesianIndices((map(x->size_dict[x], eliminated_variables)...,))
-    for i=axes(samples.samples, 2)
-        config = StatsBase.sample(totalset, Weights(vec(selectdim(probabilities, ndims(probabilities), i))))
-        # update the samplesS
-        samples.samples[eliminated_locs, i] .= config.I .- 1
+function eliminate_dimensions(x::AbstractArray{T, N}, ix::AbstractVector{L}, el::Pair{<:AbstractVector{L}, <:AbstractVector}) where {T, N, L}
+    @assert length(ix) == N
+    return x[eliminated_selector(size(x), ix, el.first, el.second)...]
+end
+function eliminated_size(size0, ix, labels)
+    @assert length(size0) == length(ix)
+    return ntuple(length(ix)) do i
+        ix[i] ∈ labels ? 1 : size0[i]
     end
-    return samples
 end
-
-# type unstable
-function get_slice(x::AbstractArray{T}, slicedim, configs::AbstractMatrix) where T
-    outdim = setdiff(1:ndims(x), slicedim)
-    res = similar(x, [size(x, d) for d in outdim]..., size(configs, 2))
-    return get_slice!(res, x, outdim, slicedim, configs)
+function eliminated_selector(size0, ix, labels, config)
+    return ntuple(length(ix)) do i
+        if ix[i] ∈ labels
+            k = config[findfirst(==(ix[i]), labels)] + 1
+            k:k
+        else
+            1:size0[i]
+        end
+    end
 end
-
-function get_slice!(res, x::AbstractArray{T}, outdim, slicedim, configs::AbstractMatrix) where T
-    xstrides = strides(x)
-    @inbounds for ci in CartesianIndices(res)
-        idx = 1
-        # the output dimension part
-        for (dim, k) in zip(outdim, ci.I)
-            idx += (k-1) * xstrides[dim]
-        end
-        # the sliced part
-        batchidx = ci.I[end]
-        for (dim, k) in zip(slicedim, view(configs, :, batchidx))
-            idx += k * xstrides[dim]
-        end
-        res[ci] = x[idx]
+function eliminate_dimensions_addbatch!(x::AbstractArray{T, N}, ix::AbstractVector{L}, el::Pair{<:AbstractVector{L}, <:AbstractMatrix}, batch_label::L) where {T, N, L}
+    nbatch = size(el.second, 2)
+    @assert length(ix) == N
+    res = similar(x, (eliminated_size(size(x), ix, el.first)..., nbatch))
+    for ibatch in 1:nbatch
+        selectdim(res, N+1, ibatch) .= eliminate_dimensions(x, ix, el.first=>view(el.second, :, ibatch))
+    end
+    push!(ix, batch_label)
+    return res
+end
+function eliminate_dimensions_withbatch(x::AbstractArray{T, N}, ix::AbstractVector{L}, el::Pair{<:AbstractVector{L}, <:AbstractMatrix}) where {T, N, L}
+    nbatch = size(el.second, 2)
+    @assert length(ix) == N && size(x, N) == nbatch
+    res = similar(x, (eliminated_size(size(x), ix, el.first)))
+    for ibatch in 1:nbatch
+        selectdim(res, N, ibatch) .= eliminate_dimensions(selectdim(x, N, ibatch), ix[1:end-1], el.first=>view(el.second, :, ibatch))
     end
     return res
 end
@@ -100,8 +77,12 @@ Returns a vector of vector, each element being a configurations defined on `get_
 ### Arguments
 * `tn` is the tensor network model.
 * `n` is the number of samples to be returned.
+
+### Keyword Arguments
+* `usecuda` is a boolean flag to indicate whether to use CUDA for tensor computation.
+* `queryvars` is the variables to be sampled, default is `get_vars(tn)`.
 """
-function sample(tn::TensorNetworkModel, n::Int; usecuda = false)::Samples
+function sample(tn::TensorNetworkModel, n::Int; usecuda = false, queryvars = get_vars(tn))::Samples
     # generate tropical tensors with its elements being log(p).
     xs = adapt_tensors(tn; usecuda, rescale = false)
     # infer size from the contraction code and the input tensors `xs`, returns a label-size dictionary.
@@ -109,40 +90,106 @@ function sample(tn::TensorNetworkModel, n::Int; usecuda = false)::Samples
     # forward compute and cache intermediate results.
     cache = cached_einsum(tn.code, xs, size_dict)
     # initialize `y̅` as the initial batch of samples.
-    labels = get_vars(tn)
     iy = getiyv(tn.code)
-    setmask = falses(length(labels))
-    idx = map(l->findfirst(==(l), labels), iy)
-    setmask[idx] .= true
-    indices = StatsBase.sample(CartesianIndices(size(cache.content)), Weights(normalize!(vec(LinearAlgebra.normalize!(cache.content)))), n)
-    configs = zeros(Int, length(labels), n)
+    idx = map(l->findfirst(==(l), queryvars), iy ∩ queryvars)
+    indices = StatsBase.sample(CartesianIndices(size(cache.content)), _Weights(vec(cache.content)), n)
+    configs = zeros(Int, length(queryvars), n)
     for i=1:n
         configs[idx, i] .= indices[i].I .- 1
     end
-    samples = Samples(configs, labels, setmask)
+    samples = Samples(configs, queryvars)
     # back-propagate
-    generate_samples(tn.code, cache, samples, size_dict)
+    env = similar(cache.content, (size(cache.content)..., n))  # batched env
+    fill!(env, one(eltype(env)))
+    batch_label = _newindex(OMEinsum.uniquelabels(tn.code))
+    code = deepcopy(tn.code)
+    iy_env = [OMEinsum.getiyv(code)..., batch_label]
+    size_dict[batch_label] = n
+    generate_samples!(code, cache, iy_env, env, samples, copy(samples.labels), batch_label, size_dict)  # note: `copy` is necessary
     # set evidence variables
-    for (k, v) in tn.evidence
-        idx = findfirst(==(k), labels)
+    for (k, v) in setdiff(tn.evidence, queryvars)
+        idx = findfirst(==(k), queryvars)
         samples.samples[idx, :] .= v
     end
     return samples
 end
+_newindex(labels::AbstractVector{<:Union{Int, Char}}) = maximum(labels) + 1
+_newindex(::AbstractVector{Symbol}) = gensym(:batch)
+_Weights(x::AbstractVector{<:Real}) = Weights(x)
+function _Weights(x::AbstractArray{<:Complex})
+    @assert all(e->abs(imag(e)) < max(100*eps(abs(e)), 1e-8), x) "Complex probability encountered: $x"
+    return Weights(real.(x))
+end
 
-function generate_samples(se::SlicedEinsum, cache::CacheTree{T}, samples, size_dict::Dict) where {T}
+function generate_samples!(se::SlicedEinsum, cache::CacheTree{T}, iy_env::Vector{Int}, env::AbstractArray{T}, samples::Samples{L}, pool, batch_label::L, size_dict::Dict{L}) where {T, L}
     # slicing is not supported yet.
     if length(se.slicing) != 0
         @warn "Slicing is not supported for caching, got nslices = $(length(se.slicing))! Fallback to `NestedEinsum`."
     end
-    return generate_samples(se.eins, cache, samples, size_dict)
+    return generate_samples!(se.eins, cache, iy_env, env, samples, pool, batch_label, size_dict)
 end
-function generate_samples(code::NestedEinsum, cache::CacheTree{T}, samples, size_dict::Dict) where {T}
-    if !OMEinsum.isleaf(code)
-        xs = ntuple(i -> cache.siblings[i].content, length(cache.siblings))
-        backward_sampling!(OMEinsum.getixs(code.eins), xs, OMEinsum.getiy(code.eins), cache.content, samples, size_dict)
-        for (arg, sib) in zip(code.args, cache.siblings)
-            generate_samples(arg, sib, samples, size_dict)
+
+# pool is a vector of labels that are not eliminated yet.
+function generate_samples!(code::DynamicNestedEinsum, cache::CacheTree{T}, iy_env::Vector{L}, env::AbstractArray{T}, samples::Samples{L}, pool::Vector{L}, batch_label::L, size_dict::Dict{L}) where {T, L}
+    @assert length(iy_env) == ndims(env)
+    if !(OMEinsum.isleaf(code))
+        ixs, iy = getixsv(code.eins), getiyv(code.eins)
+        for (subcode, child, ix) in zip(code.args, cache.children, ixs)
+            # subenv for the current child, use it to sample and update its cache
+            siblings = filter(x->x !== child, cache.children)
+            siblings_ixs = filter(x->x !== ix, ixs)
+            iy_subenv = batch_label ∈ ix ? ix : [ix..., batch_label]
+            envcode = optimize_code(EinCode([siblings_ixs..., iy_env], iy_subenv), size_dict, GreedyMethod(; nrepeat=1))
+            subenv = einsum(envcode, (getfield.(siblings, :content)..., env), size_dict)
+
+            # generate samples
+            sample_vars = ix ∩ pool
+            if !isempty(sample_vars)
+                probabilities = einsum(DynamicEinCode([ix, iy_subenv], [sample_vars..., batch_label]), (child.content, subenv), size_dict)
+                for ibatch in axes(probabilities, ndims(probabilities))
+                    update_samples!(samples.labels, samples[ibatch], sample_vars, selectdim(probabilities, ndims(probabilities), ibatch))
+                end
+                setdiff!(pool, sample_vars)
+
+                # eliminate the sampled variables
+                setindex!.(Ref(size_dict), 1, sample_vars)
+                subsamples = subset(samples, sample_vars)
+                udpate_cache_tree!(code, cache, sample_vars=>subsamples, batch_label, size_dict)
+                subenv = _eliminate!(subenv, ix, sample_vars=>subsamples, batch_label)
+            end
+
+            # recurse
+            generate_samples!(subcode, child, iy_subenv, subenv, samples, pool, batch_label, size_dict)
         end
     end
+end
+
+function _eliminate!(x, ix, el, batch_label)
+    if batch_label ∈ ix
+        eliminate_dimensions_withbatch(x, ix, el)
+    else
+        eliminate_dimensions_addbatch!(x, ix, el, batch_label)
+    end
+end
+
+# probabilities is a tensor of probabilities for each variable in `vars`.
+function update_samples!(labels, sample, vars::AbstractVector{L}, probabilities::AbstractArray{T, N}) where {L, T, N}
+    @assert length(vars) == N
+    totalset = CartesianIndices(probabilities)
+    eliminated_locs = idx4labels(labels, vars)
+    config = StatsBase.sample(totalset, _Weights(vec(probabilities)))
+    sample[eliminated_locs] .= config.I .- 1
+end
+
+function udpate_cache_tree!(ne::NestedEinsum, cache::CacheTree{T}, el::Pair{<:AbstractVector{L}}, batch_label::L, size_dict::Dict{L}) where {T, L}
+    OMEinsum.isleaf(ne) && return
+    updated = false
+    for (subcode, child, ix) in zip(ne.args, cache.children, getixsv(ne.eins))
+        if any(x->x ∈ el.first, ix)
+            updated = true
+            child.content = _eliminate!(child.content, ix, el, batch_label)
+            udpate_cache_tree!(subcode, child, el, batch_label, size_dict)
+        end
+    end
+    updated && (cache.content = einsum(ne.eins, (getfield.(cache.children, :content)...,), size_dict))
 end

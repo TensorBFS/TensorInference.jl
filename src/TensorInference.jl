@@ -11,6 +11,9 @@ using OMEinsum, LinearAlgebra
 using DocStringExtensions, TropicalNumbers
 # The Tropical GEMM support
 using StatsBase
+using PrettyTables
+using ProblemReductions
+
 import Pkg
 
 # reexport OMEinsum functions
@@ -34,8 +37,11 @@ export sample
 # MMAP
 export MMAPModel
 
-# for GenericTensorNetworks
+# for ProblemReductions
 export update_temperature
+
+# utils
+export random_matrix_product_state
 
 include("Core.jl")
 include("RescaledArray.jl")
@@ -44,6 +50,7 @@ include("mar.jl")
 include("map.jl")
 include("mmap.jl")
 include("sampling.jl")
+include("cspmodels.jl")
 
 # import PrecompileTools
 # PrecompileTools.@setup_workload begin
@@ -53,18 +60,5 @@ include("sampling.jl")
 #         include("../example/asia-network/main.jl")
 #     end
 # end
-
-"""
-$TYPEDSIGNATURES
-
-Update the temperature of a tensor network model.
-The program will regenerate tensors from the problem, without repeated optimizing the contraction order.
-
-### Arguments
-- `tnet` is the [`TensorNetworkModel`](@ref) instance.
-- `problem` is the target constraint satisfiability problem.
-- `β` is the inverse temperature.
-"""
-function update_temperature end
 
 end # module

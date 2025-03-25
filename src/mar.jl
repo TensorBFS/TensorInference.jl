@@ -16,10 +16,10 @@ end
 # `CacheTree` stores intermediate `NestedEinsum` contraction results.
 # It is a tree structure that isomorphic to the contraction tree,
 # `content` is the cached intermediate contraction result.
-# `siblings` are the siblings of current node.
-struct CacheTree{T}
+# `children` are the children of current node, e.g. tensors that are contracted to get `content`.
+mutable struct CacheTree{T}
     content::AbstractArray{T}
-    siblings::Vector{CacheTree{T}}
+    const children::Vector{CacheTree{T}}
 end
 
 function cached_einsum(se::SlicedEinsum, @nospecialize(xs), size_dict)
@@ -62,7 +62,7 @@ function generate_gradient_tree(code::NestedEinsum, cache::CacheTree{T}, dy::Abs
     if OMEinsum.isleaf(code)
         return CacheTree(dy, CacheTree{T}[])
     else
-        xs = ntuple(i -> cache.siblings[i].content, length(cache.siblings))
+        xs = ntuple(i -> cache.children[i].content, length(cache.children))
         # `einsum_grad` is the back-propagation rule for einsum function.
         # If the forward pass is `y = einsum(EinCode(inputs_labels, output_labels), (A, B, ...), size_dict)`
         # Then the back-propagation pass is
@@ -73,7 +73,7 @@ function generate_gradient_tree(code::NestedEinsum, cache::CacheTree{T}, dy::Abs
         # ```
         # Let `L` be the loss, we will have `y̅ := ∂L/∂y`, `A̅ := ∂L/∂A`...
         dxs = einsum_backward_rule(code.eins, xs, cache.content, size_dict, dy)
-        return CacheTree(dy, generate_gradient_tree.(code.args, cache.siblings, dxs, Ref(size_dict)))
+        return CacheTree(dy, generate_gradient_tree.(code.args, cache.children, dxs, Ref(size_dict)))
     end
 end
 
@@ -116,7 +116,7 @@ function extract_leaves!(code, cache, res)
         res[code.tensorindex] = cache.content
     else
         # resurse deeper
-        extract_leaves!.(code.args, cache.siblings, Ref(res))
+        extract_leaves!.(code.args, cache.children, Ref(res))
     end
     return res
 end
@@ -145,10 +145,7 @@ The following example is taken from [`examples/asia-network/main.jl`](https://te
 ```jldoctest; setup = :(using TensorInference, Random; Random.seed!(0))
 julia> model = read_model_file(pkgdir(TensorInference, "examples", "asia-network", "model.uai"));
 
-julia> tn = TensorNetworkModel(model; evidence=Dict(1=>0))
-TensorNetworkModel{Int64, DynamicNestedEinsum{Int64}, Array{Float64}}
-variables: 1 (evidence → 0), 2, 3, 4, 5, 6, 7, 8
-contraction time = 2^6.022, space = 2^2.0, read-write = 2^7.077
+julia> tn = TensorNetworkModel(model; evidence=Dict(1=>0));
 
 julia> marginals(tn)
 Dict{Vector{Int64}, Vector{Float64}} with 8 entries:
@@ -161,10 +158,7 @@ Dict{Vector{Int64}, Vector{Float64}} with 8 entries:
   [7] => [0.145092, 0.854908]
   [2] => [0.05, 0.95]
 
-julia> tn2 = TensorNetworkModel(model; evidence=Dict(1=>0), mars=[[2, 3], [3, 4]])
-TensorNetworkModel{Int64, DynamicNestedEinsum{Int64}, Array{Float64}}
-variables: 1 (evidence → 0), 2, 3, 4, 5, 6, 7, 8
-contraction time = 2^7.781, space = 2^5.0, read-write = 2^8.443
+julia> tn2 = TensorNetworkModel(model; evidence=Dict(1=>0), mars=[[2, 3], [3, 4]]);
 
 julia> marginals(tn2)
 Dict{Vector{Int64}, Matrix{Float64}} with 2 entries:

@@ -1,5 +1,6 @@
 using Test
-using GenericTensorNetworks, TensorInference
+using TensorInference
+using GenericTensorNetworks
 
 @testset "marginals" begin
     # compute the probability
@@ -8,8 +9,8 @@ using GenericTensorNetworks, TensorInference
     problem = IndependentSet(g)
     model = TensorNetworkModel(problem, β; mars=[[2, 3]])
     mars = marginals(model)[[2, 3]]
-    problem2 = IndependentSet(g; openvertices=[2,3])
-    mars2 = TensorInference.normalize!(GenericTensorNetworks.solve(problem2, PartitionFunction(β)), 1)
+    problem2 = IndependentSet(g)
+    mars2 = TensorInference.normalize!(GenericTensorNetworks.solve(GenericTensorNetwork(problem2; openvertices=[2, 3]), PartitionFunction(β)), 1)
     @test mars ≈ mars2
 
     # update temperature

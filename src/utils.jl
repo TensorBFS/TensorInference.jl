@@ -307,3 +307,56 @@ function get_artifact_path(artifact_name::String)
 end
 
 togpu(x) = error("You must import CUDA with `using CUDA` before using GPU!")
+
+"""
+$TYPEDSIGNATURES
+
+Matrix product state (MPS) is a tensor network model that is widely used in
+quantum many-body physics. It is a special case of tensor network model where
+the tensors are rank-3 tensors and the physical indices are connected in a
+chain. The MPS is defined as:
+
+```math
+\\begin{align*}
+\\left| \\psi \\right\\rangle &= \\sum_{x_1, x_2, \\ldots, x_n} \\text{Tr}(A_1^{x_1} A_2^{x_2} \\cdots A_n^{x_n}) \\left| x_1, x_2, \\ldots, x_n \\right\\rangle \\\\
+\\left\\langle \\psi \\right| &= \\sum_{x_1, x_2, \\ldots, x_n} \\text{Tr}(A_n^{x_n} \\cdots A_2^{x_2} A_1^{x_1}) \\left\\langle x_1, x_2, \\ldots, x_n \\right|
+\\end{align*}
+```
+
+where \$A_i^{x_i}\$ is a rank-3 tensor with physical index \$x_i\$ and two virtual
+indices connecting to the next tensor. The MPS is a special case of the tensor
+network model where the tensors are rank-3 tensors and the physical indices are
+connected in a chain.
+
+### Arguments
+- `n` is the number of physical indices.
+- `chi` is the bond dimension of the virtual indices.
+- `d` is the dimension of the physical indices.
+"""
+function random_matrix_product_state(::Type{T}, n::Int, chi::Int, d::Int=2) where T
+    # chi ^ (n-1) * (variance^n)^2 == 1/d^n
+    variance = d^(-1/2) * chi^(-1/2+1/2n)
+    tensors = Any[randn(T, d, chi) .* variance]
+    physical_indices = collect(1:n)
+    virtual_indices_ket = collect(n+1:2n-1)
+    virtual_indices_bra = collect(2n:3n-2)
+    ixs_ket = [[physical_indices[1], virtual_indices_ket[1]]]
+    ixs_bra = [[physical_indices[1], virtual_indices_bra[1]]]
+    for i = 2:n-1
+        push!(tensors, randn(T, chi, d, chi) .* variance)
+        push!(ixs_ket, [virtual_indices_ket[i-1], physical_indices[i], virtual_indices_ket[i]])
+        push!(ixs_bra, [virtual_indices_bra[i-1], physical_indices[i], virtual_indices_bra[i]])
+    end
+    push!(tensors, randn(T, chi, d) .* variance)
+    push!(ixs_ket, [virtual_indices_ket[n-1], physical_indices[n]])
+    push!(ixs_bra, [virtual_indices_bra[n-1], physical_indices[n]])
+    tensors, ixs = [tensors..., conj.(tensors)...], [ixs_ket..., ixs_bra...]
+    return TensorNetworkModel(
+        collect(1:3n-2),
+        optimize_code(DynamicEinCode(ixs, Int[]), OMEinsum.get_size_dict(ixs, tensors), GreedyMethod()),
+        tensors,
+        Dict{Int, Int}(),
+        Vector{Int}[[i] for i=1:n]
+    )
+end
+random_matrix_product_state(n::Int, chi::Int, d::Int=2) = random_matrix_product_state(ComplexF64, n, chi, d)

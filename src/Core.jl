@@ -177,6 +177,21 @@ end
 
 """
 $(TYPEDSIGNATURES)
+"""
+function TensorNetworkModel(
+    model::UAIModel{T}, code;
+    evidence = Dict{Int,Int}(),
+    mars = [[i] for i=1:model.nvars],
+    vars = [1:model.nvars...]
+)::TensorNetworkModel where{T}
+    @debug "constructing tensor network model from code"
+    tensors = Array{T}[[ones(T, [model.cards[i] for i in mar]...) for mar in mars]..., [t.vals for t in model.factors]...]
+
+    return TensorNetworkModel(vars, code, tensors, evidence, mars)
+end
+
+"""
+$(TYPEDSIGNATURES)
 
 Get the variables in this tensor network, they are also known as legs, labels, or degree of freedoms.
 """
@@ -189,7 +204,8 @@ Get the cardinalities of variables in this tensor network.
 """
 function get_cards(tn::TensorNetworkModel; fixedisone = false)::Vector
     vars = get_vars(tn)
-    [fixedisone && haskey(tn.evidence, vars[k]) ? 1 : length(tn.tensors[k]) for k in eachindex(vars)]
+    size_dict = OMEinsum.get_size_dict(getixsv(tn.code), tn.tensors)
+    [fixedisone && haskey(tn.evidence, vars[k]) ? 1 : size_dict[vars[k]] for k in eachindex(vars)]
 end
 
 chevidence(tn::TensorNetworkModel, evidence) = TensorNetworkModel(tn.vars, tn.code, tn.tensors, evidence)

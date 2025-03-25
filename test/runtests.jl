@@ -20,8 +20,8 @@ end
     include("sampling.jl")
 end
 
-@testset "generic tensor networks" begin
-    include("generictensornetworks.jl")
+@testset "cspmodels" begin
+    include("cspmodels.jl")
 end
 
 using CUDA
