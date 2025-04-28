@@ -51,5 +51,6 @@ include("map.jl")
 include("mmap.jl")
 include("sampling.jl")
 include("cspmodels.jl")
+include("belief.jl")
 
 end # module
