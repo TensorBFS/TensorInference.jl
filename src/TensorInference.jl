@@ -40,6 +40,9 @@ export MMAPModel
 # for ProblemReductions
 export update_temperature
 
+# belief propagation
+export belief_propagation
+
 # utils
 export random_matrix_product_state
 
