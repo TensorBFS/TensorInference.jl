@@ -53,12 +53,11 @@ $(TYPEDSIGNATURES)
 Returns the largest log-probability and the most probable configuration.
 """
 function most_probable_config(tn::TensorNetworkModel; usecuda = false)::Tuple{Real, Vector}
-    vars = get_vars(tn)
-    tensor_indices = check_queryvars(tn, [[v] for v in vars])
+    tensor_indices = check_queryvars(tn, [[v] for v in 1:tn.nvars])
     tensors = map(t -> Tropical.(log.(t)), adapt_tensors(tn; usecuda, rescale = false))
     logp, grads = cost_and_gradient(tn.code, tensors)
     # use Array to convert CuArray to CPU arrays
-    return content(Array(logp)[]), map(k -> haskey(tn.evidence, vars[k]) ? tn.evidence[vars[k]] : argmax(grads[tensor_indices[k]]) - 1, 1:length(vars))
+    return content(Array(logp)[]), map(k -> haskey(tn.evidence, k) ? tn.evidence[k] : argmax(grads[tensor_indices[k]]) - 1, 1:tn.nvars)
 end
 # check if the queryvars are included in the unity tensors labels, if yes, return the indices of the unity tensors
 function check_queryvars(tn::TensorNetworkModel, queryvars::AbstractVector{Vector{Int}})

@@ -1,6 +1,5 @@
 using Test
 using OMEinsum
-using KaHyPar
 using TensorInference
 
 @testset "composite number" begin

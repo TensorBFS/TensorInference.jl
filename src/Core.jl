@@ -45,17 +45,17 @@ $(TYPEDEF)
 Probabilistic modeling with a tensor network.
 
 ### Fields
-* `vars` are the degrees of freedom in the tensor network.
+* `nvars` are the number of variables in the tensor network.
 * `code` is the tensor network contraction pattern.
 * `tensors` are the tensors fed into the tensor network, the leading tensors are unity tensors associated with `unity_tensors_labels`.
 * `evidence` is a dictionary used to specify degrees of freedom that are fixed to certain values.
 * `unity_tensors_idx` is a vector of indices of the unity tensors in the `tensors` array. Unity tensors are dummy tensors used to obtain the marginal probabilities.
 """
-struct TensorNetworkModel{LT, ET, MT <: AbstractArray}
-    vars::Vector{LT}
+struct TensorNetworkModel{ET, MT <: AbstractArray}
+    nvars::Int
     code::ET
     tensors::Vector{MT}
-    evidence::Dict{LT, Int}
+    evidence::Dict{Int, Int}
     unity_tensors_idx::Vector{Int}
 end
 
@@ -78,7 +78,7 @@ end
 
 function Base.show(io::IO, tn::TensorNetworkModel)
     open = getiyv(tn.code)
-    variables = join([string_var(var, open, tn.evidence) for var in tn.vars], ", ")
+    variables = join([string_var(var, open, tn.evidence) for var in get_vars(tn)], ", ")
     tc, sc, rw = contraction_complexity(tn)
     println(io, "$(typeof(tn))")
     println(io, "variables: $variables")
@@ -128,7 +128,7 @@ function TensorNetworkModel(
     tensors = Array{ET}[[ones(ET, [model.cards[i] for i in lb]...) for lb in unity_tensors_labels]..., [t.vals for t in model.factors]...]
     size_dict = OMEinsum.get_size_dict(getixsv(rawcode), tensors)
     code = optimize_code(rawcode, size_dict, optimizer, simplifier)
-    return TensorNetworkModel(collect(Int, 1:model.nvars), code, tensors, evidence, collect(Int, 1:length(unity_tensors_labels)))
+    return TensorNetworkModel(model.nvars, code, tensors, evidence, collect(Int, 1:length(unity_tensors_labels)))
 end
 
 """
@@ -136,17 +136,16 @@ $(TYPEDSIGNATURES)
 
 Get the variables in this tensor network, they are also known as legs, labels, or degree of freedoms.
 """
-get_vars(tn::TensorNetworkModel)::Vector = tn.vars
+get_vars(tn::TensorNetworkModel)::Vector = 1:tn.nvars
 
 """
 $(TYPEDSIGNATURES)
 
-Get the cardinalities of variables in this tensor network.
+Get the ardinalities of variables in this tensor network.
 """
 function get_cards(tn::TensorNetworkModel; fixedisone = false)::Vector
-    vars = get_vars(tn)
     size_dict = OMEinsum.get_size_dict(getixsv(tn.code), tn.tensors)
-    [fixedisone && haskey(tn.evidence, vars[k]) ? 1 : size_dict[vars[k]] for k in eachindex(vars)]
+    [fixedisone && haskey(tn.evidence, k) ? 1 : size_dict[k] for k in 1:tn.nvars]
 end
 
 chevidence(tn::TensorNetworkModel, evidence) = TensorNetworkModel(tn.vars, tn.code, tn.tensors, evidence)

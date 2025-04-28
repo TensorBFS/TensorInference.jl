@@ -352,7 +352,7 @@ function random_matrix_product_state(::Type{T}, n::Int, chi::Int, d::Int=2) wher
     push!(ixs_bra, [virtual_indices_bra[n-1], physical_indices[n]])
     tensors, ixs = [tensors..., conj.(tensors)...], [ixs_ket..., ixs_bra...]
     return TensorNetworkModel(
-        collect(1:3n-2),
+        3n-2,
         optimize_code(DynamicEinCode(ixs, Int[]), OMEinsum.get_size_dict(ixs, tensors), GreedyMethod()),
         tensors,
         Dict{Int, Int}(),

@@ -50,7 +50,7 @@ function update_temperature(tnet::TensorNetworkModel, problem::ConstraintSatisfa
 	tensors, ixs = generate_tensors(β, problem)
     @assert tnet.unity_tensors_idx == collect(1:length(tnet.unity_tensors_idx)) "The target tensor network can not be updated! Got `unity_tensors_idx = $(tnet.unity_tensors_idx)`"
     alltensors = [tnet.tensors[tnet.unity_tensors_idx]..., tensors...]
-    return TensorNetworkModel(tnet.vars, tnet.code, alltensors, tnet.evidence, tnet.unity_tensors_idx)
+    return TensorNetworkModel(tnet.nvars, tnet.code, alltensors, tnet.evidence, tnet.unity_tensors_idx)
 end
 
 function MMAPModel(problem::ConstraintSatisfactionProblem, β::Real;
