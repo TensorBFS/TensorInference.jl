@@ -136,8 +136,10 @@ tensor network.
 
 ### Arguments
 - `tn`: The [`TensorNetworkModel`](@ref) to query.
-- `usecuda`: Specifies whether to use CUDA for tensor contraction.
-- `rescale`: Specifies whether to rescale the tensors during contraction.
+
+### Keyword Arguments
+- `usecuda::Bool`: Specifies whether to use CUDA for tensor contraction.
+- `rescale::Bool`: Specifies whether to rescale the tensors during contraction.
 
 ### Example
 The following example is taken from [`examples/asia-network/main.jl`](https://tensorbfs.github.io/TensorInference.jl/dev/generated/asia-network/main/).
@@ -187,9 +189,10 @@ function marginals(tn::TensorNetworkModel; usecuda = false, rescale = true)::Dic
     cost, grads = cost_and_gradient(tn.code, adapt_tensors(tn; usecuda, rescale))
     @debug "cost = $cost"
     ixs = OMEinsum.getixsv(tn.code)
+    queryvars = ixs[tn.unity_tensors_idx]
     if rescale
-        return Dict(zip(ixs[tn.unity_tensors_idx], LinearAlgebra.normalize!.(getfield.(grads[1:length(tn.unity_tensors_idx)], :normalized_value), 1)))
+        return Dict(zip(queryvars, LinearAlgebra.normalize!.(getfield.(grads[tn.unity_tensors_idx], :normalized_value), 1)))
     else
-        return Dict(zip(ixs[tn.unity_tensors_idx], LinearAlgebra.normalize!.(grads[1:length(tn.unity_tensors_idx)], 1)))
+        return Dict(zip(queryvars, LinearAlgebra.normalize!.(grads[tn.unity_tensors_idx], 1)))
     end
 end
