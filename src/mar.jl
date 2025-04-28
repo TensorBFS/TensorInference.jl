@@ -130,7 +130,7 @@ are their respective marginals. A marginal is a probability distribution over
 a subset of variables, obtained by integrating or summing over the remaining
 variables in the model. By default, the function returns the marginals of all
 individual variables. To specify which marginal variables to query, set the
-`mars` field when constructing a [`TensorNetworkModel`](@ref). Note that
+`unity_tensors_labels` field when constructing a [`TensorNetworkModel`](@ref). Note that
 the choice of marginal variables will affect the contraction order of the
 tensor network.
 
@@ -158,7 +158,7 @@ Dict{Vector{Int64}, Vector{Float64}} with 8 entries:
   [7] => [0.145092, 0.854908]
   [2] => [0.05, 0.95]
 
-julia> tn2 = TensorNetworkModel(model; evidence=Dict(1=>0), mars=[[2, 3], [3, 4]]);
+julia> tn2 = TensorNetworkModel(model; evidence=Dict(1=>0), unity_tensors_labels = [[2, 3], [3, 4]]);
 
 julia> marginals(tn2)
 Dict{Vector{Int64}, Matrix{Float64}} with 2 entries:
@@ -186,9 +186,10 @@ function marginals(tn::TensorNetworkModel; usecuda = false, rescale = true)::Dic
     # sometimes, the cost can overflow, then we need to rescale the tensors during contraction.
     cost, grads = cost_and_gradient(tn.code, adapt_tensors(tn; usecuda, rescale))
     @debug "cost = $cost"
+    ixs = OMEinsum.getixsv(tn.code)
     if rescale
-        return Dict(zip(tn.mars, LinearAlgebra.normalize!.(getfield.(grads[1:length(tn.mars)], :normalized_value), 1)))
+        return Dict(zip(ixs[tn.unity_tensors_idx], LinearAlgebra.normalize!.(getfield.(grads[1:length(tn.unity_tensors_idx)], :normalized_value), 1)))
     else
-        return Dict(zip(tn.mars, LinearAlgebra.normalize!.(grads[1:length(tn.mars)], 1)))
+        return Dict(zip(ixs[tn.unity_tensors_idx], LinearAlgebra.normalize!.(grads[1:length(tn.unity_tensors_idx)], 1)))
     end
 end

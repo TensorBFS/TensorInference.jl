@@ -52,13 +52,4 @@ include("mmap.jl")
 include("sampling.jl")
 include("cspmodels.jl")
 
-# import PrecompileTools
-# PrecompileTools.@setup_workload begin
-#     # Putting some things in `@setup_workload` instead of `@compile_workload` can reduce the size of the
-#     # precompile file and potentially make loading faster.
-#     PrecompileTools.@compile_workload begin
-#         include("../example/asia-network/main.jl")
-#     end
-# end
-
 end # module

@@ -7,7 +7,7 @@ using GenericTensorNetworks
     β = 2.0
     g = GenericTensorNetworks.Graphs.smallgraph(:petersen)
     problem = IndependentSet(g)
-    model = TensorNetworkModel(problem, β; mars=[[2, 3]])
+    model = TensorNetworkModel(problem, β; unity_tensors_labels = [[2, 3]])
     mars = marginals(model)[[2, 3]]
     problem2 = IndependentSet(g)
     mars2 = TensorInference.normalize!(GenericTensorNetworks.solve(GenericTensorNetwork(problem2; openvertices=[2, 3]), PartitionFunction(β)), 1)
@@ -28,7 +28,7 @@ using GenericTensorNetworks
 
     β = 1.0
     problem = SpinGlass(g, -ones(Int, ne(g)), zeros(Int, nv(g)))
-    model = TensorNetworkModel(problem, β; mars=[[2, 3]])
+    model = TensorNetworkModel(problem, β; unity_tensors_labels = [[2, 3]])
     samples = sample(model, 100)
     @test sum(energy.(Ref(problem), samples))/100 <= -14
 end

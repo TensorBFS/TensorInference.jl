@@ -116,7 +116,7 @@ end
  0.1 0.3 0.2 0.9
 """)
     n = 10000
-    tnet = TensorNetworkModel(model; mars=[[2, 3], [3, 4]])
+    tnet = TensorNetworkModel(model; unity_tensors_labels = [[2, 3], [3, 4]])
     mars = marginals(tnet)
     tnet23 = TensorNetworkModel(model; openvars=[2,3])
     tnet34 = TensorNetworkModel(model; openvars=[3,4])
@@ -124,8 +124,8 @@ end
     @test mars[[3, 4]] ≈ probability(tnet34)
 
     vars = [[2, 4], [3, 5]]
-    tnet1 = TensorNetworkModel(model; mars=vars, evidence=Dict(3=>1))
-    tnet2 = TensorNetworkModel(model; mars=vars, evidence=Dict(3=>0))
+    tnet1 = TensorNetworkModel(model; unity_tensors_labels = vars, evidence=Dict(3=>1))
+    tnet2 = TensorNetworkModel(model; unity_tensors_labels = vars, evidence=Dict(3=>0))
     mars1 = marginals(tnet1)
     mars2 = marginals(tnet2)
     update_evidence!(tnet1, Dict(3=>0))

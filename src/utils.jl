@@ -356,7 +356,7 @@ function random_matrix_product_state(::Type{T}, n::Int, chi::Int, d::Int=2) wher
         optimize_code(DynamicEinCode(ixs, Int[]), OMEinsum.get_size_dict(ixs, tensors), GreedyMethod()),
         tensors,
         Dict{Int, Int}(),
-        Vector{Int}[[i] for i=1:n]
+        collect(1:n)
     )
 end
 random_matrix_product_state(n::Int, chi::Int, d::Int=2) = random_matrix_product_state(ComplexF64, n, chi, d)
