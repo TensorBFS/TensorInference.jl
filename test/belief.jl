@@ -43,8 +43,10 @@ end
     bp = BeliefPropgation(mps_uai)
     @test TensorInference.initial_state(bp) isa TensorInference.BPState
     state, info = belief_propagate(bp)
-    @show TensorInference.contraction_results(state)
     @test info.converged
+    @test info.iterations < 10
+    contraction_res = TensorInference.contraction_results(state)
     tnet = TensorNetworkModel(mps_uai)
-    @show probability(tnet)[]
+    expected_result = probability(tnet)[]
+    @test all(r -> isapprox(r, expected_result), contraction_res)
 end

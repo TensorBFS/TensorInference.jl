@@ -43,7 +43,7 @@ end
 
 function collect_message!(bp::BeliefPropgation, state::BPState)
     for it in 1:num_tensors(bp)
-        _collect_message!(vectors_on_tensor(state.message_out, bp, it), bp.tensors[it], vectors_on_tensor(state.message_in, bp, it))
+        _collect_message!(vectors_on_tensor(state.message_in, bp, it), bp.tensors[it], vectors_on_tensor(state.message_out, bp, it))
     end
 end
 # collect the vectors associated with the target tensor
@@ -94,13 +94,15 @@ struct BPInfo
     iterations::Int
 end
 function belief_propagate!(bp::BeliefPropgation, state::BPState{T}; max_iter::Int=100, tol::Float64=1e-6) where T
+    pre_message_in = deepcopy(state.message_in)
     for i in 1:max_iter
-        process_message!(state)
         collect_message!(bp, state)
+        process_message!(state)
         # check convergence
-        if all(iv -> all(it -> isapprox(state.message_out[iv][it], state.message_in[iv][it], atol=tol), 1:length(bp.v2t[iv])), 1:num_variables(bp))
+        if all(iv -> all(it -> isapprox(state.message_in[iv][it], pre_message_in[iv][it], atol=tol), 1:length(bp.v2t[iv])), 1:num_variables(bp))
             return BPInfo(true, i)
         end
+        pre_message_in = deepcopy(state.message_in)
     end
     return BPInfo(false, max_iter)
 end
