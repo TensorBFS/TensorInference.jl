@@ -71,7 +71,6 @@ end
     mps = random_matrix_product_state(n, chi)
     num_samples = 10000
     ixs = OMEinsum.getixsv(mps.code)
-    @show ixs
     samples = map(1:num_samples) do i
         sample(mps, 1; queryvars=collect(1:n)).samples[:,1]
     end

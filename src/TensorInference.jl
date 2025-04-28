@@ -41,10 +41,10 @@ export MMAPModel
 export update_temperature
 
 # belief propagation
-export belief_propagation
+export BeliefPropgation, belief_propagate
 
 # utils
-export random_matrix_product_state
+export random_matrix_product_state, random_tensor_train_uai, random_matrix_product_uai
 
 include("Core.jl")
 include("RescaledArray.jl")

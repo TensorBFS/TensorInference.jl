@@ -1,4 +1,5 @@
 using TensorInference, Test
+using OMEinsum
 
 @testset "process message" begin
     mi = [[1, 2, 3], [2, 3, 4], [3, 4, 5]]
@@ -26,11 +27,24 @@ end
     @test vectors_out[3] ≈ vec(kron(v2, v1)' * reshape(t, 4, 2))
 end
 
+@testset "constructor" begin
+    problem = problem_from_artifact("uai2014", "MAR", "Promedus", 14)
+    uai = read_model(problem)
+    bp = BeliefPropgation(uai)
+    @test length(bp.v2t) == 414
+    @test TensorInference.num_tensors(bp) == 414
+    @test TensorInference.num_variables(bp) == length(unique(vcat([collect(Int, f.vars) for f in uai.factors]...)))
+end
+
 @testset "belief propagation" begin
     n = 5
     chi = 3
-    Random.seed!(140)
-    mps = random_matrix_product_state(n, chi)
-    model = TensorNetworkModel(mps)
-    state = belief_propagation(model)
+    mps_uai = TensorInference.random_tensor_train_uai(Float64, n, chi)
+    bp = BeliefPropgation(mps_uai)
+    @test TensorInference.initial_state(bp) isa TensorInference.BPState
+    state, info = belief_propagate(bp)
+    @show TensorInference.contraction_results(state)
+    @test info.converged
+    tnet = TensorNetworkModel(mps_uai)
+    @show probability(tnet)[]
 end

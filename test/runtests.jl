@@ -24,6 +24,14 @@ end
     include("cspmodels.jl")
 end
 
+@testset "utils" begin
+    include("utils.jl")
+end
+
+@testset "belief propagation" begin
+    include("belief.jl")
+end
+
 using CUDA
 if CUDA.functional()
     include("cuda.jl")
