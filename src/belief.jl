@@ -111,3 +111,7 @@ end
 function contraction_results(state::BPState{T}) where T
     return [sum(reduce((x, y) -> x .* y, mi)) for mi in state.message_in]
 end
+
+function marginals(state::BPState{T}) where T
+    return Dict([v] => normalize!(reduce((x, y) -> x .* y, mi), 1) for (v, mi) in enumerate(state.message_in))
+end

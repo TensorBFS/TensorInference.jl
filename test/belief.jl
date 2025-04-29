@@ -49,4 +49,9 @@ end
     tnet = TensorNetworkModel(mps_uai)
     expected_result = probability(tnet)[]
     @test all(r -> isapprox(r, expected_result), contraction_res)
+    mars = marginals(state)
+    mars_tnet = marginals(tnet)
+    for v in 1:TensorInference.num_variables(bp)
+        @test mars[[v]] ≈ mars_tnet[[v]]
+    end
 end
