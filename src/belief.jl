@@ -1,3 +1,14 @@
+"""
+$TYPEDEF
+    BeliefPropgation(nvars::Int, t2v::AbstractVector{Vector{Int}}, tensors::AbstractVector{AbstractArray{T}}) where T
+
+A belief propagation object.
+
+### Fields
+- `t2v::Vector{Vector{Int}}`: a mapping from tensors to variables
+- `v2t::Vector{Vector{Int}}`: a mapping from variables to tensors
+- `tensors::Vector{AbstractArray{T}}`: the tensors
+"""
 struct BeliefPropgation{T}
     t2v::Vector{Vector{Int}}           # a mapping from tensors to variables
     v2t::Vector{Vector{Int}}           # a mapping from variables to tensors
@@ -16,6 +27,12 @@ function BeliefPropgation(nvars::Int, t2v::AbstractVector{Vector{Int}}, tensors:
     end
     return BeliefPropgation(t2v, v2t, tensors)
 end
+
+"""
+$(TYPEDSIGNATURES)
+
+Construct a belief propagation object from a [`UAIModel`](@ref).
+"""
 function BeliefPropgation(uai::UAIModel{T}) where T
     return BeliefPropgation(uai.nvars, [collect(Int, f.vars) for f in uai.factors], AbstractArray{T}[f.vals for f in uai.factors])
 end
@@ -83,7 +100,18 @@ function initial_state(bp::BeliefPropgation{T}) where T
     return BPState(deepcopy(edges_vectors), edges_vectors)
 end
 
-# belief propagation, update the tensors on the edges of the tensor network
+"""
+$(TYPEDSIGNATURES)
+
+Run the belief propagation algorithm, and return the final state and the information about the convergence.
+
+### Arguments
+- `bp::BeliefPropgation`: the belief propagation object
+
+### Keyword Arguments
+- `max_iter::Int=100`: the maximum number of iterations
+- `tol::Float64=1e-6`: the tolerance for the convergence
+"""
 function belief_propagate(bp::BeliefPropgation; max_iter::Int=100, tol::Float64=1e-6)
     state = initial_state(bp)
     info = belief_propagate!(bp, state; max_iter=max_iter, tol=tol)
@@ -112,6 +140,9 @@ function contraction_results(state::BPState{T}) where T
     return [sum(reduce((x, y) -> x .* y, mi)) for mi in state.message_in]
 end
 
+"""
+$(TYPEDSIGNATURES)
+"""
 function marginals(state::BPState{T}) where T
     return Dict([v] => normalize!(reduce((x, y) -> x .* y, mi), 1) for (v, mi) in enumerate(state.message_in))
 end
