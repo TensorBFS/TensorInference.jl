@@ -1,12 +1,15 @@
 using TensorInference, Test
-using OMEinsum
+using OMEinsum, LinearAlgebra
 
 @testset "process message" begin
-    mi = [[1, 2, 3], [2, 3, 4], [3, 4, 5]]
-    mo_expected = [[6, 12, 20], [3, 8, 15], [2, 6, 12]]
+    mi = [[1.0, 2, 3], [2.0, 3, 4], [3.0, 4, 5]]
+    mo_expected = [[6.0, 12, 20], [3.0, 8, 15], [2.0, 6, 12]]
     mo = similar.(mi)
-    TensorInference._process_message!(mo, mi)
-    @test mo == mo_expected
+    TensorInference._process_message!(mo, mi, false, 0)
+    @test all(mo .≈ mo_expected)
+
+    TensorInference._process_message!(mo, mi, true, 0)
+    @test all(mo .≈ normalize!.(mo_expected, 1))
 end
 
 @testset "star code" begin
@@ -44,14 +47,29 @@ end
     @test TensorInference.initial_state(bp) isa TensorInference.BPState
     state, info = belief_propagate(bp)
     @test info.converged
-    @test info.iterations < 10
+    @test info.iterations < 20
+    mars = marginals(state)
+    tnet = TensorNetworkModel(mps_uai)
+    mars_tnet = marginals(tnet)
+    for v in 1:TensorInference.num_variables(bp)
+        @test mars[[v]] ≈ mars_tnet[[v]] atol=1e-6
+    end
+end
+
+@testset "belief propagation on circle" begin
+    n = 10
+    chi = 3
+    mps_uai = TensorInference.random_tensor_train_uai(Float64, n, chi; periodic=true)
+    bp = BeliefPropgation(mps_uai)
+    @test TensorInference.initial_state(bp) isa TensorInference.BPState
+    state, info = belief_propagate(bp; max_iter=100, tol=1e-6)
+    @test info.converged
+    @test info.iterations < 100
     contraction_res = TensorInference.contraction_results(state)
     tnet = TensorNetworkModel(mps_uai)
-    expected_result = probability(tnet)[]
-    @test all(r -> isapprox(r, expected_result), contraction_res)
     mars = marginals(state)
     mars_tnet = marginals(tnet)
     for v in 1:TensorInference.num_variables(bp)
-        @test mars[[v]] ≈ mars_tnet[[v]]
+        @test mars[[v]] ≈ mars_tnet[[v]] atol=1e-4
     end
 end

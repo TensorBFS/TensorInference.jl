@@ -380,21 +380,21 @@ Tensor train (TT) is a tensor network model that is widely used in quantum
 many-body physics. This model is different from the matrix product state (MPS)
 in that it does not have an extra copy for representing the bra state.
 """
-function random_tensor_train_uai(::Type{T}, n::Int, chi::Int, d::Int=2) where T
+function random_tensor_train_uai(::Type{T}, n::Int, chi::Int, d::Int=2; periodic=false) where T
     # chi ^ (n-1) * (variance^n)^2 == 1/d^n
     variance = d^(-1/2) * chi^(-1/2+1/2n)
-    tensors = Any[randn(T, d, chi) .* variance]
     physical_indices = collect(1:n)
-    virtual_indices = collect(n+1:2n-1)
-    ixs = [[physical_indices[1], virtual_indices[1]]]
+    virtual_indices = collect(n+1:2n)
+    tensors = Any[(periodic ? rand(T, chi, d, chi) : rand(T, d, chi)) .* variance]
+    ixs = [periodic ? [virtual_indices[n], physical_indices[1], virtual_indices[1]] : [physical_indices[1], virtual_indices[1]]]
     for i = 2:n-1
-        push!(tensors, randn(T, chi, d, chi) .* variance)
+        push!(tensors, rand(T, chi, d, chi) .* variance)
         push!(ixs, [virtual_indices[i-1], physical_indices[i], virtual_indices[i]])
     end
-    push!(tensors, randn(T, chi, d) .* variance)
-    push!(ixs, [virtual_indices[n-1], physical_indices[n]])
+    push!(tensors, (periodic ? rand(T, chi, d, chi) : rand(T, chi, d)) .* variance)
+    push!(ixs, periodic ? [virtual_indices[n-1], physical_indices[n], virtual_indices[n]] : [virtual_indices[n-1], physical_indices[n]])
     size_dict = OMEinsum.get_size_dict(ixs, tensors)
-    nvars = 2n-1
+    nvars = periodic ? 2n : 2n-1
     return UAIModel(
         nvars,
         [size_dict[i] for i=1:nvars],

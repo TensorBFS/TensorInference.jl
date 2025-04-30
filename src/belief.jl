@@ -43,24 +43,29 @@ struct BPState{T, VT<:AbstractVector{T}}
 end
 
 # message_in -> message_out
-function process_message!(bp::BPState)
+function process_message!(bp::BPState; normalize, damping)
     for (ov, iv) in zip(bp.message_out, bp.message_in)
-        _process_message!(ov, iv)
+        _process_message!(ov, iv, normalize, damping)
     end
 end
-function _process_message!(ov::Vector, iv::Vector)
+function _process_message!(ov::Vector, iv::Vector, normalize::Bool, damping)
     # process the message, TODO: speed up if needed!
     for (i, v) in enumerate(ov)
-        fill!(v, one(eltype(v)))  # clear the output vector
+        w = similar(v)
+        fill!(w, one(eltype(v)))  # clear the output vector
         for (j, u) in enumerate(iv)
-            j != i && (v .*= u)
+            j != i && (w .*= u)
         end
+        normalize && normalize!(w, 1)
+        v .= v .* damping + (1 - damping) * w
     end
 end
 
-function collect_message!(bp::BeliefPropgation, state::BPState)
+function collect_message!(bp::BeliefPropgation, state::BPState; normalize::Bool)
     for it in 1:num_tensors(bp)
-        _collect_message!(vectors_on_tensor(state.message_in, bp, it), bp.tensors[it], vectors_on_tensor(state.message_out, bp, it))
+        out = vectors_on_tensor(state.message_in, bp, it)
+        _collect_message!(out, bp.tensors[it], vectors_on_tensor(state.message_out, bp, it))
+        normalize && normalize!.(out, 1)
     end
 end
 # collect the vectors associated with the target tensor
@@ -78,7 +83,7 @@ function _collect_message!(vectors_out::Vector, t::AbstractArray, vectors_in::Ve
     for (o, g) in zip(vectors_out, gradient[2:end])
         o .= g
     end
-    return cost
+    return cost[]
 end
 
 # star code: contract a tensor with multiple vectors, one for each dimension
@@ -112,20 +117,20 @@ Run the belief propagation algorithm, and return the final state and the informa
 - `max_iter::Int=100`: the maximum number of iterations
 - `tol::Float64=1e-6`: the tolerance for the convergence
 """
-function belief_propagate(bp::BeliefPropgation; max_iter::Int=100, tol::Float64=1e-6)
+function belief_propagate(bp::BeliefPropgation; kwargs...)
     state = initial_state(bp)
-    info = belief_propagate!(bp, state; max_iter=max_iter, tol=tol)
+    info = belief_propagate!(bp, state; kwargs...)
     return state, info
 end
 struct BPInfo
     converged::Bool
     iterations::Int
 end
-function belief_propagate!(bp::BeliefPropgation, state::BPState{T}; max_iter::Int=100, tol::Float64=1e-6) where T
+function belief_propagate!(bp::BeliefPropgation, state::BPState{T}; max_iter::Int=100, tol=1e-6, damping=0.2) where T
     pre_message_in = deepcopy(state.message_in)
     for i in 1:max_iter
-        collect_message!(bp, state)
-        process_message!(state)
+        collect_message!(bp, state; normalize=true)
+        process_message!(state; normalize=true, damping=damping)
         # check convergence
         if all(iv -> all(it -> isapprox(state.message_in[iv][it], pre_message_in[iv][it], atol=tol), 1:length(bp.v2t[iv])), 1:num_variables(bp))
             return BPInfo(true, i)
