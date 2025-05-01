@@ -73,3 +73,27 @@ end
         @test mars[[v]] ≈ mars_tnet[[v]] atol=1e-4
     end
 end
+
+@testset "marginal uai2014" begin
+    for problem in [problem_from_artifact("uai2014", "MAR", "Promedus", 14), problem_from_artifact("uai2014", "MAR", "ObjectDetection", 42)]
+        optimizer = TreeSA(ntrials = 1, niters = 5, βs = 0.1:0.1:100)
+        evidence = Dict{Int, Int}()
+        model = read_model(problem)
+
+        tn = TensorNetworkModel(model; optimizer, evidence)
+        mars_tnet = marginals(tn)
+
+        code = tn.code.eins
+        tensors = tn.tensors
+        size_dict = Dict(i => d for (i, d) in enumerate(model.cards))
+
+        bp = BeliefPropgation(model)
+        state, info = belief_propagate(bp; max_iter=300, tol=1e-6)
+        @test info.converged
+        mars = marginals(state)
+
+        for v in 1:TensorInference.num_variables(bp)
+            @test mars[[v]] ≈ mars_tnet[[v]] atol=1e-2
+        end
+    end
+end
