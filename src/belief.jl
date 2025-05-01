@@ -17,7 +17,7 @@ end
 num_tensors(bp::BeliefPropgation) = length(bp.t2v)
 ProblemReductions.num_variables(bp::BeliefPropgation) = length(bp.v2t)
 
-function BeliefPropgation(nvars::Int, t2v::AbstractVector{Vector{Int}}, tensors::AbstractVector{AbstractArray{T}}) where T
+function BeliefPropgation(nvars::Int, t2v::AbstractVector{Vector{Int}}, tensors::AbstractVector{AbstractArray{T}}) where {T}
     # initialize the inverse mapping
     v2t = [Int[] for _ in 1:nvars]
     for (i, edge) in enumerate(t2v)
@@ -33,11 +33,11 @@ $(TYPEDSIGNATURES)
 
 Construct a belief propagation object from a [`UAIModel`](@ref).
 """
-function BeliefPropgation(uai::UAIModel{T}) where T
+function BeliefPropgation(uai::UAIModel{T}) where {T}
     return BeliefPropgation(uai.nvars, [collect(Int, f.vars) for f in uai.factors], AbstractArray{T}[f.vals for f in uai.factors])
 end
 
-struct BPState{T, VT<:AbstractVector{T}}
+struct BPState{T, VT <: AbstractVector{T}}
     message_in::Vector{Vector{VT}}  # for each variable, we store the incoming messages
     message_out::Vector{Vector{VT}} # the outgoing messages
 end
@@ -91,12 +91,12 @@ function star_code(n::Int)
     ix1, ixrest = collect(1:n), [[i] for i in 1:n]
     ne = DynamicNestedEinsum([DynamicNestedEinsum{Int}(1), DynamicNestedEinsum{Int}(2)], DynamicEinCode([ix1, ixrest[1]], collect(2:n)))
     for i in 2:n
-        ne = DynamicNestedEinsum([ne, DynamicNestedEinsum{Int}(i + 1)], DynamicEinCode([ne.eins.iy, ixrest[i]], collect(i+1:n)))
+        ne = DynamicNestedEinsum([ne, DynamicNestedEinsum{Int}(i + 1)], DynamicEinCode([ne.eins.iy, ixrest[i]], collect((i + 1):n)))
     end
     return ne
 end
 
-function initial_state(bp::BeliefPropgation{T}) where T
+function initial_state(bp::BeliefPropgation{T}) where {T}
     size_dict = OMEinsum.get_size_dict(bp.t2v, bp.tensors)
     edges_vectors = Vector{Vector{T}}[]
     for (i, tids) in enumerate(bp.v2t)
@@ -126,13 +126,13 @@ struct BPInfo
     converged::Bool
     iterations::Int
 end
-function belief_propagate!(bp::BeliefPropgation, state::BPState{T}; max_iter::Int=100, tol=1e-6, damping=0.2) where T
+function belief_propagate!(bp::BeliefPropgation, state::BPState{T}; max_iter::Int = 100, tol = 1e-6, damping = 0.2) where {T}
     pre_message_in = deepcopy(state.message_in)
     for i in 1:max_iter
-        collect_message!(bp, state; normalize=true)
-        process_message!(state; normalize=true, damping=damping)
+        collect_message!(bp, state; normalize = true)
+        process_message!(state; normalize = true, damping = damping)
         # check convergence
-        if all(iv -> all(it -> isapprox(state.message_in[iv][it], pre_message_in[iv][it], atol=tol), 1:length(bp.v2t[iv])), 1:num_variables(bp))
+        if all(iv -> all(it -> isapprox(state.message_in[iv][it], pre_message_in[iv][it], atol = tol), 1:length(bp.v2t[iv])), 1:num_variables(bp))
             return BPInfo(true, i)
         end
         pre_message_in = deepcopy(state.message_in)
@@ -141,13 +141,13 @@ function belief_propagate!(bp::BeliefPropgation, state::BPState{T}; max_iter::In
 end
 
 # if BP is exact and converged (e.g. tree like), the result should be the same as the tensor network contraction
-function contraction_results(state::BPState{T}) where T
+function contraction_results(state::BPState{T}) where {T}
     return [sum(reduce((x, y) -> x .* y, mi)) for mi in state.message_in]
 end
 
 """
 $(TYPEDSIGNATURES)
 """
-function marginals(state::BPState{T}) where T
+function marginals(state::BPState{T}) where {T}
     return Dict([v] => normalize!(reduce((x, y) -> x .* y, mi), 1) for (v, mi) in enumerate(state.message_in))
 end

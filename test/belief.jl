@@ -6,10 +6,14 @@ using OMEinsum, LinearAlgebra
     mo_expected = [[6.0, 12, 20], [3.0, 8, 15], [2.0, 6, 12]]
     mo = similar.(mi)
     TensorInference._process_message!(mo, mi, false, 0)
-    @test all(mo .≈ mo_expected)
+    for i in 1:length(mo)
+        @test mo[i] ≈ mo_expected[i] atol=1e-8
+    end
 
     TensorInference._process_message!(mo, mi, true, 0)
-    @test all(mo .≈ normalize!.(mo_expected, 1))
+    for i in 1:length(mo)
+        @test mo[i] ≈ normalize!(mo_expected[i], 1) atol=1e-8
+    end
 end
 
 @testset "star code" begin
