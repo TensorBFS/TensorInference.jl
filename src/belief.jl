@@ -116,6 +116,7 @@ Run the belief propagation algorithm, and return the final state and the informa
 ### Keyword Arguments
 - `max_iter::Int=100`: the maximum number of iterations
 - `tol::Float64=1e-6`: the tolerance for the convergence
+- `damping::Float64=0.2`: the damping factor for the message update, updated-message = damping * old-message + (1 - damping) * new-message
 """
 function belief_propagate(bp::BeliefPropgation; kwargs...)
     state = initial_state(bp)
