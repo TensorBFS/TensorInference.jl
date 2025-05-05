@@ -79,7 +79,7 @@ function _collect_message!(vectors_out::Vector, t::AbstractArray, vectors_in::Ve
     @assert length(vectors_out) == length(vectors_in) == ndims(t) "dimensions mismatch: $(length(vectors_out)), $(length(vectors_in)), $(ndims(t))"
     # TODO: speed up if needed!
     code = star_code(length(vectors_in))
-    cost, gradient = cost_and_gradient(code, [t, vectors_in...])
+    cost, gradient = cost_and_gradient(code, (t, vectors_in...))
     for (o, g) in zip(vectors_out, gradient[2:end])
         o .= g
     end

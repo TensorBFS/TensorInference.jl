@@ -8,6 +8,13 @@ using TensorInference
     op = ein"ij, j -> i"
     @test Array(x) ≈ exp(2.0) .* [2.0, 3.0]
     @test op(Array(A), Array(x)) ≈ Array(op(A, x))
+
+    @test OMEinsum.get_output_array((A,), (2,), true) ≈ RescaledArray(0.0, [0.0, 0.0])
+    @test fill!(RescaledArray(0.0, [0.0, 0.0]), 5.0) ≈ [5.0, 5.0]
+
+    C = RescaledArray(2.0 + 1im, [2.0im 3.0; 5.0 6.0])
+    @test conj(C) isa RescaledArray
+    @test conj(C) ≈ RescaledArray(2.0 - 1im, [-2.0im 3.0; 5.0 6.0])
 end
 
 @testset "cached, rescaled contract" begin
@@ -23,12 +30,12 @@ end
     # cached contract
     xs = TensorInference.adapt_tensors(tn; usecuda = false, rescale = true)
     size_dict = OMEinsum.get_size_dict!(getixsv(tn.code), xs, Dict{Int, Int}())
-    cache = TensorInference.cached_einsum(tn.code, xs, size_dict)
+    cache = OMEinsum.cached_einsum(tn.code, xs, size_dict)
     @test cache.content isa RescaledArray
     @test Array(cache.content) ≈ p1
 
     # compute marginals
-    ti_sol = marginals(tn)
+    ti_sol = marginals(tn; rescale = true)
     ref_sol[collect(keys(evidence))] .= fill([1.0], length(evidence)) # imitate dummy vars
     @test isapprox([ti_sol[[i]] for i=1:length(ref_sol)], ref_sol; atol = 1e-5)
 end

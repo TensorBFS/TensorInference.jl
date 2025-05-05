@@ -2,7 +2,7 @@
 
 ########### Backward tropical tensor contraction ##############
 # This part is copied from [`GenericTensorNetworks`](https://github.com/QuEraComputing/GenericTensorNetworks.jl).
-function einsum_backward_rule(eins, xs::NTuple{M, AbstractArray{<:Tropical}} where {M}, y, size_dict, dy)
+function OMEinsum.einsum_backward_rule(eins, xs::NTuple{M, AbstractArray{<:Tropical}} where {M}, y, size_dict, dy)
     return backward_tropical!(OMEinsum.getixs(eins), xs, OMEinsum.getiy(eins), y, dy, size_dict)
 end
 
@@ -55,7 +55,7 @@ Returns the largest log-probability and the most probable configuration.
 function most_probable_config(tn::TensorNetworkModel; usecuda = false)::Tuple{Real, Vector}
     tensor_indices = check_queryvars(tn, [[v] for v in 1:tn.nvars])
     tensors = map(t -> Tropical.(log.(t)), adapt_tensors(tn; usecuda, rescale = false))
-    logp, grads = cost_and_gradient(tn.code, tensors)
+    logp, grads = cost_and_gradient(tn.code, (tensors...,))
     # use Array to convert CuArray to CPU arrays
     return content(Array(logp)[]), map(k -> haskey(tn.evidence, k) ? tn.evidence[k] : argmax(grads[tensor_indices[k]]) - 1, 1:tn.nvars)
 end

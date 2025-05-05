@@ -178,7 +178,7 @@ end
 function most_probable_config(mmap::MMAPModel; usecuda = false)::Tuple{Real, Vector}
     vars = get_vars(mmap)
     tensors = map(t -> OMEinsum.asarray(Tropical.(log.(t)), t), adapt_tensors(mmap; usecuda, rescale = false))
-    logp, grads = cost_and_gradient(mmap.code, tensors)
+    logp, grads = cost_and_gradient(mmap.code, (tensors...,))
     # use Array to convert CuArray to CPU arrays
     return content(Array(logp)[]), map(k -> haskey(mmap.evidence, vars[k]) ? mmap.evidence[vars[k]] : argmax(grads[k]) - 1, 1:length(vars))
 end

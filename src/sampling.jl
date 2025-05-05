@@ -134,9 +134,9 @@ function generate_samples!(code::DynamicNestedEinsum, cache::CacheTree{T}, iy_en
     @assert length(iy_env) == ndims(env)
     if !(OMEinsum.isleaf(code))
         ixs, iy = getixsv(code.eins), getiyv(code.eins)
-        for (subcode, child, ix) in zip(code.args, cache.children, ixs)
+        for (subcode, child, ix) in zip(code.args, cache.siblings, ixs)
             # subenv for the current child, use it to sample and update its cache
-            siblings = filter(x->x !== child, cache.children)
+            siblings = filter(x->x !== child, cache.siblings)
             siblings_ixs = filter(x->x !== ix, ixs)
             iy_subenv = batch_label ∈ ix ? ix : [ix..., batch_label]
             envcode = optimize_code(EinCode([siblings_ixs..., iy_env], iy_subenv), size_dict, GreedyMethod(; nrepeat=1))
@@ -184,12 +184,12 @@ end
 function udpate_cache_tree!(ne::NestedEinsum, cache::CacheTree{T}, el::Pair{<:AbstractVector{L}}, batch_label::L, size_dict::Dict{L}) where {T, L}
     OMEinsum.isleaf(ne) && return
     updated = false
-    for (subcode, child, ix) in zip(ne.args, cache.children, getixsv(ne.eins))
+    for (subcode, child, ix) in zip(ne.args, cache.siblings, getixsv(ne.eins))
         if any(x->x ∈ el.first, ix)
             updated = true
             child.content = _eliminate!(child.content, ix, el, batch_label)
             udpate_cache_tree!(subcode, child, el, batch_label, size_dict)
         end
     end
-    updated && (cache.content = einsum(ne.eins, (getfield.(cache.children, :content)...,), size_dict))
+    updated && (cache.content = einsum(ne.eins, (getfield.(cache.siblings, :content)...,), size_dict))
 end

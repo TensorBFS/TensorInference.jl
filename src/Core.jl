@@ -191,6 +191,3 @@ Returns the contraction complexity of a tensor newtork model.
 function OMEinsum.contraction_complexity(tn::TensorNetworkModel)
     return contraction_complexity(tn.code, Dict(zip(get_vars(tn), get_cards(tn; fixedisone = true))))
 end
-
-# adapt array type with the target array type
-match_arraytype(::Type{<:Array{T, N}}, target::AbstractArray{T, N}) where {T, N} = Array(target)

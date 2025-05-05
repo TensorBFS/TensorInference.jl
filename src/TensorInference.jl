@@ -8,6 +8,7 @@ $(EXPORTS)
 module TensorInference
 
 using OMEinsum, LinearAlgebra
+using OMEinsum: CacheTree, cached_einsum
 using DocStringExtensions, TropicalNumbers
 # The Tropical GEMM support
 using StatsBase
