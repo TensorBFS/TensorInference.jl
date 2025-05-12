@@ -205,6 +205,13 @@ Some of these have been implemented in the
 [OMEinsum](https://github.com/under-Peter/OMEinsum.jl) package. Please check
 [Performance Tips](@ref) for more details.
 
+## Belief propagation
+
+Belief propagation[^Yedidia2003] is a message passing algorithm that can be used to compute the marginals of a probabilistic graphical model. It has close connections with the tensor networks. It can be viewed as a way to gauge the tensor networks[^Tindall2023], and can be combined with tensor networks to achieve better performance[^Wang2024].
+
+Belief propagation is an approximate method, and the quality of the approximation can be improved by the loop series expansion[^Evenbly2024].
+
+
 ## References
 
 [^Orus2014]:
@@ -227,3 +234,15 @@ Some of these have been implemented in the
 
 [^Liu2023]:
     Liu J G, Gao X, Cain M, et al. Computing solution space properties of combinatorial optimization problems via generic tensor networks[J]. SIAM Journal on Scientific Computing, 2023, 45(3): A1239-A1270.
+
+[^Yedidia2003]:
+    Yedidia, J.S., Freeman, W.T., Weiss, Y., 2003. Understanding belief propagation and its generalizations, in: Exploring Artificial Intelligence in the New Millennium. Morgan Kaufmann Publishers Inc., San Francisco, CA, USA, pp. 239–269.
+
+[^Wang2024]:
+    Wang, Y., Zhang, Y.E., Pan, F., Zhang, P., 2024. Tensor Network Message Passing. Phys. Rev. Lett. 132, 117401. https://doi.org/10.1103/PhysRevLett.132.117401
+
+[^Tindall2023]:
+    Tindall, J., Fishman, M.T., 2023. Gauging tensor networks with belief propagation. SciPost Phys. 15, 222. https://doi.org/10.21468/SciPostPhys.15.6.222
+
+[^Evenbly2024]:
+    Evenbly, G., Pancotti, N., Milsted, A., Gray, J., Chan, G.K.-L., 2024. Loop Series Expansions for Tensor Networks. https://doi.org/10.48550/arXiv.2409.03108

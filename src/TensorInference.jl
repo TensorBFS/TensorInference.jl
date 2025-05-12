@@ -8,6 +8,7 @@ $(EXPORTS)
 module TensorInference
 
 using OMEinsum, LinearAlgebra
+using OMEinsum: CacheTree, cached_einsum
 using DocStringExtensions, TropicalNumbers
 # The Tropical GEMM support
 using StatsBase
@@ -40,8 +41,11 @@ export MMAPModel
 # for ProblemReductions
 export update_temperature
 
+# belief propagation
+export BeliefPropgation, belief_propagate
+
 # utils
-export random_matrix_product_state
+export random_matrix_product_state, random_tensor_train_uai, random_matrix_product_uai
 
 include("Core.jl")
 include("RescaledArray.jl")
@@ -51,14 +55,6 @@ include("map.jl")
 include("mmap.jl")
 include("sampling.jl")
 include("cspmodels.jl")
-
-# import PrecompileTools
-# PrecompileTools.@setup_workload begin
-#     # Putting some things in `@setup_workload` instead of `@compile_workload` can reduce the size of the
-#     # precompile file and potentially make loading faster.
-#     PrecompileTools.@compile_workload begin
-#         include("../example/asia-network/main.jl")
-#     end
-# end
+include("belief.jl")
 
 end # module

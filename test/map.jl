@@ -2,16 +2,14 @@ using Test
 using OMEinsum
 using TensorInference
 
-@testset "load from code" begin
+@testset "load from model" begin
     model = problem_from_artifact("uai2014", "MAR", "Promedus", 14)
 
     tn1 = TensorNetworkModel(read_model(model);
         evidence=read_evidence(model),
         optimizer = TreeSA(ntrials = 3, niters = 2, βs = 1:0.1:80))
     
-    tn2 = TensorNetworkModel(read_model(model), tn1.code, evidence=read_evidence(model))
-
-    @test tn1.code == tn2.code
+    @test tn1 isa TensorNetworkModel
 end
 
 @testset "gradient-based tensor network solvers" begin
@@ -22,8 +20,7 @@ end
         evidence=read_evidence(model),
         optimizer = TreeSA(ntrials = 3, niters = 2, βs = 1:0.1:80))
     @debug contraction_complexity(tn)
-    most_probable_config(tn)
-    @time logp, config = most_probable_config(tn)
+    logp, config = most_probable_config(tn)
     @test log_probability(tn, config) ≈ logp
     @test maximum_logp(tn)[] ≈ logp
 end

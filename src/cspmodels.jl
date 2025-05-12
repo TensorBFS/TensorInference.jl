@@ -28,10 +28,11 @@ Convert a constraint satisfiability problem (or energy model) to a probabilistic
 * `mars` is the list of variables to be marginalized.
 """
 function TensorNetworkModel(problem::ConstraintSatisfactionProblem, β::T; evidence::Dict=Dict{Int,Int}(),
-        optimizer=GreedyMethod(), openvars=Int[], simplifier=nothing, mars=[[l] for l in variables(problem)]) where T <: Real
+        optimizer=GreedyMethod(), openvars=Int[], simplifier=nothing, unity_tensors_labels = [[l] for l in variables(problem)]) where T <: Real
     tensors, ixs = generate_tensors(β, problem)
     factors = [Factor((ix...,), t) for (ix, t) in zip(ixs, tensors)]
-	return TensorNetworkModel(variables(problem), fill(num_flavors(problem), num_variables(problem)), factors; openvars, evidence, optimizer, simplifier, mars)
+    model = UAIModel(num_variables(problem), fill(num_flavors(problem), num_variables(problem)), factors)
+    return TensorNetworkModel(model; openvars, evidence, optimizer, simplifier, unity_tensors_labels)
 end
 
 """
@@ -47,8 +48,9 @@ The program will regenerate tensors from the problem, without repeated optimizin
 """
 function update_temperature(tnet::TensorNetworkModel, problem::ConstraintSatisfactionProblem, β::Real)
 	tensors, ixs = generate_tensors(β, problem)
-    alltensors = [tnet.tensors[1:length(tnet.mars)]..., tensors...]
-    return TensorNetworkModel(tnet.vars, tnet.code, alltensors, tnet.evidence, tnet.mars)
+    @assert tnet.unity_tensors_idx == collect(1:length(tnet.unity_tensors_idx)) "The target tensor network can not be updated! Got `unity_tensors_idx = $(tnet.unity_tensors_idx)`"
+    alltensors = [tnet.tensors[tnet.unity_tensors_idx]..., tensors...]
+    return TensorNetworkModel(tnet.nvars, tnet.code, alltensors, tnet.evidence, tnet.unity_tensors_idx)
 end
 
 function MMAPModel(problem::ConstraintSatisfactionProblem, β::Real;

@@ -2,7 +2,7 @@
 
 ########### Backward tropical tensor contraction ##############
 # This part is copied from [`GenericTensorNetworks`](https://github.com/QuEraComputing/GenericTensorNetworks.jl).
-function einsum_backward_rule(eins, xs::NTuple{M, AbstractArray{<:Tropical}} where {M}, y, size_dict, dy)
+function OMEinsum.einsum_backward_rule(eins, xs::NTuple{M, AbstractArray{<:Tropical}} where {M}, y, size_dict, dy)
     return backward_tropical!(OMEinsum.getixs(eins), xs, OMEinsum.getiy(eins), y, dy, size_dict)
 end
 
@@ -53,13 +53,18 @@ $(TYPEDSIGNATURES)
 Returns the largest log-probability and the most probable configuration.
 """
 function most_probable_config(tn::TensorNetworkModel; usecuda = false)::Tuple{Real, Vector}
-    expected_mars = [[l] for l in get_vars(tn)]
-    @assert tn.mars[1:length(expected_mars)] == expected_mars "To get the the most probable configuration, the leading elements of `tn.vars` must be `$expected_mars`"
-    vars = get_vars(tn)
+    tensor_indices = check_queryvars(tn, [[v] for v in 1:tn.nvars])
     tensors = map(t -> Tropical.(log.(t)), adapt_tensors(tn; usecuda, rescale = false))
-    logp, grads = cost_and_gradient(tn.code, tensors)
+    logp, grads = cost_and_gradient(tn.code, (tensors...,))
     # use Array to convert CuArray to CPU arrays
-    return content(Array(logp)[]), map(k -> haskey(tn.evidence, vars[k]) ? tn.evidence[vars[k]] : argmax(grads[k]) - 1, 1:length(vars))
+    return content(Array(logp)[]), map(k -> haskey(tn.evidence, k) ? tn.evidence[k] : argmax(grads[tensor_indices[k]]) - 1, 1:tn.nvars)
+end
+# check if the queryvars are included in the unity tensors labels, if yes, return the indices of the unity tensors
+function check_queryvars(tn::TensorNetworkModel, queryvars::AbstractVector{Vector{Int}})
+    ixs = OMEinsum.getixsv(tn.code)
+    indices = [findfirst(==(l), ixs[tn.unity_tensors_idx]) for l in queryvars]
+    @assert !any(isnothing, indices) "To get the the most probable configuration, the unity tensors labels must include all variables. Query variables: $queryvars, Unity tensors labels: $(ixs[tn.unity_tensors_idx])"
+    return tn.unity_tensors_idx[indices]
 end
 
 """

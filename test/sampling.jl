@@ -70,10 +70,11 @@ end
     Random.seed!(140)
     mps = random_matrix_product_state(n, chi)
     num_samples = 10000
+    ixs = OMEinsum.getixsv(mps.code)
     samples = map(1:num_samples) do i
-        sample(mps, 1; queryvars=vcat(mps.mars...)).samples[:,1]
+        sample(mps, 1; queryvars=collect(1:n)).samples[:,1]
     end
-    samples = sample(mps, num_samples; queryvars=vcat(mps.mars...))
+    samples = sample(mps, num_samples; queryvars=collect(1:n))
     indices = map(samples) do sample
         sum(i->sample[i] * 2^(i-1), 1:n) + 1
     end

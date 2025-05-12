@@ -1,6 +1,5 @@
 using Test
 using OMEinsum
-using KaHyPar
 using TensorInference
 
 @testset "UAI Reference Solution Comparison" begin

@@ -43,6 +43,7 @@ RescaledArray
 TensorNetworkModel
 ArtifactProblemSpec
 UAIModel
+BeliefPropgation
 ```
 
 ## Functions
@@ -56,6 +57,7 @@ marginals
 maximum_logp
 most_probable_config
 probability
+belief_propagate
 dataset_from_artifact
 problem_from_artifact
 read_model
@@ -69,4 +71,6 @@ sample
 update_evidence!
 update_temperature
 random_matrix_product_state
+random_matrix_product_uai
+random_tensor_train_uai
 ```

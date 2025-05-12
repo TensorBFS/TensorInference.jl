@@ -46,4 +46,9 @@ end
 Base.size(arr::RescaledArray) = size(arr.normalized_value)
 Base.size(arr::RescaledArray, i::Int) = size(arr.normalized_value, i)
 
-match_arraytype(::Type{<:RescaledArray{T, N, AT}}, target::AbstractArray{T, N}) where {T, N, AT} = rescale_array(match_arraytype(AT, target))
+function OMEinsum.get_output_array(xs::NTuple{N, RescaledArray{T}}, size, fillzero::Bool) where {N, T}
+    return RescaledArray(zero(T), OMEinsum.get_output_array(getfield.(xs, :normalized_value), size, fillzero))
+end
+# The following two APIs are required by OMEinsum
+Base.fill!(r::RescaledArray, x) = (fill!(r.normalized_value, x ./ exp(r.log_factor)); r)
+Base.conj(r::RescaledArray) = RescaledArray(conj(r.log_factor), conj(r.normalized_value))

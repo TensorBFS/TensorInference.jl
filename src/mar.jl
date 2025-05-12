@@ -12,115 +12,6 @@ function adapt_tensors(code, tensors, evidence; usecuda, rescale)
     end
 end
 
-# ######### Inference by back propagation ############
-# `CacheTree` stores intermediate `NestedEinsum` contraction results.
-# It is a tree structure that isomorphic to the contraction tree,
-# `content` is the cached intermediate contraction result.
-# `children` are the children of current node, e.g. tensors that are contracted to get `content`.
-mutable struct CacheTree{T}
-    content::AbstractArray{T}
-    const children::Vector{CacheTree{T}}
-end
-
-function cached_einsum(se::SlicedEinsum, @nospecialize(xs), size_dict)
-    # slicing is not supported yet.
-    if length(se.slicing) != 0
-        @warn "Slicing is not supported for caching, got nslices = $(length(se.slicing))! Fallback to `NestedEinsum`."
-    end
-    return cached_einsum(se.eins, xs, size_dict)
-end
-
-# recursively contract and cache a tensor network
-function cached_einsum(code::NestedEinsum, @nospecialize(xs), size_dict)
-    if OMEinsum.isleaf(code)
-        # For a leaf node, cache the input tensor
-        y = xs[code.tensorindex]
-        return CacheTree(y, CacheTree{eltype(y)}[])
-    else
-        # For a non-leaf node, compute the einsum and cache the contraction result
-        caches = [cached_einsum(arg, xs, size_dict) for arg in code.args]
-        # `einsum` evaluates the einsum contraction,
-        # Its 1st argument is the contraction pattern,
-        # Its 2nd one is a tuple of input tensors,
-        # Its 3rd argument is the size dictionary (label as the key, size as the value).
-        y = einsum(code.eins, ntuple(i -> caches[i].content, length(caches)), size_dict)
-        return CacheTree(y, caches)
-    end
-end
-
-# computed gradient tree by back propagation
-function generate_gradient_tree(se::SlicedEinsum, cache::CacheTree{T}, dy::AbstractArray{T}, size_dict::Dict) where {T}
-    if length(se.slicing) != 0
-        @warn "Slicing is not supported for generating masked tree! Fallback to `NestedEinsum`."
-    end
-    return generate_gradient_tree(se.eins, cache, dy, size_dict)
-end
-
-# recursively compute the gradients and store it into a tree.
-# also known as the back-propagation algorithm.
-function generate_gradient_tree(code::NestedEinsum, cache::CacheTree{T}, dy::AbstractArray{T}, size_dict::Dict) where {T}
-    if OMEinsum.isleaf(code)
-        return CacheTree(dy, CacheTree{T}[])
-    else
-        xs = ntuple(i -> cache.children[i].content, length(cache.children))
-        # `einsum_grad` is the back-propagation rule for einsum function.
-        # If the forward pass is `y = einsum(EinCode(inputs_labels, output_labels), (A, B, ...), size_dict)`
-        # Then the back-propagation pass is
-        # ```
-        # A̅ = einsum_grad(inputs_labels, (A, B, ...), output_labels, size_dict, y̅, 1)
-        # B̅ = einsum_grad(inputs_labels, (A, B, ...), output_labels, size_dict, y̅, 2)
-        # ...
-        # ```
-        # Let `L` be the loss, we will have `y̅ := ∂L/∂y`, `A̅ := ∂L/∂A`...
-        dxs = einsum_backward_rule(code.eins, xs, cache.content, size_dict, dy)
-        return CacheTree(dy, generate_gradient_tree.(code.args, cache.children, dxs, Ref(size_dict)))
-    end
-end
-
-# a unified interface of the backward rules for real numbers and tropical numbers
-function einsum_backward_rule(eins, xs::NTuple{M, AbstractArray{<:Real}} where {M}, y, size_dict, dy)
-    return ntuple(i -> OMEinsum.einsum_grad(OMEinsum.getixs(eins), xs, OMEinsum.getiy(eins), size_dict, dy, i), length(xs))
-end
-
-# the main function for generating the gradient tree.
-function gradient_tree(code, xs)
-    # infer size from the contraction code and the input tensors `xs`, returns a label-size dictionary.
-    size_dict = OMEinsum.get_size_dict!(getixsv(code), xs, Dict{Int, Int}())
-    # forward compute and cache intermediate results.
-    cache = cached_einsum(code, xs, size_dict)
-    # initialize `y̅` as `1`. Note we always start from `L̅ := 1`.
-    dy = match_arraytype(typeof(cache.content), ones(eltype(cache.content), size(cache.content)))
-    # back-propagate
-    return copy(cache.content), generate_gradient_tree(code, cache, dy, size_dict)
-end
-
-# evaluate the cost and the gradient of leaves
-function cost_and_gradient(code, xs)
-    cost, tree = gradient_tree(code, xs)
-    # extract the gradients on leaves (i.e. the input tensors).
-    return cost, extract_leaves(code, tree)
-end
-
-# since slicing is not supported, we forward it to NestedEinsum.
-extract_leaves(code::SlicedEinsum, cache::CacheTree) = extract_leaves(code.eins, cache)
-
-# extract gradients on leaf nodes.
-function extract_leaves(code::NestedEinsum, cache::CacheTree)
-    res = Vector{Any}(undef, length(getixsv(code)))
-    return extract_leaves!(code, cache, res)
-end
-
-function extract_leaves!(code, cache, res)
-    if OMEinsum.isleaf(code)
-        # extract
-        res[code.tensorindex] = cache.content
-    else
-        # resurse deeper
-        extract_leaves!.(code.args, cache.children, Ref(res))
-    end
-    return res
-end
-
 """
 $(TYPEDSIGNATURES)
 
@@ -130,14 +21,16 @@ are their respective marginals. A marginal is a probability distribution over
 a subset of variables, obtained by integrating or summing over the remaining
 variables in the model. By default, the function returns the marginals of all
 individual variables. To specify which marginal variables to query, set the
-`mars` field when constructing a [`TensorNetworkModel`](@ref). Note that
+`unity_tensors_labels` field when constructing a [`TensorNetworkModel`](@ref). Note that
 the choice of marginal variables will affect the contraction order of the
 tensor network.
 
 ### Arguments
 - `tn`: The [`TensorNetworkModel`](@ref) to query.
-- `usecuda`: Specifies whether to use CUDA for tensor contraction.
-- `rescale`: Specifies whether to rescale the tensors during contraction.
+
+### Keyword Arguments
+- `usecuda::Bool`: Specifies whether to use CUDA for tensor contraction.
+- `rescale::Bool`: Specifies whether to rescale the tensors during contraction.
 
 ### Example
 The following example is taken from [`examples/asia-network/main.jl`](https://tensorbfs.github.io/TensorInference.jl/dev/generated/asia-network/main/).
@@ -158,7 +51,7 @@ Dict{Vector{Int64}, Vector{Float64}} with 8 entries:
   [7] => [0.145092, 0.854908]
   [2] => [0.05, 0.95]
 
-julia> tn2 = TensorNetworkModel(model; evidence=Dict(1=>0), mars=[[2, 3], [3, 4]]);
+julia> tn2 = TensorNetworkModel(model; evidence=Dict(1=>0), unity_tensors_labels = [[2, 3], [3, 4]]);
 
 julia> marginals(tn2)
 Dict{Vector{Int64}, Matrix{Float64}} with 2 entries:
@@ -184,11 +77,13 @@ probabilities of the queried variables, represented by tensors.
 """
 function marginals(tn::TensorNetworkModel; usecuda = false, rescale = true)::Dict{Vector{Int}}
     # sometimes, the cost can overflow, then we need to rescale the tensors during contraction.
-    cost, grads = cost_and_gradient(tn.code, adapt_tensors(tn; usecuda, rescale))
+    cost, grads = cost_and_gradient(tn.code, (adapt_tensors(tn; usecuda, rescale)...,))
     @debug "cost = $cost"
+    ixs = OMEinsum.getixsv(tn.code)
+    queryvars = ixs[tn.unity_tensors_idx]
     if rescale
-        return Dict(zip(tn.mars, LinearAlgebra.normalize!.(getfield.(grads[1:length(tn.mars)], :normalized_value), 1)))
+        return Dict(zip(queryvars, LinearAlgebra.normalize!.(getfield.(grads[tn.unity_tensors_idx], :normalized_value), 1)))
     else
-        return Dict(zip(tn.mars, LinearAlgebra.normalize!.(grads[1:length(tn.mars)], 1)))
+        return Dict(zip(queryvars, LinearAlgebra.normalize!.(grads[tn.unity_tensors_idx], 1)))
     end
 end

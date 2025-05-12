@@ -334,6 +334,18 @@ connected in a chain.
 - `d` is the dimension of the physical indices.
 """
 function random_matrix_product_state(::Type{T}, n::Int, chi::Int, d::Int=2) where T
+    uai = random_matrix_product_uai(T, n, chi, d)
+    return TensorNetworkModel(uai; optimizer=GreedyMethod())
+end
+random_matrix_product_state(n::Int, chi::Int, d::Int=2) = random_matrix_product_state(ComplexF64, n, chi, d)
+
+"""
+$TYPEDSIGNATURES
+
+Generate a random UAIModel that represents a matrix product state (MPS).
+Similar to [`random_matrix_product_state`](@ref), but returns the UAIModel directly.
+"""
+function random_matrix_product_uai(::Type{T}, n::Int, chi::Int, d::Int=2) where T
     # chi ^ (n-1) * (variance^n)^2 == 1/d^n
     variance = d^(-1/2) * chi^(-1/2+1/2n)
     tensors = Any[randn(T, d, chi) .* variance]
@@ -351,12 +363,41 @@ function random_matrix_product_state(::Type{T}, n::Int, chi::Int, d::Int=2) wher
     push!(ixs_ket, [virtual_indices_ket[n-1], physical_indices[n]])
     push!(ixs_bra, [virtual_indices_bra[n-1], physical_indices[n]])
     tensors, ixs = [tensors..., conj.(tensors)...], [ixs_ket..., ixs_bra...]
-    return TensorNetworkModel(
-        collect(1:3n-2),
-        optimize_code(DynamicEinCode(ixs, Int[]), OMEinsum.get_size_dict(ixs, tensors), GreedyMethod()),
-        tensors,
-        Dict{Int, Int}(),
-        Vector{Int}[[i] for i=1:n]
+    size_dict = OMEinsum.get_size_dict(ixs, tensors)
+    nvars = 3n-2
+    return UAIModel(
+        nvars,
+        [size_dict[i] for i=1:nvars],
+        [Factor((ixs[i]...,), tensors[i]) for i in 1:length(tensors)]
     )
 end
-random_matrix_product_state(n::Int, chi::Int, d::Int=2) = random_matrix_product_state(ComplexF64, n, chi, d)
+
+
+"""
+$TYPEDSIGNATURES
+
+Tensor train (TT) is a tensor network model that is widely used in quantum
+many-body physics. This model is different from the matrix product state (MPS)
+in that it does not have an extra copy for representing the bra state.
+"""
+function random_tensor_train_uai(::Type{T}, n::Int, chi::Int, d::Int=2; periodic=false) where T
+    # chi ^ (n-1) * (variance^n)^2 == 1/d^n
+    variance = d^(-1/2) * chi^(-1/2+1/2n)
+    physical_indices = collect(1:n)
+    virtual_indices = collect(n+1:2n)
+    tensors = Any[(periodic ? rand(T, chi, d, chi) : rand(T, d, chi)) .* variance]
+    ixs = [periodic ? [virtual_indices[n], physical_indices[1], virtual_indices[1]] : [physical_indices[1], virtual_indices[1]]]
+    for i = 2:n-1
+        push!(tensors, rand(T, chi, d, chi) .* variance)
+        push!(ixs, [virtual_indices[i-1], physical_indices[i], virtual_indices[i]])
+    end
+    push!(tensors, (periodic ? rand(T, chi, d, chi) : rand(T, chi, d)) .* variance)
+    push!(ixs, periodic ? [virtual_indices[n-1], physical_indices[n], virtual_indices[n]] : [virtual_indices[n-1], physical_indices[n]])
+    size_dict = OMEinsum.get_size_dict(ixs, tensors)
+    nvars = periodic ? 2n : 2n-1
+    return UAIModel(
+        nvars,
+        [size_dict[i] for i=1:nvars],
+        [Factor((ixs[i]...,), tensors[i]) for i in 1:length(tensors)]
+    )
+end
