@@ -74,7 +74,9 @@ end
     mars = marginals(state)
     mars_tnet = marginals(tnet)
     for v in 1:TensorInference.num_variables(bp)
-        @test mars[[v]] ≈ mars_tnet[[v]] atol=1e-4
+        gauge = mars[[v]] ./ mars_tnet[[v]]
+        @test all(gauge .≈ gauge[1])
+        @test mars[[v]] ≈ gauge[1] .* mars_tnet[[v]] atol=1e-4
     end
 end
 
