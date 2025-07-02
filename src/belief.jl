@@ -80,7 +80,7 @@ function _collect_message!(vectors_out::Vector, t::AbstractArray, vectors_in::Ve
     # TODO: speed up if needed!
     code = star_code(length(vectors_in))
     cost, gradient = cost_and_gradient(code, (t, vectors_in...))
-    for (o, g) in zip(vectors_out, gradient[2:end])
+    for (o, g) in zip(vectors_out, conj.(gradient[2:end]))
         o .= g
     end
     return cost[]

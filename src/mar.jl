@@ -78,6 +78,7 @@ probabilities of the queried variables, represented by tensors.
 function marginals(tn::TensorNetworkModel; usecuda = false, rescale = true)::Dict{Vector{Int}}
     # sometimes, the cost can overflow, then we need to rescale the tensors during contraction.
     cost, grads = cost_and_gradient(tn.code, (adapt_tensors(tn; usecuda, rescale)...,))
+    grads = conj.(grads)
     @debug "cost = $cost"
     ixs = OMEinsum.getixsv(tn.code)
     queryvars = ixs[tn.unity_tensors_idx]

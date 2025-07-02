@@ -46,7 +46,7 @@ end
 @testset "belief propagation" begin
     n = 5
     chi = 3
-    mps_uai = TensorInference.random_tensor_train_uai(Float64, n, chi)
+    mps_uai = TensorInference.random_tensor_train_uai(ComplexF64, n, chi)
     bp = BeliefPropgation(mps_uai)
     @test TensorInference.initial_state(bp) isa TensorInference.BPState
     state, info = belief_propagate(bp)
@@ -63,7 +63,7 @@ end
 @testset "belief propagation on circle" begin
     n = 10
     chi = 3
-    mps_uai = TensorInference.random_tensor_train_uai(Float64, n, chi; periodic=true)
+    mps_uai = TensorInference.random_tensor_train_uai(ComplexF64, n, chi; periodic=true) # FIXME: fail to converge
     bp = BeliefPropgation(mps_uai)
     @test TensorInference.initial_state(bp) isa TensorInference.BPState
     state, info = belief_propagate(bp; max_iter=100, tol=1e-6)
