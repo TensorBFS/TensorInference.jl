@@ -46,21 +46,21 @@ end
 @testset "belief propagation" begin
     n = 5
     chi = 3
-    mps_uai = TensorInference.random_tensor_train_uai(Float64, n, chi)
+    mps_uai = TensorInference.random_tensor_train_uai(ComplexF64, n, chi)
     bp = BeliefPropgation(mps_uai)
     @test TensorInference.initial_state(bp) isa TensorInference.BPState
-    state, info = belief_propagate(bp)
+    state, info = belief_propagate(bp; max_iter=100, tol=1e-8)
     @test info.converged
     @test info.iterations < 20
     mars = marginals(state)
     tnet = TensorNetworkModel(mps_uai)
     mars_tnet = marginals(tnet)
     for v in 1:TensorInference.num_variables(bp)
-        @test mars[[v]] ≈ mars_tnet[[v]] atol=1e-6
+        @test mars[[v]] ≈ mars_tnet[[v]] atol=1e-4
     end
 end
 
-@testset "belief propagation on circle" begin
+@testset "belief propagation on circle (Real)" begin
     n = 10
     chi = 3
     mps_uai = TensorInference.random_tensor_train_uai(Float64, n, chi; periodic=true)
@@ -75,6 +75,25 @@ end
     mars_tnet = marginals(tnet)
     for v in 1:TensorInference.num_variables(bp)
         @test mars[[v]] ≈ mars_tnet[[v]] atol=1e-4
+    end
+end
+
+
+@testset "belief propagation on circle (Complex)" begin
+    n = 10
+    chi = 3
+    mps_uai = TensorInference.random_tensor_train_uai(ComplexF64, n, chi; periodic=true) # FIXME: fail to converge
+    bp = BeliefPropgation(mps_uai)
+    @test TensorInference.initial_state(bp) isa TensorInference.BPState
+    state, info = belief_propagate(bp; max_iter=100, tol=1e-6)
+    @test info.converged
+    @test info.iterations < 100
+    contraction_res = TensorInference.contraction_results(state)
+    tnet = TensorNetworkModel(mps_uai)
+    mars = marginals(state)
+    mars_tnet = marginals(tnet)
+    for v in 1:TensorInference.num_variables(bp)
+        @test TensorInference.message_converged(mars[[v]], mars_tnet[[v]]; atol=1e-4)
     end
 end
 

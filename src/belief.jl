@@ -80,7 +80,7 @@ function _collect_message!(vectors_out::Vector, t::AbstractArray, vectors_in::Ve
     # TODO: speed up if needed!
     code = star_code(length(vectors_in))
     cost, gradient = cost_and_gradient(code, (t, vectors_in...))
-    for (o, g) in zip(vectors_out, gradient[2:end])
+    for (o, g) in zip(vectors_out, conj.(gradient[2:end]))
         o .= g
     end
     return cost[]
@@ -115,7 +115,7 @@ Run the belief propagation algorithm, and return the final state and the informa
 
 ### Keyword Arguments
 - `max_iter::Int=100`: the maximum number of iterations
-- `tol::Float64=1e-6`: the tolerance for the convergence
+- `tol::Float64=1e-6`: the tolerance for the convergence, the convergence is checked by infidelity of messages in consecutive iterations. For complex numbers, the converged message may be different only by a phase factor.
 - `damping::Float64=0.2`: the damping factor for the message update, updated-message = damping * old-message + (1 - damping) * new-message
 """
 function belief_propagate(bp::BeliefPropgation; kwargs...)
@@ -133,12 +133,19 @@ function belief_propagate!(bp::BeliefPropgation, state::BPState{T}; max_iter::In
         collect_message!(bp, state; normalize = true)
         process_message!(state; normalize = true, damping = damping)
         # check convergence
-        if all(iv -> all(it -> isapprox(state.message_in[iv][it], pre_message_in[iv][it], atol = tol), 1:length(bp.v2t[iv])), 1:num_variables(bp))
+        if all(iv -> all(it -> message_converged(state.message_in[iv][it], pre_message_in[iv][it], atol = tol), 1:length(bp.v2t[iv])), 1:num_variables(bp))
             return BPInfo(true, i)
         end
         pre_message_in = deepcopy(state.message_in)
     end
     return BPInfo(false, max_iter)
+end
+
+# check if two messages are converged by fidelity (needed for complex numbers)
+function message_converged(a, b; atol)
+    a_norm = norm(a)
+    b_norm = norm(b)
+    return isapprox(a_norm, b_norm, atol=atol) && isapprox(sqrt(abs(a' * b)), a_norm, atol=atol)
 end
 
 # if BP is exact and converged (e.g. tree like), the result should be the same as the tensor network contraction
