@@ -30,12 +30,12 @@ probability(tn)
 
 # For large scale applications, it is also possible to slice over certain degrees of freedom to reduce the space complexity, i.e.
 # loop and accumulate over certain degrees of freedom so that one can have a smaller tensor network inside the loop due to the removal of these degrees of freedom.
-# In the [`TreeSA`](@ref) optimizer, one can set `nslices` to a value larger than zero to turn on this feature.
-# As a comparison we slice over 5 degrees of freedom, which can reduce the space complexity by at most 5.
+# One can use the `slicer` keyword argument to reduce the space complexity by slicing over certain degrees of freedom.
+# In the following example, we use the `TreeSASlicer` to reduce the space complexity to `sc_target=10`.
 # In this application, the slicing achieves the largest possible space complexity reduction 5, while the time and read-write complexity are only increased by less than 1,
 # i.e. the peak memory usage is reduced by a factor ``32``, while the (theoretical) computing time is increased by at a factor ``< 2``.
-optimizer = TreeSA(ntrials = 1, niters = 5, βs = 0.1:0.3:100, nslices=5)
-tn = TensorNetworkModel(model; optimizer, evidence);
+optimizer = TreeSA(ntrials = 1, niters = 5, βs = 0.1:0.3:100)
+tn = TensorNetworkModel(model; optimizer, evidence, slicer=TreeSASlicer(score=ScoreFunction(sc_target=10)));
 contraction_complexity(tn)
 
 # ## Faster Tropical tensor contraction to speed up MAP and MMAP

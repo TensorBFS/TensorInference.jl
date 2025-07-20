@@ -34,6 +34,9 @@ TensorInference
 ```@docs
 GreedyMethod
 KaHyParBipartite
+HyperND
+TreeSASlicer
+ScoreFunction
 MergeGreedy
 MergeVectors
 SABipartite
@@ -73,4 +76,6 @@ update_temperature
 random_matrix_product_state
 random_matrix_product_uai
 random_tensor_train_uai
+save_tensor_network
+load_tensor_network
 ```
