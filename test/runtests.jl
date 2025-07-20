@@ -32,6 +32,10 @@ end
     include("belief.jl")
 end
 
+@testset "fileio" begin
+    include("fileio.jl")
+end
+
 using CUDA
 if CUDA.functional()
     include("cuda.jl")

@@ -9,6 +9,7 @@ module TensorInference
 
 using OMEinsum, LinearAlgebra
 using OMEinsum: CacheTree, cached_einsum
+using OMEinsum.OMEinsumContractionOrders.JSON
 using DocStringExtensions, TropicalNumbers
 # The Tropical GEMM support
 using StatsBase
@@ -19,7 +20,7 @@ import Pkg
 
 # reexport OMEinsum functions
 export RescaledArray
-export contraction_complexity, TreeSA, GreedyMethod, KaHyParBipartite, SABipartite, MergeGreedy, MergeVectors
+export contraction_complexity, TreeSA, GreedyMethod, KaHyParBipartite, HyperND, SABipartite, MergeGreedy, MergeVectors, TreeSASlicer, ScoreFunction
 
 # read and load uai files
 export read_model_file, read_td_file, read_evidence_file
@@ -44,6 +45,9 @@ export update_temperature
 # belief propagation
 export BeliefPropgation, belief_propagate
 
+# fileio
+export save_tensor_network, load_tensor_network
+
 # utils
 export random_matrix_product_state, random_tensor_train_uai, random_matrix_product_uai
 
@@ -56,5 +60,6 @@ include("mmap.jl")
 include("sampling.jl")
 include("cspmodels.jl")
 include("belief.jl")
+include("fileio.jl")
 
 end # module

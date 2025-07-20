@@ -1,7 +1,7 @@
 name = "TensorInference"
 uuid = "c2297e78-99bd-40ad-871d-f50e56b81012"
 authors = ["Jin-Guo Liu", "Martin Roa Villescas"]
-version = "0.6.1"
+version = "0.6.2"
 
 [deps]
 DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
@@ -23,7 +23,7 @@ TensorInferenceCUDAExt = "CUDA"
 CUDA = "4, 5"
 DocStringExtensions = "0.8.6, 0.9"
 LinearAlgebra = "1"
-OMEinsum = "0.8.7"
+OMEinsum = "0.9.1"
 Pkg = "1"
 PrettyTables = "2"
 ProblemReductions = "0.3"

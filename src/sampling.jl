@@ -139,7 +139,7 @@ function generate_samples!(code::DynamicNestedEinsum, cache::CacheTree{T}, iy_en
             siblings = filter(x->x !== child, cache.siblings)
             siblings_ixs = filter(x->x !== ix, ixs)
             iy_subenv = batch_label ∈ ix ? ix : [ix..., batch_label]
-            envcode = optimize_code(EinCode([siblings_ixs..., iy_env], iy_subenv), size_dict, GreedyMethod(; nrepeat=1))
+            envcode = optimize_code(EinCode([siblings_ixs..., iy_env], iy_subenv), size_dict, GreedyMethod())
             subenv = einsum(envcode, (getfield.(siblings, :content)..., env), size_dict)
 
             # generate samples

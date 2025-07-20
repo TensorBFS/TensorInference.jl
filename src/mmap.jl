@@ -91,13 +91,13 @@ function MMAPModel(vars::AbstractVector{LT}, cards::AbstractVector{Int}, factors
         ixsi = all_ixs[cluster]
         vari = unique!(vcat(ixsi...))
         iyi = setdiff(vari, contracted)
-        codei = optimize_code(EinCode(ixsi, iyi), size_dict, marginalize_optimizer, marginalize_simplifier)
+        codei = optimize_code(EinCode(ixsi, iyi), size_dict, marginalize_optimizer; simplifier=marginalize_simplifier)
         push!(ixs, iyi)
         push!(clusters, Cluster(contracted, codei, ts))
     end
     rem_indices = setdiff(1:length(all_ixs), vcat([c.second for c in subsets]...))
     remaining_tensors = all_tensors[rem_indices]
-    code = optimize_code(EinCode([all_ixs[rem_indices]..., ixs...], iy), size_dict, optimizer, simplifier)
+    code = optimize_code(EinCode([all_ixs[rem_indices]..., ixs...], iy), size_dict, optimizer; simplifier)
     return MMAPModel(setdiff(vars, marginalized), code, remaining_tensors, clusters, evidence)
 end
 

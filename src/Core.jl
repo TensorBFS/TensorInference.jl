@@ -49,7 +49,7 @@ Probabilistic modeling with a tensor network.
 * `code` is the tensor network contraction pattern.
 * `tensors` are the tensors fed into the tensor network, the leading tensors are unity tensors associated with `unity_tensors_labels`.
 * `evidence` is a dictionary used to specify degrees of freedom that are fixed to certain values.
-* `unity_tensors_idx` is a vector of indices of the unity tensors in the `tensors` array. Unity tensors are dummy tensors used to obtain the marginal probabilities.
+* `unity_tensors_idx` is a vector of indices pointing to the unity tensors in the `tensors` array. Unity tensors are dummy tensors with all entries equal to one, which are used to obtain the marginal probabilities.
 """
 struct TensorNetworkModel{ET, MT <: AbstractArray}
     nvars::Int
@@ -118,6 +118,7 @@ function TensorNetworkModel(
     evidence = Dict{Int,Int}(),
     optimizer = GreedyMethod(),
     simplifier = nothing,
+    slicer = nothing,
     unity_tensors_labels = [[i] for i=1:model.nvars]
 ) where {ET, FT}
     # `optimize_code` optimizes the contraction order of a raw tensor network without a contraction order specified.
@@ -127,7 +128,7 @@ function TensorNetworkModel(
     rawcode = EinCode([unity_tensors_labels..., [[factor.vars...] for factor in model.factors]...], collect(Int, openvars))  # labels for vertex tensors (unity tensors) and edge tensors
     tensors = Array{ET}[[ones(ET, [model.cards[i] for i in lb]...) for lb in unity_tensors_labels]..., [t.vals for t in model.factors]...]
     size_dict = OMEinsum.get_size_dict(getixsv(rawcode), tensors)
-    code = optimize_code(rawcode, size_dict, optimizer, simplifier)
+    code = optimize_code(rawcode, size_dict, optimizer; simplifier, slicer)
     return TensorNetworkModel(model.nvars, code, tensors, evidence, collect(Int, 1:length(unity_tensors_labels)))
 end
 
