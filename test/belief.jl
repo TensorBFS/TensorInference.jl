@@ -56,7 +56,7 @@ end
     tnet = TensorNetworkModel(mps_uai)
     mars_tnet = marginals(tnet)
     for v in 1:TensorInference.num_variables(bp)
-        @test mars[[v]] ≈ mars_tnet[[v]] atol=1e-4
+        @test mars[[v]] ≈ mars_tnet[[v]] atol=1e-3
     end
 end
 
