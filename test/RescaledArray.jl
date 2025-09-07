@@ -19,7 +19,7 @@ using OMEinsum
     # Test rescale_array function
     @testset "rescale_array" begin
         T = [1.0 2.0; 3.0 4.0]
-        r = rescale_array(T)
+        r = TensorInference.rescale_array(T)
         
         # Maximum absolute value should be 1 in normalized_value
         @test maximum(abs, r.normalized_value) ≈ 1.0
@@ -29,7 +29,7 @@ using OMEinsum
         
         # Test with zero array
         zero_T = zeros(2, 2)
-        r_zero = rescale_array(zero_T)
+        r_zero = TensorInference.rescale_array(zero_T)
         @test r_zero.log_factor == 0.0
         @test r_zero.normalized_value == zero_T
     end

@@ -5,6 +5,8 @@ using Documenter, Literate
 using Pkg
 
 # Literate Examples
+const DRAFT = get(ENV, "DRAFT", "false") == "true"
+@show DRAFT
 const EXAMPLE_DIR = pkgdir(TensorInference, "examples")
 const LITERATE_GENERATED_DIR = pkgdir(TensorInference, "docs", "src", "generated")
 mkpath(LITERATE_GENERATED_DIR)
@@ -19,7 +21,7 @@ for each in readdir(EXAMPLE_DIR)
     # build
     input_file = joinpath(workdir, "main.jl")
     @info "building" input_file
-    Literate.markdown(input_file, workdir; execute=true)
+    Literate.markdown(input_file, workdir; execute=!DRAFT)
     # restore environment
     # Pkg.activate(Pkg.PREV_ENV_PATH[])
 end
@@ -30,7 +32,7 @@ for each in EXTRA_JL
     cp(joinpath(SRC_DIR, each), joinpath(LITERATE_GENERATED_DIR, each); force=true)
     input_file = joinpath(LITERATE_GENERATED_DIR, each)
     @info "building" input_file
-    Literate.markdown(input_file, LITERATE_GENERATED_DIR; execute=true)
+    Literate.markdown(input_file, LITERATE_GENERATED_DIR; execute=!DRAFT)
 end
 
 DocMeta.setdocmeta!(TensorInference, :DocTestSetup, :(using TensorInference); recursive=true)
@@ -68,6 +70,7 @@ makedocs(;
     ],
     doctest = false,
     warnonly = :missing_docs,
+    draft = DRAFT,
 )
 
 deploydocs(;
