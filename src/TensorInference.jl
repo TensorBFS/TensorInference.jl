@@ -19,7 +19,7 @@ using ProblemReductions
 import Pkg
 
 # reexport OMEinsum functions
-export RescaledArray
+export RescaledArray, rescale_array
 export contraction_complexity, TreeSA, GreedyMethod, KaHyParBipartite, HyperND, SABipartite, MergeGreedy, MergeVectors, TreeSASlicer, ScoreFunction
 
 # read and load uai files

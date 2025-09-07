@@ -32,6 +32,10 @@ function eliminate_dimensions(x::AbstractArray{T, N}, ix::AbstractVector{L}, el:
     @assert length(ix) == N
     return x[eliminated_selector(size(x), ix, el.first, el.second)...]
 end
+function eliminate_dimensions(x::RescaledArray{T, N}, ix::AbstractVector{L}, el::Pair{<:AbstractVector{L}, <:AbstractVector}) where {T, N, L}
+    return RescaledArray(x.log_factor, eliminate_dimensions(x.normalized_value, ix, el))
+end
+
 function eliminated_size(size0, ix, labels)
     @assert length(size0) == length(ix)
     return ntuple(length(ix)) do i
@@ -53,7 +57,7 @@ function eliminate_dimensions_addbatch!(x::AbstractArray{T, N}, ix::AbstractVect
     @assert length(ix) == N
     res = similar(x, (eliminated_size(size(x), ix, el.first)..., nbatch))
     for ibatch in 1:nbatch
-        selectdim(res, N+1, ibatch) .= eliminate_dimensions(x, ix, el.first=>view(el.second, :, ibatch))
+        copyto!(selectdim(res, N+1, ibatch), eliminate_dimensions(x, ix, el.first=>view(el.second, :, ibatch)))
     end
     push!(ix, batch_label)
     return res
@@ -63,7 +67,7 @@ function eliminate_dimensions_withbatch(x::AbstractArray{T, N}, ix::AbstractVect
     @assert length(ix) == N && size(x, N) == nbatch
     res = similar(x, (eliminated_size(size(x), ix, el.first)))
     for ibatch in 1:nbatch
-        selectdim(res, N, ibatch) .= eliminate_dimensions(selectdim(x, N, ibatch), ix[1:end-1], el.first=>view(el.second, :, ibatch))
+        copyto!(selectdim(res, N, ibatch), eliminate_dimensions(selectdim(x, N, ibatch), ix[1:end-1], el.first=>view(el.second, :, ibatch)))
     end
     return res
 end
@@ -79,12 +83,13 @@ Returns a vector of vector, each element being a configurations defined on `get_
 * `n` is the number of samples to be returned.
 
 ### Keyword Arguments
+* `rescale` is a boolean flag to indicate whether to rescale the tensors during contraction.
 * `usecuda` is a boolean flag to indicate whether to use CUDA for tensor computation.
 * `queryvars` is the variables to be sampled, default is `get_vars(tn)`.
 """
-function sample(tn::TensorNetworkModel, n::Int; usecuda = false, queryvars = get_vars(tn))::Samples
+function sample(tn::TensorNetworkModel, n::Int; usecuda = false, queryvars = get_vars(tn), rescale::Bool = false)::Samples
     # generate tropical tensors with its elements being log(p).
-    xs = adapt_tensors(tn; usecuda, rescale = false)
+    xs = adapt_tensors(tn; usecuda, rescale)
     # infer size from the contraction code and the input tensors `xs`, returns a label-size dictionary.
     size_dict = OMEinsum.get_size_dict!(getixsv(tn.code), xs, Dict{Int, Int}())
     # forward compute and cache intermediate results.
@@ -92,15 +97,14 @@ function sample(tn::TensorNetworkModel, n::Int; usecuda = false, queryvars = get
     # initialize `y̅` as the initial batch of samples.
     iy = getiyv(tn.code)
     idx = map(l->findfirst(==(l), queryvars), iy ∩ queryvars)
-    indices = StatsBase.sample(CartesianIndices(size(cache.content)), _Weights(vec(cache.content)), n)
+    indices = StatsBase.sample(CartesianIndices(size(cache.content)), _weight(cache.content), n)
     configs = zeros(Int, length(queryvars), n)
     for i=1:n
         configs[idx, i] .= indices[i].I .- 1
     end
     samples = Samples(configs, queryvars)
     # back-propagate
-    env = similar(cache.content, (size(cache.content)..., n))  # batched env
-    fill!(env, one(eltype(env)))
+    env = ones_like(cache.content, n)
     batch_label = _newindex(OMEinsum.uniquelabels(tn.code))
     code = deepcopy(tn.code)
     iy_env = [OMEinsum.getiyv(code)..., batch_label]
@@ -115,10 +119,22 @@ function sample(tn::TensorNetworkModel, n::Int; usecuda = false, queryvars = get
 end
 _newindex(labels::AbstractVector{<:Union{Int, Char}}) = maximum(labels) + 1
 _newindex(::AbstractVector{Symbol}) = gensym(:batch)
-_Weights(x::AbstractVector{<:Real}) = Weights(x)
-function _Weights(x::AbstractArray{<:Complex})
+_weight(x::AbstractArray{<:Real}) = Weights(_normvec(x))
+function _weight(_x::AbstractArray{<:Complex})
+    x = _normvec(_x)
     @assert all(e->abs(imag(e)) < max(100*eps(abs(e)), 1e-8), x) "Complex probability encountered: $x"
-    return Weights(real.(x))
+    return _weight(real.(x))
+end
+_normvec(x::AbstractArray) = vec(x)
+_normvec(x::RescaledArray) = vec(x.normalized_value)
+
+function ones_like(x::AbstractArray{T}, n::Int) where {T}
+    res = similar(x, (size(x)..., n))
+    fill!(res, one(eltype(res)))
+    return res
+end
+function ones_like(x::RescaledArray, n::Int)
+    return RescaledArray(zero(x.log_factor), ones_like(x.normalized_value, n))
 end
 
 function generate_samples!(se::SlicedEinsum, cache::CacheTree{T}, iy_env::Vector{Int}, env::AbstractArray{T}, samples::Samples{L}, pool, batch_label::L, size_dict::Dict{L}) where {T, L}
@@ -177,7 +193,7 @@ function update_samples!(labels, sample, vars::AbstractVector{L}, probabilities:
     @assert length(vars) == N
     totalset = CartesianIndices(probabilities)
     eliminated_locs = idx4labels(labels, vars)
-    config = StatsBase.sample(totalset, _Weights(vec(probabilities)))
+    config = StatsBase.sample(totalset, _weight(probabilities))
     sample[eliminated_locs] .= config.I .- 1
 end
 

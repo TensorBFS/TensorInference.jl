@@ -16,6 +16,12 @@ Base.show(io::IO, ::MIME"text/plain", c::RescaledArray) = Base.show(io, c)
 Base.Array(c::RescaledArray) = rmul!(Array(c.normalized_value), exp(c.log_factor))
 Base.copy(c::RescaledArray) = RescaledArray(c.log_factor, copy(c.normalized_value))
 Base.getindex(r::RescaledArray, indices...) = map(x->x * exp(r.log_factor), getindex(r.normalized_value, indices...))
+Base.similar(r::RescaledArray, ::Type{T}, dims::Dims) where {T} = RescaledArray(r.log_factor, similar(r.normalized_value, T, dims))
+Base.selectdim(r::RescaledArray, d::Int, i::Int) = RescaledArray(r.log_factor, selectdim(r.normalized_value, d, i))
+function Base.copyto!(dest::RescaledArray, src::RescaledArray)
+    dest.normalized_value .= exp(src.log_factor - dest.log_factor) .* src.normalized_value
+    return dest
+end
 
 """
 $(TYPEDSIGNATURES)

@@ -87,3 +87,13 @@ end
     @show negative_loglikelyhood(probs, indices), entropy(probs)
     @test negative_loglikelyhood(probs, indices) ≈ entropy(probs) atol=1e-1
 end
+
+@testset "issue 102 - support using rescaled array in sampling" begin
+    n = 100
+    chi = 10
+    Random.seed!(140)
+    mps = random_matrix_product_state(Float64, n, chi)
+    mps.tensors[setdiff(1:length(mps.tensors), mps.unity_tensors_idx)] .*= 100
+    samples = sample(mps, 1; rescale = true)
+    @test samples isa TensorInference.Samples
+end

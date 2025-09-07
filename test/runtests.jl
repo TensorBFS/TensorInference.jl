@@ -36,6 +36,10 @@ end
     include("fileio.jl")
 end
 
+@testset "RescaledArray" begin
+    include("RescaledArray.jl")
+end
+
 using CUDA
 if CUDA.functional()
     include("cuda.jl")
