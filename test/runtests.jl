@@ -30,6 +30,7 @@ end
 
 @testset "belief propagation" begin
     include("belief.jl")
+    include("loop_series.jl")
 end
 
 @testset "fileio" begin

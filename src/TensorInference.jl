@@ -7,6 +7,8 @@ $(EXPORTS)
 """
 module TensorInference
 
+using BitBasis
+using Graphs
 using OMEinsum, LinearAlgebra
 using OMEinsum: CacheTree, cached_einsum
 using OMEinsum.OMEinsumContractionOrders.JSON
@@ -44,6 +46,8 @@ export update_temperature
 
 # belief propagation
 export BeliefPropgation, belief_propagate
+export LoopSeriesTruncation, XORLoopSum, UnionLoopSum, Degree, Cyclomatic
+export loop_series, loop_basis, loop_weight, bp_vacuum_weight, loop_corrections
 
 # fileio
 export save_tensor_network, load_tensor_network
@@ -60,6 +64,7 @@ include("mmap.jl")
 include("sampling.jl")
 include("cspmodels.jl")
 include("belief.jl")
+include("loop_series.jl")
 include("fileio.jl")
 
 end # module
