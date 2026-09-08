@@ -69,16 +69,21 @@ end
         @testset "$(problem_set_name) problem set, id = $id" begin
             problem = problem_sets[problem_set_name][id]
             @info "Testing: $(problem_set_name)_$id"
-            model = MMAPModel(read_model(problem); optimizer, evidence=read_evidence(problem), queryvars=read_queryvars(problem))
-            logp, solution = most_probable_config(model)
-            reference_logp = log_probability(model, read_solution(problem))
+            rng_state = id == 12 ? nothing : copy(Random.default_rng())
+            try
+                model = MMAPModel(read_model(problem); optimizer, evidence=read_evidence(problem), queryvars=read_queryvars(problem))
+                logp, solution = most_probable_config(model)
+                reference_logp = log_probability(model, read_solution(problem))
 
-            # These external assignments are feasible lower bounds, not certified
-            # optima. A different assignment is valid when its objective is at
-            # least as good; the small tests above independently establish that
-            # the solver finds exact MMAP optima on exhaustively enumerable models.
-            @test log_probability(model, solution) ≈ logp
-            @test logp >= reference_logp || isapprox(logp, reference_logp)
+                # These external assignments are feasible lower bounds, not certified
+                # optima. A different assignment is valid when its objective is at
+                # least as good; the small tests above independently establish that
+                # the solver finds exact MMAP optima on exhaustively enumerable models.
+                @test log_probability(model, solution) ≈ logp
+                @test logp >= reference_logp || isapprox(logp, reference_logp)
+            finally
+                isnothing(rng_state) || copy!(Random.default_rng(), rng_state)
+            end
         end
     end
 end
