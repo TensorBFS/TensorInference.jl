@@ -177,6 +177,12 @@ function generate_samples!(code::DynamicNestedEinsum, cache::CacheTree{T}, iy_en
             # recurse
             generate_samples!(subcode, child, iy_subenv, subenv, samples, pool, batch_label, size_dict)
         end
+        # Descendants may have conditioned internal variables that are absent
+        # from this node's output. Propagate their cache and retain each sample.
+        if any(ix -> batch_label in ix, getixsv(code.eins)) && !(batch_label in getiyv(code.eins))
+            push!(getiyv(code.eins), batch_label)
+        end
+        cache.content = einsum(code.eins, (getfield.(cache.siblings, :content)...,), size_dict)
     end
 end
 
@@ -207,5 +213,10 @@ function udpate_cache_tree!(ne::NestedEinsum, cache::CacheTree{T}, el::Pair{<:Ab
             udpate_cache_tree!(subcode, child, el, batch_label, size_dict)
         end
     end
-    updated && (cache.content = einsum(ne.eins, (getfield.(cache.siblings, :content)...,), size_dict))
+    if updated
+        # A conditioned internal index introduces a batch dimension even when
+        # it was contracted out of this node's original output.
+        batch_label in getiyv(ne.eins) || push!(getiyv(ne.eins), batch_label)
+        cache.content = einsum(ne.eins, (getfield.(cache.siblings, :content)...,), size_dict)
+    end
 end
