@@ -17,7 +17,11 @@ Base.length(s::Samples) = size(s.samples, 2)
 Base.size(s::Samples) = (size(s.samples, 2),)
 function Base.show(io::IO, s::Samples)  # display with PrettyTables
     println(io, typeof(s))
-    PrettyTables.pretty_table(io, s.samples', header=s.labels)
+    if pkgversion(PrettyTables) < v"3"
+        PrettyTables.pretty_table(io, s.samples'; header=s.labels)
+    else
+        PrettyTables.pretty_table(io, s.samples'; column_labels=s.labels)
+    end
 end
 num_samples(samples::Samples) = size(samples.samples, 2)
 function idx4labels(totalset::AbstractVector{L}, labels::AbstractVector{L})::Vector{Int} where L
