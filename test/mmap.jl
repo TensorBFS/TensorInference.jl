@@ -42,11 +42,12 @@ end
         for queryvars in ([1], [1, 3]), evidence in (Dict{Int,Int}(), Dict(3 => 1))
             mmap = MMAPModel(model; queryvars, evidence)
             scores = Dict{Tuple,Float64}()
-            outputvars = get_vars(mmap)
+            expected_outputvars = sort!(union(queryvars, collect(keys(evidence))))
+            @test get_vars(mmap) == expected_outputvars
             for x in 0:1, y in 0:1, z in 0:1
                 assignment = [x, y, z]
                 all(assignment[k] == value for (k, value) in evidence) || continue
-                key = Tuple(assignment[k] for k in outputvars)
+                key = Tuple(assignment[k] for k in expected_outputvars)
                 scores[key] = get(scores, key, 0.0) + f[x + 1, y + 1] * g[y + 1, z + 1]
             end
             logp, config = most_probable_config(mmap)
