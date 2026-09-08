@@ -18,6 +18,7 @@ end
 
 @testset "sampling" begin
     include("sampling.jl")
+    include("sampling_joint.jl")
 end
 
 @testset "cspmodels" begin
