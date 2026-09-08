@@ -2,6 +2,16 @@ using TensorInference, Test, LinearAlgebra
 import StatsBase
 using OMEinsum, Random
 
+@testset "Samples display" begin
+    samples = TensorInference.Samples([0 1; 1 0], ["x", "y"])
+    output = sprint(show, samples)
+    @test occursin("Samples{String}", output)
+    @test occursin("x", output)
+    @test occursin("y", output)
+    @test occursin("0", output)
+    @test occursin("1", output)
+end
+
 @testset "sampling" begin
     model = TensorInference.read_model_from_string("""MARKOV
 8
